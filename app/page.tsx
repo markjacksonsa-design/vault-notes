@@ -1,167 +1,189 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 export default function Home() {
-  // --- ALL STATES (The App's Memory) ---
+  const [mounted, setMounted] = useState(false);
+  const [view, setView] = useState<'student' | 'seller'>('student');
   const [cartCount, setCartCount] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [darkMode, setDarkMode] = useState(true);
+  const [teacherNotes, setTeacherNotes] = useState<any[]>([]);
   const [selectedNote, setSelectedNote] = useState<any>(null);
-  const [sortBy, setSortBy] = useState('newest');
-  const [toast, setToast] = useState(''); // The notification message
-  const [teacherNotes, setTeacherNotes] = useState<{id: number, subject: string, title: string, price: string, description: string}[]>([]);
   
-  // Form States
-  const [newTitle, setNewTitle] = useState('');
-  const [newSubject, setNewSubject] = useState('');
-  const [newPrice, setNewPrice] = useState('');
-  const [newDesc, setNewDesc] = useState('');
+  // Withdrawal States
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawnTotal, setWithdrawnTotal] = useState(0);
+  const [bankDetails, setBankDetails] = useState({ bank: '', accNumber: '' });
+  const [isBankLinked, setIsBankLinked] = useState(false);
 
-  // --- PERSISTENCE (Loading/Saving) ---
+  // --- NEW NOTE FORM STATE ---
+  const [newNote, setNewNote] = useState({
+    title: '',
+    subject: '',
+    curriculum: 'CAPS',
+    price: '',
+    description: ''
+  });
+
   useEffect(() => {
-    const savedNotes = localStorage.getItem('vault_notes');
-    if (savedNotes) { 
-      setTeacherNotes(JSON.parse(savedNotes)); 
-    } else { 
-      setTeacherNotes([{ 
-        id: 1, subject: "Physics", title: "Quantum Basics", price: "$5.00",
-        description: "A deep dive into wave-particle duality and Schrödinger's cat."
-      }]); 
+    setMounted(true);
+    const savedInventory = localStorage.getItem('vault_inventory');
+    const savedWithdrawn = localStorage.getItem('vault_withdrawn');
+    const savedBank = localStorage.getItem('vault_bank_details');
+    const savedCart = localStorage.getItem('vault_cart');
+
+    if (savedWithdrawn) setWithdrawnTotal(parseFloat(savedWithdrawn));
+    if (savedBank) { setBankDetails(JSON.parse(savedBank)); setIsBankLinked(true); }
+    if (savedCart) setCartCount(JSON.parse(savedCart).length);
+
+    if (savedInventory) {
+      setTeacherNotes(JSON.parse(savedInventory));
+    } else {
+      const initialData = [
+        { 
+          id: 1, curriculum: "CAPS", subject: "Maths", 
+          title: "Grade 12 Calculus Masterclass", price: "R 150.00", rating: 4.8, reviews: 1, sales: 5,
+          description: "Full breakdown of limits and derivatives.",
+          textReviews: [{ stars: 5, comment: "Best notes for Gauteng students!", date: "10/12/2025" }]
+        }
+      ];
+      setTeacherNotes(initialData);
+      localStorage.setItem('vault_inventory', JSON.stringify(initialData));
     }
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('vault_notes', JSON.stringify(teacherNotes));
-  }, [teacherNotes]);
+  if (!mounted) return null;
 
-  // --- FUNCTIONS (The App's Actions) ---
-  const handleAddToCart = (note: any) => {
-  setCartCount(prev => prev + 1);
-  
-  // Get existing cart or start fresh
-  const existingCart = JSON.parse(localStorage.getItem('vault_cart') || '[]');
-  const updatedCart = [...existingCart, note];
-  
-  // Save to the bridge
-  localStorage.setItem('vault_cart', JSON.stringify(updatedCart));
-  
-  setToast(`Added "${note.title}" to cart!`);
-  setTimeout(() => setToast(''), 3000);
-};
-
-  const addNote = (e: React.FormEvent) => {
+  // --- HANDLERS ---
+  const handleCreateNote = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle || !newSubject || !newPrice) return;
-    const newNote = { 
-      id: Date.now(), title: newTitle, subject: newSubject, price: `$${newPrice}`,
-      description: newDesc || "No description provided."
+    if (!newNote.title || !newNote.price) return alert("Please add a title and price.");
+
+    const noteToAdd = {
+      ...newNote,
+      id: Date.now(), // Unique ID
+      price: `R ${parseFloat(newNote.price).toFixed(2)}`,
+      rating: 0,
+      reviews: 0,
+      sales: 0,
+      textReviews: []
     };
-    setTeacherNotes([...teacherNotes, newNote]);
-    setNewTitle(''); setNewSubject(''); setNewPrice(''); setNewDesc('');
+
+    const updatedInventory = [...teacherNotes, noteToAdd];
+    setTeacherNotes(updatedInventory);
+    localStorage.setItem('vault_inventory', JSON.stringify(updatedInventory));
+    
+    // Reset Form
+    setNewNote({ title: '', subject: '', curriculum: 'CAPS', price: '', description: '' });
+    alert("🚀 Note published to Marketplace!");
   };
 
-  const deleteNote = (id: number) => {
-    setTeacherNotes(teacherNotes.filter(note => note.id !== id));
-  };
+  const grossEarnings = teacherNotes.reduce((acc, note) => {
+    const priceNum = parseFloat(String(note.price).replace('R', '').trim()) || 0;
+    return acc + (priceNum * (note.sales || 0));
+  }, 0);
 
-  const processedNotes = teacherNotes
-    .filter(note => 
-      note.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      note.title.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (sortBy === 'low') return parseFloat(a.price.replace('$', '')) - parseFloat(b.price.replace('$', ''));
-      if (sortBy === 'high') return parseFloat(b.price.replace('$', '')) - parseFloat(a.price.replace('$', ''));
-      return b.id - a.id;
-    });
-
-  const theme = {
-    bg: darkMode ? '#0f172a' : '#f8fafc',
-    card: darkMode ? '#1e293b' : '#ffffff',
-    text: darkMode ? 'white' : '#1e293b',
-    border: darkMode ? '#334155' : '#e2e8f0',
-    inputBg: darkMode ? '#0f172a' : '#f1f5f9'
-  };
+  const currentBalance = grossEarnings - withdrawnTotal;
 
   return (
-    <div style={{ backgroundColor: theme.bg, color: theme.text, minHeight: '100vh', padding: '40px', fontFamily: 'system-ui', transition: '0.4s ease' }}>
+    <div style={{ backgroundColor: '#0f172a', color: 'white', minHeight: '100vh', padding: '20px', fontFamily: 'system-ui' }}>
       
-      <style jsx>{`
-        .note-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-        .note-card:hover { transform: translateY(-8px); box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.3); border-color: #3b82f6 !important; }
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-        @keyframes slideUp { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
-      `}</style>
-
-      {/* TOAST NOTIFICATION */}
-      {toast && (
-        <div style={{ position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#10b981', color: 'white', padding: '12px 25px', borderRadius: '30px', zIndex: 2000, fontWeight: 'bold', boxShadow: '0 10px 15px rgba(0,0,0,0.2)', animation: 'slideUp 0.3s ease' }}>
-          {toast}
+      {/* HEADER */}
+      <nav style={{ maxWidth: '1100px', margin: '0 auto 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#1e293b', padding: '12px 25px', borderRadius: '50px', border: '1px solid #334155' }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={() => setView('student')} style={{ padding: '10px 20px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: 'bold', backgroundColor: view === 'student' ? '#3b82f6' : 'transparent', color: 'white' }}>Student Shop</button>
+          <button onClick={() => setView('seller')} style={{ padding: '10px 20px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: 'bold', backgroundColor: view === 'seller' ? '#10b981' : 'transparent', color: 'white' }}>Seller Central</button>
         </div>
-      )}
-
-      {/* MODAL */}
-      {selectedNote && (
-        <div className="modal-overlay" onClick={() => setSelectedNote(null)}>
-          <div style={{ backgroundColor: theme.card, padding: '40px', borderRadius: '24px', maxWidth: '500px', width: '90%', position: 'relative', border: `1px solid ${theme.border}` }} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setSelectedNote(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', color: theme.text, cursor: 'pointer', fontSize: '1.5rem' }}>✕</button>
-            <span style={{ color: '#3b82f6', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.8rem' }}>{selectedNote.subject}</span>
-            <h2 style={{ fontSize: '2rem', margin: '10px 0' }}>{selectedNote.title}</h2>
-            <p style={{ lineHeight: '1.6', color: darkMode ? '#94a3b8' : '#64748b' }}>{selectedNote.description}</p>
-            <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>{selectedNote.price}</span>
-              <button onClick={() => { handleAddToCart(selectedNote.title); setSelectedNote(null); }} style={{ backgroundColor: '#10b981', color: 'white', border: 'none', padding: '12px 30px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Add to Cart</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* NAVBAR */}
-      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 0', borderBottom: `1px solid ${theme.border}`, marginBottom: '40px' }}>
-        <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#3b82f6' }}>Vault.Notes</div>
-        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ padding: '8px', borderRadius: '10px', backgroundColor: theme.card, color: theme.text, border: `1px solid ${theme.border}` }}>
-            <option value="newest">Newest</option>
-            <option value="low">Price: Low to High</option>
-            <option value="high">Price: High to Low</option>
-          </select>
-          <button onClick={() => setDarkMode(!darkMode)} style={{ padding: '8px 15px', borderRadius: '20px', cursor: 'pointer', border: 'none', backgroundColor: '#3b82f6', color: 'white' }}>{darkMode ? '☀️ Light' : '🌙 Dark'}</button>
-          <div style={{ backgroundColor: theme.card, padding: '5px 15px', borderRadius: '20px', border: '1px solid #3b82f6', fontWeight: 'bold' }}>🛒 {cartCount}</div>
-        </div>
+        {view === 'student' && <Link href="/cart" style={{ textDecoration: 'none', color: 'white', fontWeight: 'bold' }}>🛒 Cart ({cartCount})</Link>}
       </nav>
 
-      <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: '100%', maxWidth: '1000px', display: 'block', margin: '0 auto 40px', padding: '15px 25px', borderRadius: '30px', border: `1px solid ${theme.border}`, backgroundColor: theme.card, color: theme.text, fontSize: '1rem', outline: 'none' }} />
-
-      {/* GRID */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '25px', maxWidth: '1000px', margin: '0 auto' }}>
-        {processedNotes.map((note) => (
-          <div key={note.id} className="note-card" onClick={() => setSelectedNote(note)} style={{ position: 'relative', backgroundColor: theme.card, padding: '25px', borderRadius: '20px', border: `1px solid ${theme.border}`, cursor: 'pointer' }}>
-            <button onClick={(e) => { e.stopPropagation(); deleteNote(note.id); }} style={{ position: 'absolute', top: '12px', right: '12px', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', zIndex: 10 }}>✕</button>
-            <span style={{ fontSize: '0.7rem', color: '#3b82f6', textTransform: 'uppercase', fontWeight: '800' }}>{note.subject}</span>
-            <h2 style={{ fontSize: '1.3rem', margin: '8px 0' }}>{note.title}</h2>
-            <p style={{ fontSize: '0.9rem', color: '#94a3b8', height: '40px', overflow: 'hidden' }}>{(note.description || "").substring(0, 60)}...</p>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
-              <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>{note.price}</span>
-              <button onClick={(e) => { e.stopPropagation(); handleAddToCart(note.title); }} style={{ backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Buy</button>
-            </div>
+      {/* --- STUDENT VIEW --- */}
+      {view === 'student' && (
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <h1 style={{ textAlign: 'center', marginBottom: '40px' }}>Marketplace</h1>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+            {teacherNotes.map(note => (
+              <div key={note.id} onClick={() => setSelectedNote(note)} style={{ backgroundColor: '#1e293b', padding: '25px', borderRadius: '24px', border: '1px solid #334155', cursor: 'pointer' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <span style={{ color: '#3b82f6', fontWeight: 'bold', fontSize: '0.8rem' }}>{note.curriculum}</span>
+                  <span style={{ color: '#fbbf24' }}>⭐ {(note.rating || 0).toFixed(1)}</span>
+                </div>
+                <h3>{note.title}</h3>
+                <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>{note.subject}</p>
+                <p style={{ color: '#10b981', fontWeight: 'bold', marginTop: '15px', fontSize: '1.2rem' }}>{note.price}</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
-      <hr style={{ margin: '80px 0', opacity: 0.1 }} />
+      {/* --- SELLER DASHBOARD --- */}
+      {view === 'seller' && (
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '25px', marginBottom: '30px' }}>
+            
+            {/* 1. POST A NEW NOTE FORM */}
+            <div style={{ backgroundColor: '#1e293b', padding: '30px', borderRadius: '32px', border: '1px solid #334155' }}>
+              <h2 style={{ marginBottom: '20px' }}>Post a New Note 📄</h2>
+              <form onSubmit={handleCreateNote} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <input placeholder="Note Title (e.g. Physics Paper 1 Prep)" value={newNote.title} onChange={e => setNewNote({...newNote, title: e.target.value})} style={{ padding: '12px', borderRadius: '12px', backgroundColor: '#0f172a', color: 'white', border: '1px solid #334155' }} />
+                
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input placeholder="Subject" value={newNote.subject} onChange={e => setNewNote({...newNote, subject: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '12px', backgroundColor: '#0f172a', color: 'white', border: '1px solid #334155' }} />
+                  <select value={newNote.curriculum} onChange={e => setNewNote({...newNote, curriculum: e.target.value})} style={{ padding: '12px', borderRadius: '12px', backgroundColor: '#0f172a', color: 'white', border: '1px solid #334155' }}>
+                    <option value="CAPS">CAPS</option>
+                    <option value="IEB">IEB</option>
+                    <option value="University">University</option>
+                  </select>
+                </div>
 
-      {/* FORM */}
-      <div style={{ maxWidth: '500px', margin: '0 auto 100px', backgroundColor: theme.card, padding: '40px', borderRadius: '24px', border: `1px solid ${theme.border}` }}>
-        <h3 style={{ marginBottom: '25px', textAlign: 'center' }}>List New Notes</h3>
-        <form onSubmit={addNote} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <input placeholder="Title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} style={{ padding: '14px', borderRadius: '12px', border: `1px solid ${theme.border}`, backgroundColor: theme.inputBg, color: theme.text }} />
-          <input placeholder="Subject" value={newSubject} onChange={(e) => setNewSubject(e.target.value)} style={{ padding: '14px', borderRadius: '12px', border: `1px solid ${theme.border}`, backgroundColor: theme.inputBg, color: theme.text }} />
-          <input placeholder="Price" type="number" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} style={{ padding: '14px', borderRadius: '12px', border: `1px solid ${theme.border}`, backgroundColor: theme.inputBg, color: theme.text }} />
-          <textarea placeholder="Description..." value={newDesc} onChange={(e) => setNewDesc(e.target.value)} style={{ padding: '14px', borderRadius: '12px', border: `1px solid ${theme.border}`, backgroundColor: theme.inputBg, color: theme.text, minHeight: '100px', fontFamily: 'inherit' }} />
-          <button type="submit" style={{ backgroundColor: '#10b981', color: 'white', padding: '16px', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }}>Publish</button>
-        </form>
-      </div>
+                <input type="number" placeholder="Price in Rands (e.g. 50)" value={newNote.price} onChange={e => setNewNote({...newNote, price: e.target.value})} style={{ padding: '12px', borderRadius: '12px', backgroundColor: '#0f172a', color: 'white', border: '1px solid #334155' }} />
+                
+                <textarea placeholder="Description (Tell students what they get...)" value={newNote.description} onChange={e => setNewNote({...newNote, description: e.target.value})} rows={3} style={{ padding: '12px', borderRadius: '12px', backgroundColor: '#0f172a', color: 'white', border: '1px solid #334155', resize: 'none' }} />
+                
+                <button type="submit" style={{ padding: '15px', borderRadius: '12px', backgroundColor: '#3b82f6', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>Publish Note</button>
+              </form>
+            </div>
+
+            {/* 2. PAYOUT & BANKING */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ backgroundColor: '#1e293b', padding: '30px', borderRadius: '32px', border: '2px solid #10b981' }}>
+                <p style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Available Balance</p>
+                <h2 style={{ fontSize: '2.5rem', color: '#10b981' }}>R {currentBalance.toFixed(2)}</h2>
+                <button onClick={() => alert("Withdrawal triggered!")} style={{ width: '100%', marginTop: '10px', padding: '12px', borderRadius: '12px', backgroundColor: '#10b981', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>Withdraw</button>
+              </div>
+              
+              <div style={{ backgroundColor: '#1e293b', padding: '25px', borderRadius: '32px', border: '1px solid #334155' }}>
+                <h4 style={{ margin: '0 0 10px 0' }}>Student Feedback</h4>
+                {teacherNotes.flatMap(n => n.textReviews || []).slice(0, 2).map((rev, i) => (
+                  <div key={i} style={{ fontSize: '0.8rem', backgroundColor: '#0f172a', padding: '10px', borderRadius: '10px', marginBottom: '8px' }}>
+                    "{rev.comment}"
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* DETAIL MODAL */}
+      {selectedNote && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setSelectedNote(null)}>
+           <div style={{ backgroundColor: '#1e293b', padding: '40px', borderRadius: '32px', maxWidth: '450px', width: '100%', border: '1px solid #334155' }} onClick={e => e.stopPropagation()}>
+              <h2 style={{ marginBottom: '10px' }}>{selectedNote.title}</h2>
+              <p style={{ color: '#94a3b8', marginBottom: '25px' }}>{selectedNote.description || "No description provided."}</p>
+              <button onClick={() => {
+                const cart = JSON.parse(localStorage.getItem('vault_cart') || '[]');
+                localStorage.setItem('vault_cart', JSON.stringify([...cart, selectedNote]));
+                setCartCount(cart.length + 1);
+                setSelectedNote(null);
+                alert("Added to cart!");
+              }} style={{ width: '100%', padding: '15px', backgroundColor: '#10b981', border: 'none', borderRadius: '14px', color: 'white', fontWeight: 'bold', fontSize: '1.1rem' }}>Buy for {selectedNote.price}</button>
+           </div>
+        </div>
+      )}
     </div>
   );
 }
