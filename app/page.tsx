@@ -1,189 +1,298 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useVault } from '../hooks/useVault';
+import Navbar from '../components/Navbar';
+import Marketplace from '../components/Marketplace';
+import Vault from '../components/Vault';
+import Dashboard from '../components/Dashboard';
 
 export default function Home() {
-  const [mounted, setMounted] = useState(false);
-  const [view, setView] = useState<'student' | 'seller'>('student');
-  const [cartCount, setCartCount] = useState(0);
-  const [teacherNotes, setTeacherNotes] = useState<any[]>([]);
-  const [selectedNote, setSelectedNote] = useState<any>(null);
-  
-  // Withdrawal States
-  const [withdrawing, setWithdrawing] = useState(false);
-  const [withdrawnTotal, setWithdrawnTotal] = useState(0);
-  const [bankDetails, setBankDetails] = useState({ bank: '', accNumber: '' });
-  const [isBankLinked, setIsBankLinked] = useState(false);
+  const {
+    mounted,
+    view,
+    setView,
+    theme,
+    activeTheme,
+    teacherNotes,
+    purchasedNotes,
+    selectedNote,
+    setSelectedNote,
+    userBalance,
+    bankDetails,
+    sellerProfile,
+    sellerEarnings,
+    toggleTheme,
+    buyNote,
+    addNote,
+    saveBankDetails,
+    withdrawFunds,
+    saveSellerProfile,
+    requestVerification,
+    toggleVerification,
+  } = useVault();
 
-  // --- NEW NOTE FORM STATE ---
-  const [newNote, setNewNote] = useState({
-    title: '',
-    subject: '',
-    curriculum: 'CAPS',
-    price: '',
-    description: ''
-  });
-
-  useEffect(() => {
-    setMounted(true);
-    const savedInventory = localStorage.getItem('vault_inventory');
-    const savedWithdrawn = localStorage.getItem('vault_withdrawn');
-    const savedBank = localStorage.getItem('vault_bank_details');
-    const savedCart = localStorage.getItem('vault_cart');
-
-    if (savedWithdrawn) setWithdrawnTotal(parseFloat(savedWithdrawn));
-    if (savedBank) { setBankDetails(JSON.parse(savedBank)); setIsBankLinked(true); }
-    if (savedCart) setCartCount(JSON.parse(savedCart).length);
-
-    if (savedInventory) {
-      setTeacherNotes(JSON.parse(savedInventory));
-    } else {
-      const initialData = [
-        { 
-          id: 1, curriculum: "CAPS", subject: "Maths", 
-          title: "Grade 12 Calculus Masterclass", price: "R 150.00", rating: 4.8, reviews: 1, sales: 5,
-          description: "Full breakdown of limits and derivatives.",
-          textReviews: [{ stars: 5, comment: "Best notes for Gauteng students!", date: "10/12/2025" }]
-        }
-      ];
-      setTeacherNotes(initialData);
-      localStorage.setItem('vault_inventory', JSON.stringify(initialData));
-    }
-  }, []);
-
-  if (!mounted) return null;
-
-  // --- HANDLERS ---
-  const handleCreateNote = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newNote.title || !newNote.price) return alert("Please add a title and price.");
-
-    const noteToAdd = {
-      ...newNote,
-      id: Date.now(), // Unique ID
-      price: `R ${parseFloat(newNote.price).toFixed(2)}`,
-      rating: 0,
-      reviews: 0,
-      sales: 0,
-      textReviews: []
-    };
-
-    const updatedInventory = [...teacherNotes, noteToAdd];
-    setTeacherNotes(updatedInventory);
-    localStorage.setItem('vault_inventory', JSON.stringify(updatedInventory));
-    
-    // Reset Form
-    setNewNote({ title: '', subject: '', curriculum: 'CAPS', price: '', description: '' });
-    alert("🚀 Note published to Marketplace!");
-  };
-
-  const grossEarnings = teacherNotes.reduce((acc, note) => {
-    const priceNum = parseFloat(String(note.price).replace('R', '').trim()) || 0;
-    return acc + (priceNum * (note.sales || 0));
-  }, 0);
-
-  const currentBalance = grossEarnings - withdrawnTotal;
+  // Prevent hydration errors
+  if (!mounted) {
+    return null;
+  }
 
   return (
-    <div style={{ backgroundColor: '#0f172a', color: 'white', minHeight: '100vh', padding: '20px', fontFamily: 'system-ui' }}>
-      
-      {/* HEADER */}
-      <nav style={{ maxWidth: '1100px', margin: '0 auto 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#1e293b', padding: '12px 25px', borderRadius: '50px', border: '1px solid #334155' }}>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button onClick={() => setView('student')} style={{ padding: '10px 20px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: 'bold', backgroundColor: view === 'student' ? '#3b82f6' : 'transparent', color: 'white' }}>Student Shop</button>
-          <button onClick={() => setView('seller')} style={{ padding: '10px 20px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: 'bold', backgroundColor: view === 'seller' ? '#10b981' : 'transparent', color: 'white' }}>Seller Central</button>
-        </div>
-        {view === 'student' && <Link href="/cart" style={{ textDecoration: 'none', color: 'white', fontWeight: 'bold' }}>🛒 Cart ({cartCount})</Link>}
-      </nav>
+    <div style={{
+      backgroundColor: activeTheme.bg,
+      color: activeTheme.text,
+      minHeight: '100vh',
+      padding: '20px',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      transition: 'background-color 0.3s ease, color 0.3s ease',
+    }}>
+      <Navbar
+        view={view}
+        setView={setView}
+        theme={theme}
+        toggleTheme={toggleTheme}
+        activeTheme={activeTheme}
+      />
 
-      {/* --- STUDENT VIEW --- */}
       {view === 'student' && (
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <h1 style={{ textAlign: 'center', marginBottom: '40px' }}>Marketplace</h1>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-            {teacherNotes.map(note => (
-              <div key={note.id} onClick={() => setSelectedNote(note)} style={{ backgroundColor: '#1e293b', padding: '25px', borderRadius: '24px', border: '1px solid #334155', cursor: 'pointer' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ color: '#3b82f6', fontWeight: 'bold', fontSize: '0.8rem' }}>{note.curriculum}</span>
-                  <span style={{ color: '#fbbf24' }}>⭐ {(note.rating || 0).toFixed(1)}</span>
-                </div>
-                <h3>{note.title}</h3>
-                <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>{note.subject}</p>
-                <p style={{ color: '#10b981', fontWeight: 'bold', marginTop: '15px', fontSize: '1.2rem' }}>{note.price}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <Marketplace
+          teacherNotes={teacherNotes}
+          setSelectedNote={setSelectedNote}
+          activeTheme={activeTheme}
+          sellerProfile={sellerProfile}
+        />
       )}
 
-      {/* --- SELLER DASHBOARD --- */}
+      {view === 'library' && (
+        <Vault
+          purchasedNotes={purchasedNotes}
+          activeTheme={activeTheme}
+        />
+      )}
+
       {view === 'seller' && (
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '25px', marginBottom: '30px' }}>
-            
-            {/* 1. POST A NEW NOTE FORM */}
-            <div style={{ backgroundColor: '#1e293b', padding: '30px', borderRadius: '32px', border: '1px solid #334155' }}>
-              <h2 style={{ marginBottom: '20px' }}>Post a New Note 📄</h2>
-              <form onSubmit={handleCreateNote} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <input placeholder="Note Title (e.g. Physics Paper 1 Prep)" value={newNote.title} onChange={e => setNewNote({...newNote, title: e.target.value})} style={{ padding: '12px', borderRadius: '12px', backgroundColor: '#0f172a', color: 'white', border: '1px solid #334155' }} />
-                
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <input placeholder="Subject" value={newNote.subject} onChange={e => setNewNote({...newNote, subject: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '12px', backgroundColor: '#0f172a', color: 'white', border: '1px solid #334155' }} />
-                  <select value={newNote.curriculum} onChange={e => setNewNote({...newNote, curriculum: e.target.value})} style={{ padding: '12px', borderRadius: '12px', backgroundColor: '#0f172a', color: 'white', border: '1px solid #334155' }}>
-                    <option value="CAPS">CAPS</option>
-                    <option value="IEB">IEB</option>
-                    <option value="University">University</option>
-                  </select>
-                </div>
+        <Dashboard
+          sellerEarnings={sellerEarnings}
+          userBalance={userBalance}
+          activeTheme={activeTheme}
+          bankDetails={bankDetails}
+          saveBankDetails={saveBankDetails}
+          withdrawFunds={withdrawFunds}
+          addNote={addNote}
+          sellerProfile={sellerProfile}
+          saveSellerProfile={saveSellerProfile}
+          requestVerification={requestVerification}
+          toggleVerification={toggleVerification}
+        />
+      )}
 
-                <input type="number" placeholder="Price in Rands (e.g. 50)" value={newNote.price} onChange={e => setNewNote({...newNote, price: e.target.value})} style={{ padding: '12px', borderRadius: '12px', backgroundColor: '#0f172a', color: 'white', border: '1px solid #334155' }} />
-                
-                <textarea placeholder="Description (Tell students what they get...)" value={newNote.description} onChange={e => setNewNote({...newNote, description: e.target.value})} rows={3} style={{ padding: '12px', borderRadius: '12px', backgroundColor: '#0f172a', color: 'white', border: '1px solid #334155', resize: 'none' }} />
-                
-                <button type="submit" style={{ padding: '15px', borderRadius: '12px', backgroundColor: '#3b82f6', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>Publish Note</button>
-              </form>
+      {/* Note Detail Modal with Glass Effect */}
+      {selectedNote && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+          }}
+          onClick={() => setSelectedNote(null)}
+          className="modal-overlay"
+        >
+          <div
+            style={{
+              backgroundColor: theme === 'dark' 
+                ? 'rgba(30, 41, 59, 0.95)' 
+                : 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              padding: '48px',
+              borderRadius: '32px',
+              maxWidth: '500px',
+              width: '100%',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+              border: `1px solid ${activeTheme.border}`,
+              animation: 'modalSlideIn 0.3s ease-out',
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="modal-content"
+          >
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              marginBottom: '24px',
+            }}>
+              <div>
+                <span style={{
+                  color: selectedNote.curriculum === 'CAPS' ? '#3b82f6' : '#8b5cf6',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}>
+                  {selectedNote.curriculum} • {selectedNote.subject}
+                </span>
+                <h2 style={{
+                  margin: '12px 0 0 0',
+                  fontSize: '1.75rem',
+                  fontWeight: '700',
+                  lineHeight: '1.3',
+                }}>
+                  {selectedNote.title}
+                </h2>
+              </div>
+              <button
+                onClick={() => setSelectedNote(null)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  color: activeTheme.subtext,
+                  padding: '4px',
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
             </div>
 
-            {/* 2. PAYOUT & BANKING */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ backgroundColor: '#1e293b', padding: '30px', borderRadius: '32px', border: '2px solid #10b981' }}>
-                <p style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Available Balance</p>
-                <h2 style={{ fontSize: '2.5rem', color: '#10b981' }}>R {currentBalance.toFixed(2)}</h2>
-                <button onClick={() => alert("Withdrawal triggered!")} style={{ width: '100%', marginTop: '10px', padding: '12px', borderRadius: '12px', backgroundColor: '#10b981', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>Withdraw</button>
+            <p style={{
+              color: activeTheme.subtext,
+              margin: '24px 0',
+              lineHeight: '1.6',
+              fontSize: '1.05rem',
+            }}>
+              {selectedNote.description}
+            </p>
+
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '24px',
+              paddingTop: '24px',
+              borderTop: `1px solid ${activeTheme.border}`,
+            }}>
+              <div>
+                <span style={{
+                  color: '#10b981',
+                  fontWeight: '700',
+                  fontSize: '1.5rem',
+                }}>
+                  {selectedNote.price}
+                </span>
               </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ color: '#fbbf24', fontSize: '1.2rem' }}>⭐</span>
+                <span style={{ fontWeight: '600', fontSize: '1.1rem' }}>
+                  {(selectedNote.rating || 0).toFixed(1)}
+                </span>
+                {selectedNote.reviews && (
+                  <span style={{ color: activeTheme.subtext, fontSize: '0.9rem' }}>
+                    ({selectedNote.reviews} reviews)
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Teacher Info in Modal - with fallback to sellerProfile */}
+            {(() => {
+              const displayName = selectedNote.sellerName || sellerProfile.name || 'Teacher';
+              const displaySchool = selectedNote.sellerSchool || sellerProfile.school;
+              const isVerified = selectedNote.isVerified !== undefined ? selectedNote.isVerified : sellerProfile.isVerified;
               
-              <div style={{ backgroundColor: '#1e293b', padding: '25px', borderRadius: '32px', border: '1px solid #334155' }}>
-                <h4 style={{ margin: '0 0 10px 0' }}>Student Feedback</h4>
-                {teacherNotes.flatMap(n => n.textReviews || []).slice(0, 2).map((rev, i) => (
-                  <div key={i} style={{ fontSize: '0.8rem', backgroundColor: '#0f172a', padding: '10px', borderRadius: '10px', marginBottom: '8px' }}>
-                    "{rev.comment}"
-                  </div>
-                ))}
-              </div>
-            </div>
+              return (displayName || displaySchool) ? (
+                <div style={{
+                  marginBottom: '32px',
+                  paddingTop: '16px',
+                  borderTop: `1px solid ${activeTheme.border}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}>
+                  <span style={{
+                    color: activeTheme.subtext,
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                  }}>
+                    {displayName}
+                    {displaySchool && ` • ${displaySchool}`}
+                  </span>
+                  {isVerified && (
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '50%',
+                      backgroundColor: '#3b82f6',
+                      color: 'white',
+                      fontSize: '0.75rem',
+                      fontWeight: 'bold',
+                      flexShrink: 0,
+                    }} title="Verified Teacher">
+                      ✓
+                    </span>
+                  )}
+                </div>
+              ) : null;
+            })()}
 
+            <button
+              onClick={() => buyNote(selectedNote)}
+              style={{
+                width: '100%',
+                padding: '18px',
+                backgroundColor: '#10b981',
+                border: 'none',
+                borderRadius: '16px',
+                color: 'white',
+                fontWeight: '700',
+                fontSize: '1.1rem',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+              }}
+              className="buy-button"
+            >
+              Buy Now - {selectedNote.price}
+            </button>
           </div>
         </div>
       )}
 
-      {/* DETAIL MODAL */}
-      {selectedNote && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setSelectedNote(null)}>
-           <div style={{ backgroundColor: '#1e293b', padding: '40px', borderRadius: '32px', maxWidth: '450px', width: '100%', border: '1px solid #334155' }} onClick={e => e.stopPropagation()}>
-              <h2 style={{ marginBottom: '10px' }}>{selectedNote.title}</h2>
-              <p style={{ color: '#94a3b8', marginBottom: '25px' }}>{selectedNote.description || "No description provided."}</p>
-              <button onClick={() => {
-                const cart = JSON.parse(localStorage.getItem('vault_cart') || '[]');
-                localStorage.setItem('vault_cart', JSON.stringify([...cart, selectedNote]));
-                setCartCount(cart.length + 1);
-                setSelectedNote(null);
-                alert("Added to cart!");
-              }} style={{ width: '100%', padding: '15px', backgroundColor: '#10b981', border: 'none', borderRadius: '14px', color: 'white', fontWeight: 'bold', fontSize: '1.1rem' }}>Buy for {selectedNote.price}</button>
-           </div>
-        </div>
-      )}
+      <style jsx global>{`
+        @keyframes modalSlideIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+
+        .modal-content {
+          animation: modalSlideIn 0.3s ease-out;
+        }
+
+        .buy-button:hover {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+        }
+
+        .buy-button:active {
+          transform: translateY(0);
+        }
+      `}</style>
     </div>
   );
 }
