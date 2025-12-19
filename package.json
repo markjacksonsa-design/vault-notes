@@ -1,27 +1,21 @@
 {
   "name": "projects",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {
-    "next": "16.0.10",
-    "react": "19.2.1",
-    "react-dom": "19.2.1"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markjacksonsa-design/vault-notes.git"
   },
-  "devDependencies": {
-    "@cloudflare/workers-types": "^4.20251219.0",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.0.10",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/markjacksonsa-design/vault-notes/issues"
+  },
+  "homepage": "https://github.com/markjacksonsa-design/vault-notes#readme"
 }
