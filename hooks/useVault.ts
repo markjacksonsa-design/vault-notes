@@ -195,9 +195,12 @@ export const useVault = () => {
       }
     } else {
       // Initialize default profile
-      const defaultProfile = { name: 'Guest Teacher', school: '', isVerified: false, verificationStatus: 'none' };
-      setSellerProfile(defaultProfile);
-      localStorage.setItem('vault_seller_profile', JSON.stringify(defaultProfile));
+      const defaultProfile: SellerProfile = { 
+        name: 'Guest Teacher', 
+        school: '', 
+        isVerified: false, 
+        verificationStatus: 'none' as VerificationStatus
+      };
     }
   }, []);
 

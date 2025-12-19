@@ -5,6 +5,8 @@ import Navbar from '../components/Navbar';
 import Marketplace from '../components/Marketplace';
 import Vault from '../components/Vault';
 import Dashboard from '../components/Dashboard';
+import BankDetailsCard from '../components/BankDetailsCard';
+import StarRating from '../components/StarRating';
 
 export default function Home() {
   const {
@@ -83,6 +85,30 @@ export default function Home() {
           requestVerification={requestVerification}
           toggleVerification={toggleVerification}
         />
+      )}
+
+      {/* Bank Details & Rating Section */}
+      {(view === 'student' || view === 'library') && (
+        <div className="max-w-6xl mx-auto mt-16 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Bank Details Card */}
+            <div>
+              <BankDetailsCard
+                bankName={bankDetails.bank || undefined}
+                accountNumber={bankDetails.accNumber || undefined}
+                accountHolder={bankDetails.accHolder || undefined}
+              />
+            </div>
+
+            {/* Star Rating Component */}
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                Rate Your Experience
+              </h2>
+              <StarRating userEmail="user@example.com" />
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Note Detail Modal with Glass Effect */}
