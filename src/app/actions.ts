@@ -1,3 +1,5 @@
+/// <reference types="@cloudflare/workers-types" />
+
 'use server';
 
 interface SaveRatingParams {
@@ -24,7 +26,7 @@ export async function saveRating(
 
     // Access D1 database via Cloudflare runtime environment
     // In Cloudflare Pages with Next.js, DB is available via process.env.DB
-    const db = (process.env.DB || (globalThis as any).DB) as D1Database | undefined;
+    const db = (process.env.DB || (globalThis as any).DB) as unknown as D1Database | undefined;
     
     if (!db) {
       console.error('D1 database binding not available');

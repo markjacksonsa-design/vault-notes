@@ -1,3 +1,5 @@
+/// <reference types="@cloudflare/workers-types" />
+
 // D1 Database binding export
 // This will be available via Cloudflare's runtime environment
 
@@ -5,7 +7,7 @@ export function getDB(): D1Database {
   // In Cloudflare Pages/Workers runtime, DB is available via env.DB
   // This function will be called from server actions that have access to the env context
   if (typeof process !== 'undefined' && process.env.DB) {
-    return process.env.DB as D1Database;
+    return process.env.DB as unknown as D1Database;
   }
   
   // For Cloudflare Pages, the binding is passed through the request context
