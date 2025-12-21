@@ -1,6 +1,6 @@
 export async function onRequest(context) {
-    const { request, env } = context;
-    const db = env.DB; // D1 database binding
+    const { request } = context;
+    const db = context.env.DB; // D1 database binding
 
     // Basic error handling - check if database is available
     if (!db) {

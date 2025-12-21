@@ -1,7 +1,7 @@
 export async function onRequest(context) {
     try {
-        const { request, env } = context;
-        const bucket = env.BUCKET; // R2 bucket binding
+        const { request } = context;
+        const bucket = context.env.BUCKET; // R2 bucket binding
 
         // Basic error handling - check if bucket is available
         if (!bucket) {

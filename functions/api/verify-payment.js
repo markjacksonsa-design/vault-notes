@@ -1,9 +1,9 @@
 export async function onRequest(context) {
     try {
-        const { request, env } = context;
-        const db = env.DB; // D1 database binding
-        const bucket = env.BUCKET; // R2 bucket binding
-        const paystackSecret = env.PAYSTACK_SECRET; // Paystack secret key
+        const { request } = context;
+        const db = context.env.DB; // D1 database binding
+        const bucket = context.env.BUCKET; // R2 bucket binding
+        const paystackSecret = context.env.PAYSTACK_SECRET; // Paystack secret key
 
         // Check if required bindings are available
         if (!db) {
@@ -71,7 +71,7 @@ export async function onRequest(context) {
             }
 
             // Extract payment details from Paystack response
-            const customerEmail = paystackData.data.customer?.email || paystackData.data.authorization?.email || 'unknown@example.com';
+            const customerEmail = paystackData.data.customer?.email || paystackData.data.authorization?.email || '';
             const amount = paystackData.data.amount ? (paystackData.data.amount / 100) : 0; // Convert from kobo to ZAR
 
             // Get user_id from session cookie if available

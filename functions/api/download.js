@@ -1,9 +1,9 @@
 export async function onRequest(context) {
     try {
-        const { request, env } = context;
-        const db = env.DB; // D1 database binding
-        const bucket = env.BUCKET; // R2 bucket binding
-        const paystackSecret = env.PAYSTACK_SECRET; // Paystack secret key
+        const { request } = context;
+        const db = context.env.DB; // D1 database binding
+        const bucket = context.env.BUCKET; // R2 bucket binding
+        const paystackSecret = context.env.PAYSTACK_SECRET; // Paystack secret key
 
         // Check if required bindings are available
         if (!db || !bucket || !paystackSecret) {

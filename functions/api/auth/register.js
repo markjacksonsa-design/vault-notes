@@ -1,7 +1,7 @@
 export async function onRequest(context) {
     try {
-        const { request, env } = context;
-        const db = env.DB; // D1 database binding
+        const { request } = context;
+        const db = context.env.DB; // D1 database binding
 
         if (!db) {
             return new Response('Database not available', { status: 500 });
@@ -61,7 +61,7 @@ export async function onRequest(context) {
             }
 
             // Get AUTH_SECRET from environment
-            const authSecret = env.AUTH_SECRET || 'mnbvcxz';
+            const authSecret = context.env.AUTH_SECRET || 'mnbvcxz';
             
             // Hash password using Web Crypto API with AUTH_SECRET (HMAC-SHA256)
             const encoder = new TextEncoder();

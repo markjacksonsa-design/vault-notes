@@ -6,7 +6,7 @@ pages_build_output_dir = "."
 [[d1_databases]]
 binding = "DB"
 database_name = "notes-db"
-database_id = "[PASTE YOUR ID HERE]"
+database_id = "7d92a52b-9568-48e7-b6db-31e95019ea6c"
 
 # R2 Bucket binding
 [[r2_buckets]]

@@ -1,7 +1,7 @@
 export async function onRequest(context) {
     try {
-        const { request, env } = context;
-        const db = env.DB; // D1 database binding
+        const { request } = context;
+        const db = context.env.DB; // D1 database binding
 
         if (!db) {
             return new Response('Database not available', { status: 500 });

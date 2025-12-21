@@ -639,7 +639,7 @@
                 // Initialize Paystack payment
                 const handler = PaystackPop.setup({
                     key: 'pk_test_918f2bc75973d584115dd168b8f302f3b5bc64de', // Public Key
-                    email: 'customer@notevaultsa.com', // You can make this dynamic later
+                    email: getCurrentUser()?.email || 'customer@notevaultsa.com',
                     amount: Math.round(amount * 100), // Convert to kobo (cents)
                     currency: 'ZAR',
                     ref: reference,
