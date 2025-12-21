@@ -1,19 +1,12 @@
 export async function onRequest(context) {
-    const { request, env } = context;
-    const db = env.DB; // D1 database binding
-
-    // Basic error handling - check if database is available
-    if (!db) {
-        return new Response(
-            JSON.stringify({ error: 'Database not available' }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' }
-            }
-        );
-    }
-
     try {
+        const { request, env } = context;
+        const db = env.DB; // D1 database binding
+
+        // Basic error handling - check if database is available
+        if (!db) {
+            return new Response('Database not available', { status: 500 });
+        }
         // Handle GET request - fetch all notes or a specific note by ID
         if (request.method === 'GET') {
             const url = new URL(request.url);
@@ -259,18 +252,9 @@ export async function onRequest(context) {
         );
 
     } catch (error) {
-        // Error handling for database operations
+        // Error handling - return actual error message
         console.error('Database error:', error);
-        return new Response(
-            JSON.stringify({ 
-                error: 'Internal server error',
-                message: error.message 
-            }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' }
-            }
-        );
+        return new Response(error.message || 'Internal server error', { status: 500 });
     }
 }
 

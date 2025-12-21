@@ -1,19 +1,12 @@
 export async function onRequest(context) {
-    const { request, env } = context;
-    const bucket = env.BUCKET; // R2 bucket binding
-
-    // Basic error handling - check if bucket is available
-    if (!bucket) {
-        return new Response(
-            JSON.stringify({ error: 'Storage bucket not available' }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' }
-            }
-        );
-    }
-
     try {
+        const { request, env } = context;
+        const bucket = env.BUCKET; // R2 bucket binding
+
+        // Basic error handling - check if bucket is available
+        if (!bucket) {
+            return new Response('Storage bucket not available', { status: 500 });
+        }
         // Handle POST request - upload PDF file
         if (request.method === 'POST') {
             const formData = await request.formData();
@@ -90,18 +83,9 @@ export async function onRequest(context) {
         );
 
     } catch (error) {
-        // Error handling
+        // Error handling - return actual error message
         console.error('Upload error:', error);
-        return new Response(
-            JSON.stringify({ 
-                error: 'Internal server error',
-                message: error.message 
-            }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' }
-            }
-        );
+        return new Response(error.message || 'Internal server error', { status: 500 });
     }
 }
 
