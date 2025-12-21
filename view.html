@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>View Note | SA Study Vault</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        :root {
+            --bg: #181b20;
+            --panel: #23272f;
+            --input-bg: #252932;
+            --accent: #5ecb90;
+            --text: #f8f8f2;
+            --subtitle: #bbbbbb;
+            --sa-green: #007a4d;
+            --sa-gold: #ffb612;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+        }
+        
+        /* Global Navigation Header */
+        .global-nav {
+            background: var(--panel);
+            padding: 16px 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1002;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-logo {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            font-size: 0.95em;
+        }
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 32px;
+        }
+        
+        /* Product Layout */
+        .product-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 40px;
+            margin-top: 30px;
+        }
+        
+        /* Product Details */
+        .product-details {
+            background: var(--panel);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+        .product-title {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 24px;
+            line-height: 1.2;
+        }
+        .product-badges {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge.caps {
+            background: rgba(94, 203, 144, 0.2);
+            color: #5ecb90;
+            border: 1px solid rgba(94, 203, 144, 0.4);
+        }
+        .badge.ieb {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+        .badge.university {
+            background: rgba(168, 85, 247, 0.2);
+            color: #a855f7;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+        }
+        .badge.level {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--subtitle);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .badge.subject {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-transform: none;
+        }
+        .badge.free {
+            background: rgba(94, 203, 144, 0.3);
+            color: #5ecb90;
+            border: 1px solid rgba(94, 203, 144, 0.5);
+            font-weight: 700;
+        }
+        .product-info {
+            margin-top: 32px;
+        }
+        .info-row {
+            display: flex;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: var(--subtitle);
+            width: 120px;
+            flex-shrink: 0;
+        }
+        .info-value {
+            color: var(--text);
+            flex: 1;
+        }
+        .product-content {
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .product-content h3 {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+        .product-content-text {
+            color: var(--subtitle);
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+        
+        /* Product Sidebar */
+        .product-sidebar {
+            position: sticky;
+            top: 80px;
+            height: fit-content;
+        }
+        .price-card {
+            background: var(--panel);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        .price-label {
+            color: var(--subtitle);
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        .price-value {
+            font-size: 3em;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 32px;
+        }
+        .price-value.free {
+            font-size: 2em;
+        }
+        .btn-whatsapp {
+            width: 100%;
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 18px 32px;
+            font-size: 1.2em;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+            margin-bottom: 16px;
+        }
+        .btn-whatsapp:hover {
+            background: #20BA5A;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(37, 211, 102, 0.6);
+        }
+        .btn-edit {
+            width: 100%;
+            background: var(--input-bg);
+            color: var(--text);
+            border: 2px solid var(--accent);
+            padding: 14px 32px;
+            font-size: 1em;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .btn-edit:hover {
+            background: var(--accent);
+            color: var(--panel);
+        }
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--subtitle);
+            font-size: 1.1em;
+        }
+        .error {
+            text-align: center;
+            padding: 60px 20px;
+            color: #ef4444;
+            font-size: 1.1em;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .global-nav {
+                padding: 12px 20px;
+            }
+            .nav-logo {
+                font-size: 1.2em;
+            }
+            .nav-links {
+                gap: 16px;
+                font-size: 0.9em;
+            }
+            .container {
+                padding: 24px 20px;
+            }
+            .product-container {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            .product-sidebar {
+                position: static;
+            }
+            .product-title {
+                font-size: 2em;
+            }
+            .product-details {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Navigation Header -->
+    <nav class="global-nav">
+        <a href="/home.html" class="nav-logo">SA Study Vault</a>
+        <div class="nav-links">
+            <a href="/home.html">Home</a>
+            <a href="/list.html">Browse Notes</a>
+            <a href="/index.html">Sell Your Notes</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="loading" class="loading">Loading note...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        
+        <div id="product-content" style="display: none;">
+            <div class="product-container">
+                <!-- Product Details -->
+                <div class="product-details">
+                    <h1 class="product-title" id="note-title"></h1>
+                    <div class="product-badges" id="note-badges"></div>
+                    
+                    <div class="product-info">
+                        <div class="info-row">
+                            <div class="info-label">Subject:</div>
+                            <div class="info-value" id="note-subject">-</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Level:</div>
+                            <div class="info-value" id="note-level">-</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Curriculum:</div>
+                            <div class="info-value" id="note-curriculum">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="product-content">
+                        <h3>Description</h3>
+                        <div class="product-content-text" id="note-content"></div>
+                    </div>
+                </div>
+                
+                <!-- Product Sidebar -->
+                <div class="product-sidebar">
+                    <div class="price-card">
+                        <div class="price-label">Price</div>
+                        <div class="price-value" id="note-price">R 0.00</div>
+                        <a href="#" id="whatsapp-btn" class="btn-whatsapp" target="_blank">
+                            💬 Buy via WhatsApp
+                        </a>
+                        <a href="#" id="edit-btn" class="btn-edit" style="display: none;">
+                            ✏️ Edit this Note
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Helper for XSS-safe text
+        function escapeHTML(str) {
+            return String(str || '')
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            if (!amount || isNaN(amount) || amount === 0) return 'FREE';
+            return 'R ' + parseFloat(amount).toFixed(2);
+        }
+
+        // Get category badge HTML
+        function getCategoryBadge(curriculum) {
+            if (!curriculum) return '';
+            const curriculumLower = curriculum.toLowerCase();
+            let badgeClass = '';
+            if (curriculumLower === 'caps') badgeClass = 'caps';
+            else if (curriculumLower === 'ieb') badgeClass = 'ieb';
+            else if (curriculumLower === 'university') badgeClass = 'university';
+            else return '';
+            
+            return `<span class="badge ${badgeClass}">${escapeHTML(curriculum)}</span>`;
+        }
+
+        // Get note ID from URL
+        function getNoteId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+
+        // Load note details
+        async function loadNote() {
+            const noteId = getNoteId();
+            if (!noteId) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = 'No note ID provided';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/notes?id=${noteId}`);
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        throw new Error('Note not found');
+                    }
+                    throw new Error('Failed to load note');
+                }
+                const note = await res.json();
+                
+                // Hide loading, show content
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('product-content').style.display = 'block';
+                
+                // Populate note details
+                document.getElementById('note-title').textContent = note.title || 'Untitled';
+                document.getElementById('note-subject').textContent = note.subject || '-';
+                document.getElementById('note-level').textContent = note.level || '-';
+                document.getElementById('note-curriculum').textContent = note.curriculum || '-';
+                document.getElementById('note-content').textContent = note.content || 'No description available.';
+                
+                // Build badges
+                const badges = [];
+                if (note.curriculum) {
+                    badges.push(getCategoryBadge(note.curriculum));
+                }
+                if (note.level) {
+                    badges.push(`<span class="badge level">${escapeHTML(note.level)}</span>`);
+                }
+                if (note.subject) {
+                    badges.push(`<span class="badge subject">${escapeHTML(note.subject)}</span>`);
+                }
+                document.getElementById('note-badges').innerHTML = badges.join('');
+                
+                // Set price
+                const priceValue = note.price ? parseFloat(note.price) : 0;
+                const priceDisplay = formatCurrency(priceValue);
+                const priceEl = document.getElementById('note-price');
+                priceEl.textContent = priceDisplay;
+                if (priceValue === 0) {
+                    priceEl.classList.add('free');
+                } else {
+                    priceEl.classList.remove('free');
+                }
+                
+                // Setup WhatsApp button
+                const whatsappBtn = document.getElementById('whatsapp-btn');
+                const phoneNumber = '27123456789'; // Replace with your actual WhatsApp number (format: country code + number, no + or spaces)
+                const message = `Hi, I want to buy the ${escapeHTML(note.title || 'notes')} notes for ${priceDisplay === 'FREE' ? 'free' : priceDisplay}.`;
+                const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+                whatsappBtn.href = whatsappUrl;
+                
+                // Check if user is owner (for now, we'll hide this - can be implemented with authentication later)
+                // For demo purposes, you could check localStorage or a cookie
+                const isOwner = false; // TODO: Implement owner check when authentication is added
+                if (isOwner) {
+                    document.getElementById('edit-btn').style.display = 'block';
+                    document.getElementById('edit-btn').href = `/index.html?id=${noteId}`;
+                }
+                
+            } catch (err) {
+                console.error('Error loading note:', err);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = err.message || 'Failed to load note';
+            }
+        }
+
+        // Initialize on page load
+        loadNote();
+    </script>
+</body>
+</html>
+
