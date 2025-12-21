@@ -4,6 +4,7 @@
     <title>NoteVault SA | Top South African Study Notes</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src='https://js.paystack.co/v2/inline.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js'></script>
     <style>
         :root {
             --bg: #0D0D0D;
@@ -644,14 +645,50 @@
                             // Hide spinner
                             spinnerOverlay.classList.remove('active');
                             
+                            // Trigger confetti celebration with Neon Green and White
+                            if (typeof confetti !== 'undefined') {
+                                // Neon Green and White confetti burst
+                                confetti({
+                                    particleCount: 150,
+                                    spread: 70,
+                                    origin: { y: 0.6 },
+                                    colors: ['#00FF85', '#FFFFFF', '#00FF85', '#FFFFFF'],
+                                    gravity: 0.8,
+                                    ticks: 200
+                                });
+                                
+                                // Additional burst after a short delay
+                                setTimeout(() => {
+                                    confetti({
+                                        particleCount: 100,
+                                        angle: 60,
+                                        spread: 55,
+                                        origin: { x: 0 },
+                                        colors: ['#00FF85', '#FFFFFF'],
+                                        gravity: 0.8
+                                    });
+                                    confetti({
+                                        particleCount: 100,
+                                        angle: 120,
+                                        spread: 55,
+                                        origin: { x: 1 },
+                                        colors: ['#00FF85', '#FFFFFF'],
+                                        gravity: 0.8
+                                    });
+                                }, 300);
+                            }
+                            
                             // Hide Buy Now button and show Download PDF button
                             buyBtn.classList.add('hidden');
                             const downloadBtn = document.getElementById('download-btn');
                             downloadBtn.classList.add('show');
                             
-                            // Store payment reference for download
+                            // Store payment reference and download URL for download
                             downloadBtn.dataset.reference = response.reference;
                             downloadBtn.dataset.noteId = noteId;
+                            if (verifyData.downloadUrl) {
+                                downloadBtn.dataset.downloadUrl = verifyData.downloadUrl;
+                            }
 
                             // Show success message
                             console.log('Payment verified successfully!');
@@ -760,10 +797,15 @@
                 
                 // Setup Download PDF button
                 downloadBtn.onclick = () => {
+                    const downloadUrl = downloadBtn.dataset.downloadUrl;
                     const ref = downloadBtn.dataset.reference;
                     const noteIdForDownload = downloadBtn.dataset.noteId;
-                    if (ref && noteIdForDownload) {
-                        // Trigger download from R2 bucket
+                    
+                    // Use secure download URL if available, otherwise fallback to endpoint
+                    if (downloadUrl) {
+                        window.location.href = downloadUrl;
+                    } else if (ref && noteIdForDownload) {
+                        // Fallback to endpoint-based download
                         window.location.href = `/api/download?noteId=${noteIdForDownload}&reference=${ref}`;
                     } else {
                         alert('Download information not available. Please try again.');

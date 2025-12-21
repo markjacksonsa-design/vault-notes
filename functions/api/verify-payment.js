@@ -70,8 +70,8 @@ export async function onRequest(context) {
                 );
             }
 
-            // Fetch note details to get PDF key
-            const note = await db.prepare("SELECT pdf_key FROM notes WHERE id = ?")
+            // Fetch note details to get PDF key from D1 database
+            const note = await db.prepare("SELECT pdf_key, title FROM notes WHERE id = ?")
                 .bind(noteId)
                 .first();
 
@@ -95,19 +95,31 @@ export async function onRequest(context) {
                 );
             }
 
-            // Generate temporary download link (valid for 1 hour)
-            // Using R2's presigned URL feature
-            // Note: Cloudflare R2 supports presigned URLs via S3-compatible API
-            // For now, we'll return a download endpoint that verifies the payment reference
+            // Verify the PDF exists in R2 bucket
+            const pdfObject = await bucket.head(note.pdf_key);
+            if (!pdfObject) {
+                return new Response(
+                    JSON.stringify({ error: 'PDF file not found in storage' }),
+                    {
+                        status: 404,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+            }
+
+            // Generate secure download URL
+            // Using our download endpoint that verifies the payment reference
+            // This is more secure than presigned URLs as we can verify payment on each download
             const downloadUrl = `/api/download?noteId=${noteId}&reference=${reference}`;
 
-            // Return success with download link
+            // Return success with secure download link
             return new Response(
                 JSON.stringify({
                     success: true,
                     message: 'Payment verified successfully',
                     downloadUrl: downloadUrl,
-                    reference: reference
+                    reference: reference,
+                    pdfKey: note.pdf_key // Include for reference (not used client-side for security)
                 }),
                 {
                     status: 200,
