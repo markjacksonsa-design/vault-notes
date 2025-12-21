@@ -263,8 +263,8 @@
         .sidebar {
             position: fixed;
             left: 0;
-            top: 0;
-            height: 100vh;
+            top: 64px;
+            height: calc(100vh - 64px);
             width: 250px;
             background: var(--panel);
             padding: 20px;
@@ -294,7 +294,7 @@
         }
         .sidebar-overlay {
             position: fixed;
-            top: 0;
+            top: 64px;
             left: 0;
             right: 0;
             bottom: 0;
@@ -305,9 +305,42 @@
         .sidebar-overlay.open {
             display: block;
         }
+        /* Global Navigation Header */
+        .global-nav {
+            background: var(--panel);
+            padding: 16px 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1002;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-logo {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            font-size: 0.95em;
+        }
+        .nav-links a:hover {
+            color: var(--accent);
+        }
         .hamburger {
             position: fixed;
-            top: 20px;
+            top: 72px;
             left: 20px;
             width: 44px;
             height: 44px;
@@ -351,7 +384,27 @@
             }
             h1 {
                 font-size: 1.8em;
-                margin-top: 60px;
+                margin-top: 20px;
+            }
+            .global-nav {
+                padding: 12px 20px;
+            }
+            .nav-logo {
+                font-size: 1.2em;
+            }
+            .nav-links {
+                gap: 16px;
+                font-size: 0.9em;
+            }
+            .hamburger {
+                top: 64px;
+            }
+            .sidebar {
+                top: 64px;
+                height: calc(100vh - 64px);
+            }
+            .sidebar-overlay {
+                top: 64px;
             }
             .fab {
                 bottom: 24px;
@@ -415,6 +468,16 @@
     </style>
 </head>
 <body>
+    <!-- Global Navigation Header -->
+    <nav class="global-nav">
+        <a href="/home.html" class="nav-logo">SA Study Vault</a>
+        <div class="nav-links">
+            <a href="/home.html">Home</a>
+            <a href="/list.html">Browse Notes</a>
+            <a href="/index.html">Sell Your Notes</a>
+        </div>
+    </nav>
+    
     <!-- Hamburger Menu Button (mobile only) -->
     <button class="hamburger" id="hamburger" aria-label="Toggle menu">
         <span></span>
@@ -749,6 +812,19 @@
             currentSort = e.target.value;
             applyFilters();
         });
+
+        // Check for curriculum parameter in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const curriculumParam = urlParams.get('curriculum');
+        if (curriculumParam && curriculumParam !== 'all') {
+            // Set the curriculum filter and activate the button
+            currentCurriculum = curriculumParam;
+            const matchingBtn = document.querySelector(`.filter-btn[data-curriculum="${curriculumParam}"]`);
+            if (matchingBtn) {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                matchingBtn.classList.add('active');
+            }
+        }
 
         // Initial load
         loadNotes();

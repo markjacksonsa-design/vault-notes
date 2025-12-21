@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Ace Your Exams with Top-Tier SA Notes | SA Notes Marketplace</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="The marketplace for CAPS, IEB, and University students to buy and sell quality study resources in South Africa.">
+    <style>
+        :root {
+            --bg: #181b20;
+            --panel: #23272f;
+            --input-bg: #252932;
+            --accent: #5ecb90;
+            --text: #f8f8f2;
+            --subtitle: #bbbbbb;
+            --sa-green: #007a4d;
+            --sa-gold: #ffb612;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Global Navigation Header */
+        .global-nav {
+            background: var(--panel);
+            padding: 16px 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1002;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 100%;
+        }
+        .nav-logo {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            font-size: 0.95em;
+        }
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 80px 32px;
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .hero h1 {
+            font-size: clamp(2.5em, 6vw, 4em);
+            font-weight: 800;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--sa-gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+        .hero p {
+            font-size: clamp(1.1em, 2vw, 1.4em);
+            color: var(--subtitle);
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .cta-btn {
+            padding: 18px 40px;
+            font-size: 1.1em;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            min-width: 180px;
+        }
+        .cta-btn.primary {
+            background: linear-gradient(135deg, var(--sa-green) 0%, #005a36 100%);
+            color: white;
+            box-shadow: 0 4px 16px rgba(0, 122, 77, 0.4);
+        }
+        .cta-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(0, 122, 77, 0.6);
+        }
+        .cta-btn.secondary {
+            background: linear-gradient(135deg, var(--sa-gold) 0%, #cc9200 100%);
+            color: var(--bg);
+            box-shadow: 0 4px 16px rgba(255, 182, 18, 0.4);
+        }
+        .cta-btn.secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(255, 182, 18, 0.6);
+        }
+        
+        /* Section Container */
+        .section {
+            padding: 80px 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section-title {
+            font-size: clamp(2em, 4vw, 2.8em);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 50px;
+            color: var(--text);
+        }
+        
+        /* Curriculum Cards */
+        .curriculum-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+            margin-bottom: 60px;
+        }
+        .curriculum-card {
+            background: var(--panel);
+            border-radius: 16px;
+            padding: 40px 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            text-decoration: none;
+            color: var(--text);
+            display: block;
+        }
+        .curriculum-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            box-shadow: 0 8px 32px rgba(94, 203, 144, 0.3);
+        }
+        .curriculum-card h3 {
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--accent);
+        }
+        .curriculum-card p {
+            color: var(--subtitle);
+            font-size: 1.1em;
+        }
+        .curriculum-card.caps:hover {
+            border-color: #5ecb90;
+            box-shadow: 0 8px 32px rgba(94, 203, 144, 0.3);
+        }
+        .curriculum-card.ieb:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+        }
+        .curriculum-card.university:hover {
+            border-color: #a855f7;
+            box-shadow: 0 8px 32px rgba(168, 85, 247, 0.3);
+        }
+        
+        /* How It Works */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+        .step {
+            text-align: center;
+            padding: 32px;
+        }
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--sa-green) 0%, var(--accent) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: white;
+            margin: 0 auto 24px;
+            box-shadow: 0 4px 16px rgba(94, 203, 144, 0.4);
+        }
+        .step h3 {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--accent);
+        }
+        .step p {
+            color: var(--subtitle);
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--panel);
+            padding: 40px 32px;
+            text-align: center;
+            color: var(--subtitle);
+            margin-top: 80px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .global-nav {
+                padding: 12px 20px;
+                flex-direction: row;
+            }
+            .nav-logo {
+                font-size: 1.2em;
+            }
+            .nav-links {
+                gap: 16px;
+                font-size: 0.9em;
+            }
+            .hero {
+                padding: 60px 20px;
+            }
+            .cta-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .cta-btn {
+                width: 100%;
+            }
+            .section {
+                padding: 60px 20px;
+            }
+            .curriculum-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            .steps-grid {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Navigation Header -->
+    <nav class="global-nav">
+        <a href="/home.html" class="nav-logo">SA Study Vault</a>
+        <div class="nav-links">
+            <a href="/home.html">Home</a>
+            <a href="/list.html">Browse Notes</a>
+            <a href="/index.html">Sell Your Notes</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Ace Your Exams with Top-Tier SA Notes.</h1>
+        <p>The marketplace for CAPS, IEB, and University students to buy and sell quality study resources.</p>
+        <div class="cta-buttons">
+            <a href="/list.html" class="cta-btn primary">Shop Notes</a>
+            <a href="/index.html" class="cta-btn secondary">Start Selling</a>
+        </div>
+    </section>
+
+    <!-- Curriculum Section -->
+    <section class="section">
+        <h2 class="section-title">Choose Your Curriculum</h2>
+        <div class="curriculum-grid">
+            <a href="/list.html?curriculum=CAPS" class="curriculum-card caps">
+                <h3>CAPS</h3>
+                <p>Find comprehensive notes for the South African CAPS curriculum, covering all grades and subjects.</p>
+            </a>
+            <a href="/list.html?curriculum=IEB" class="curriculum-card ieb">
+                <h3>IEB</h3>
+                <p>Access premium study materials designed for Independent Examination Board students.</p>
+            </a>
+            <a href="/list.html?curriculum=University" class="curriculum-card university">
+                <h3>University</h3>
+                <p>Discover university-level notes and resources from top students across South Africa.</p>
+            </a>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="section">
+        <h2 class="section-title">How It Works</h2>
+        <div class="steps-grid">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Find Your Subject</h3>
+                <p>Browse through thousands of quality notes organized by curriculum, subject, and level. Use our filters to find exactly what you need.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Pay Securely (ZAR)</h3>
+                <p>Purchase notes instantly with secure payment. All prices are in South African Rand (ZAR) for your convenience.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Download & Pass</h3>
+                <p>Download your notes immediately after purchase and start studying. Ace your exams with confidence!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 SA Notes Marketplace. Helping students succeed across South Africa.</p>
+    </footer>
+</body>
+</html>
+
