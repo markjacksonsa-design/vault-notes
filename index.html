@@ -106,56 +106,64 @@
             margin-top: 30px;
             font-style: italic;
         }
+        .back-link {
+            display: inline-block;
+            color: var(--subtitle);
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: var(--accent);
+        }
+        .back-link::before {
+            content: '← ';
+            margin-right: 4px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <a href="/list.html" class="back-link">Back to List</a>
         <h1>My Vault</h1>
         <form id="note-form">
             <label for="note-title">Note Title</label>
             <input type="text" id="note-title" name="title" required maxlength="100" autocomplete="off" placeholder="Enter a title...">
             <label for="note-content">Note Content</label>
             <textarea id="note-content" name="content" required maxlength="1000" placeholder="Type your note..."></textarea>
-            <button type="submit">Save Note</button>
+            <button type="submit" id="save-btn">Save Note</button>
         </form>
-        <div class="notes-list" id="notes-list"></div>
     </div>
     <script>
-        // Fetch and display all notes
-        async function loadNotes() {
-            const list = document.getElementById('notes-list');
-            list.innerHTML = '<div class="notes-empty">Loading notes...</div>';
-            try {
-                const res = await fetch('/api/notes');
-                if (!res.ok) throw new Error('Failed to load notes');
-                const notes = await res.json();
-                if (!notes.length) {
-                    list.innerHTML = '<div class="notes-empty">No notes yet.</div>';
-                    return;
-                }
-                list.innerHTML = '';
-                notes.forEach((note) => {
-                    const div = document.createElement('div');
-                    div.className = 'note';
-                    div.innerHTML = `
-                        <div class="note-title">${escapeHTML(note.title)}</div>
-                        <div class="note-content">${escapeHTML(note.content)}</div>
-                    `;
-                    list.appendChild(div);
-                });
-            } catch (e) {
-                list.innerHTML = '<div class="notes-empty">Failed to load notes.</div>';
-            }
+        // Get note ID from URL parameters
+        function getNoteId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
         }
 
-        // Helper for XSS-safe text
-        function escapeHTML(str) {
-            return String(str)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+        // Fetch a specific note by ID
+        async function loadNote(id) {
+            try {
+                const res = await fetch(`/api/notes?id=${id}`);
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        alert('Note not found.');
+                        window.location.href = '/list.html';
+                        return;
+                    }
+                    throw new Error('Failed to load note');
+                }
+                const note = await res.json();
+                
+                // Populate the form with the note data
+                document.getElementById('note-title').value = note.title || '';
+                document.getElementById('note-content').value = note.content || '';
+            } catch (err) {
+                console.error('Error loading note:', err);
+                alert('Failed to load note.');
+                window.location.href = '/list.html';
+            }
         }
 
         // Handle note submission
@@ -166,28 +174,44 @@
             const content = form['content'].value.trim();
             if (!title || !content) return;
 
-            const btn = form.querySelector('button[type="submit"]');
+            const noteId = getNoteId();
+            const isEditing = noteId !== null;
+            const btn = document.getElementById('save-btn');
+            
             btn.disabled = true;
-            btn.innerText = 'Saving...';
+            btn.innerText = isEditing ? 'Updating...' : 'Saving...';
+            
             try {
-                const res = await fetch('/api/notes', {
-                    method: 'POST',
+                const url = isEditing ? `/api/notes?id=${noteId}` : '/api/notes';
+                const method = isEditing ? 'PUT' : 'POST';
+                
+                const res = await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title, content })
                 });
-                if (!res.ok) throw new Error('Save failed');
-                form.reset();
-                await loadNotes();
+                
+                if (!res.ok) throw new Error(isEditing ? 'Update failed' : 'Save failed');
+                
+                // Redirect to list after successful save/update
+                window.location.href = '/list.html';
             } catch (err) {
-                alert('Failed to save note.');
+                console.error('Error saving note:', err);
+                alert(isEditing ? 'Failed to update note.' : 'Failed to save note.');
             } finally {
                 btn.disabled = false;
-                btn.innerText = 'Save Note';
+                btn.innerText = isEditing ? 'Update Note' : 'Save Note';
             }
         });
 
-        // Initial load
-        loadNotes();
+        // Check if we're editing an existing note
+        const noteId = getNoteId();
+        if (noteId) {
+            // Update button text for editing mode
+            document.getElementById('save-btn').innerText = 'Update Note';
+            // Load the note data
+            loadNote(noteId);
+        }
     </script>
 </body>
 </html>

@@ -14,17 +14,44 @@ export async function onRequest(context) {
     }
 
     try {
-        // Handle GET request - fetch all notes
+        // Handle GET request - fetch all notes or a specific note by ID
         if (request.method === 'GET') {
-            const { results } = await db.prepare("SELECT * FROM notes ORDER BY id DESC").all();
+            const url = new URL(request.url);
+            const noteId = url.searchParams.get('id');
             
-            return new Response(
-                JSON.stringify(results || []),
-                {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' }
+            if (noteId) {
+                // Fetch a single note by ID
+                const note = await db.prepare("SELECT * FROM notes WHERE id = ?").bind(noteId).first();
+                
+                if (!note) {
+                    return new Response(
+                        JSON.stringify({ error: 'Note not found' }),
+                        {
+                            status: 404,
+                            headers: { 'Content-Type': 'application/json' }
+                        }
+                    );
                 }
-            );
+                
+                return new Response(
+                    JSON.stringify(note),
+                    {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+            } else {
+                // Fetch all notes
+                const { results } = await db.prepare("SELECT * FROM notes ORDER BY id DESC").all();
+                
+                return new Response(
+                    JSON.stringify(results || []),
+                    {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+            }
         }
 
         // Handle POST request - create a new note
@@ -65,6 +92,69 @@ export async function onRequest(context) {
             }
         }
 
+        // Handle PUT request - update an existing note
+        if (request.method === 'PUT') {
+            const url = new URL(request.url);
+            const noteId = url.searchParams.get('id');
+            
+            if (!noteId) {
+                return new Response(
+                    JSON.stringify({ error: 'Note ID is required' }),
+                    {
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+            }
+
+            const body = await request.json();
+            const { title, content } = body;
+
+            // Validate required fields
+            if (!title || !content) {
+                return new Response(
+                    JSON.stringify({ error: 'Title and content are required' }),
+                    {
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+            }
+
+            // Check if note exists
+            const existingNote = await db.prepare("SELECT id FROM notes WHERE id = ?").bind(noteId).first();
+            if (!existingNote) {
+                return new Response(
+                    JSON.stringify({ error: 'Note not found' }),
+                    {
+                        status: 404,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+            }
+
+            // Update the note in the database
+            const result = await db.prepare(
+                "UPDATE notes SET title = ?, content = ? WHERE id = ?"
+            ).bind(title, content, noteId).run();
+
+            if (result.success) {
+                return new Response(
+                    JSON.stringify({ 
+                        success: true,
+                        id: noteId,
+                        message: 'Note updated successfully' 
+                    }),
+                    {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+            } else {
+                throw new Error('Failed to update note');
+            }
+        }
+
         // Handle unsupported methods
         return new Response(
             JSON.stringify({ error: 'Method not allowed' }),
@@ -72,7 +162,7 @@ export async function onRequest(context) {
                 status: 405,
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Allow': 'GET, POST'
+                    'Allow': 'GET, POST, PUT'
                 }
             }
         );
