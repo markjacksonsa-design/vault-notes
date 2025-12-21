@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Notes List - My Vault</title>
+    <title>NoteVault SA | Top South African Study Notes</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         :root {
-            --bg: #181b20;
-            --panel: #23272f;
-            --input-bg: #252932;
-            --accent: #5ecb90;
+            --bg: #001f3f;
+            --panel: #003366;
+            --input-bg: #002244;
+            --accent: #FFD700;
             --text: #f8f8f2;
             --subtitle: #bbbbbb;
         }
@@ -86,9 +86,9 @@
             letter-spacing: 0.5px;
         }
         .badge.caps {
-            background: rgba(94, 203, 144, 0.2);
-            color: #5ecb90;
-            border: 1px solid rgba(94, 203, 144, 0.4);
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            border: 1px solid rgba(255, 215, 0, 0.4);
         }
         .badge.ieb {
             background: rgba(59, 130, 246, 0.2);
@@ -114,9 +114,9 @@
             text-transform: none;
         }
         .badge.free {
-            background: rgba(94, 203, 144, 0.3);
-            color: #5ecb90;
-            border: 1px solid rgba(94, 203, 144, 0.5);
+            background: rgba(255, 215, 0, 0.3);
+            color: #FFD700;
+            border: 1px solid rgba(255, 215, 0, 0.5);
             font-weight: 700;
         }
         .note-price {
@@ -227,7 +227,7 @@
             opacity: 0.6;
         }
         .highlight {
-            background-color: rgba(94, 203, 144, 0.3);
+            background-color: rgba(255, 215, 0, 0.3);
             color: var(--accent);
             font-weight: bold;
             padding: 2px 0;
@@ -245,7 +245,7 @@
             font-size: 32px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 16px rgba(94, 203, 144, 0.4);
+            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.4);
             transition: transform 0.2s, box-shadow 0.2s;
             display: flex;
             align-items: center;
@@ -254,7 +254,7 @@
         }
         .fab:hover {
             transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(94, 203, 144, 0.6);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
         }
         .fab:active {
             transform: scale(0.95);
@@ -322,6 +322,10 @@
             font-weight: 700;
             color: var(--accent);
             text-decoration: none;
+        }
+        .nav-logo strong {
+            font-weight: 800;
+            color: var(--accent);
         }
         .nav-links {
             display: flex;
@@ -470,7 +474,7 @@
 <body>
     <!-- Global Navigation Header -->
     <nav class="global-nav">
-        <a href="/home.html" class="nav-logo">SA Study Vault</a>
+        <a href="/home.html" class="nav-logo"><strong>🔒 NoteVault SA</strong></a>
         <div class="nav-links">
             <a href="/home.html">Home</a>
             <a href="/list.html">Browse Notes</a>
@@ -498,7 +502,7 @@
     
     <div class="main-content">
         <div class="container">
-        <h1>My Notes</h1>
+        <h1>Browse Notes</h1>
         
         <!-- Curriculum Filter Bar -->
         <div class="filter-bar">
@@ -657,7 +661,7 @@
                 const card = document.createElement('div');
                 card.className = 'note-card';
                 card.onclick = () => {
-                    window.location.href = `/index.html?id=${note.id}`;
+                    window.location.href = `/view.html?id=${note.id}`;
                 };
                 
                 const title = highlightText(note.title || 'Untitled', searchTerm);

@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>View Note | SA Study Vault</title>
+    <title>NoteVault SA | Top South African Study Notes</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         :root {
-            --bg: #181b20;
-            --panel: #23272f;
-            --input-bg: #252932;
-            --accent: #5ecb90;
+            --bg: #001f3f;
+            --panel: #003366;
+            --input-bg: #002244;
+            --accent: #FFD700;
             --text: #f8f8f2;
             --subtitle: #bbbbbb;
             --sa-green: #007a4d;
-            --sa-gold: #ffb612;
+            --sa-gold: #FFD700;
         }
         * {
             margin: 0;
@@ -46,6 +46,10 @@
             font-weight: 700;
             color: var(--accent);
             text-decoration: none;
+        }
+        .nav-logo strong {
+            font-weight: 800;
+            color: var(--accent);
         }
         .nav-links {
             display: flex;
@@ -108,9 +112,9 @@
             letter-spacing: 0.5px;
         }
         .badge.caps {
-            background: rgba(94, 203, 144, 0.2);
-            color: #5ecb90;
-            border: 1px solid rgba(94, 203, 144, 0.4);
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            border: 1px solid rgba(255, 215, 0, 0.4);
         }
         .badge.ieb {
             background: rgba(59, 130, 246, 0.2);
@@ -134,9 +138,9 @@
             text-transform: none;
         }
         .badge.free {
-            background: rgba(94, 203, 144, 0.3);
-            color: #5ecb90;
-            border: 1px solid rgba(94, 203, 144, 0.5);
+            background: rgba(255, 215, 0, 0.3);
+            color: #FFD700;
+            border: 1px solid rgba(255, 215, 0, 0.5);
             font-weight: 700;
         }
         .product-info {
@@ -183,12 +187,12 @@
             top: 80px;
             height: fit-content;
         }
-        .price-card {
+        .checkout-card {
             background: var(--panel);
             border-radius: 16px;
             padding: 32px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-            text-align: center;
+            border: 1px solid rgba(255, 215, 0, 0.2);
         }
         .price-label {
             color: var(--subtitle);
@@ -201,15 +205,20 @@
             font-size: 3em;
             font-weight: 700;
             color: var(--accent);
-            margin-bottom: 32px;
+            margin-bottom: 24px;
         }
         .price-value.free {
             font-size: 2em;
         }
-        .btn-whatsapp {
+        .checkout-section {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-buy {
             width: 100%;
-            background: #25D366;
-            color: white;
+            background: linear-gradient(135deg, var(--accent) 0%, #FFA500 100%);
+            color: var(--bg);
             border: none;
             padding: 18px 32px;
             font-size: 1.2em;
@@ -217,15 +226,55 @@
             border-radius: 12px;
             cursor: pointer;
             text-decoration: none;
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
             transition: all 0.3s;
-            box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
-            margin-bottom: 16px;
+            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
+            margin-bottom: 12px;
         }
-        .btn-whatsapp:hover {
-            background: #20BA5A;
+        .btn-buy:hover {
+            background: linear-gradient(135deg, #FFA500 0%, var(--accent) 100%);
             transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(37, 211, 102, 0.6);
+            box-shadow: 0 6px 24px rgba(255, 215, 0, 0.5);
+        }
+        .btn-buy:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .secure-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85em;
+            color: var(--accent);
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .secure-badge-icon {
+            font-size: 1.1em;
+        }
+        .payment-features {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .payment-feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 0.9em;
+            color: var(--subtitle);
+        }
+        .payment-feature:last-child {
+            margin-bottom: 0;
+        }
+        .payment-feature-icon {
+            color: var(--accent);
+            font-size: 1.1em;
         }
         .btn-edit {
             width: 100%;
@@ -293,7 +342,7 @@
 <body>
     <!-- Global Navigation Header -->
     <nav class="global-nav">
-        <a href="/home.html" class="nav-logo">SA Study Vault</a>
+        <a href="/home.html" class="nav-logo"><strong>🔒 NoteVault SA</strong></a>
         <div class="nav-links">
             <a href="/home.html">Home</a>
             <a href="/list.html">Browse Notes</a>
@@ -335,12 +384,36 @@
                 
                 <!-- Product Sidebar -->
                 <div class="product-sidebar">
-                    <div class="price-card">
+                    <div class="checkout-card">
                         <div class="price-label">Price</div>
                         <div class="price-value" id="note-price">R 0.00</div>
-                        <a href="#" id="whatsapp-btn" class="btn-whatsapp" target="_blank">
-                            💬 Buy via WhatsApp
-                        </a>
+                        
+                        <div class="checkout-section">
+                            <button id="buy-btn" class="btn-buy">
+                                <span>🛒</span>
+                                <span id="buy-btn-text">Buy Note</span>
+                            </button>
+                            <div class="secure-badge">
+                                <span class="secure-badge-icon">🔒</span>
+                                <span>Secure Payment</span>
+                            </div>
+                            
+                            <div class="payment-features">
+                                <div class="payment-feature">
+                                    <span class="payment-feature-icon">✓</span>
+                                    <span>Instant download after payment</span>
+                                </div>
+                                <div class="payment-feature">
+                                    <span class="payment-feature-icon">✓</span>
+                                    <span>Secure payment processing</span>
+                                </div>
+                                <div class="payment-feature">
+                                    <span class="payment-feature-icon">✓</span>
+                                    <span>24/7 customer support</span>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <a href="#" id="edit-btn" class="btn-edit" style="display: none;">
                             ✏️ Edit this Note
                         </a>
@@ -441,12 +514,41 @@
                     priceEl.classList.remove('free');
                 }
                 
-                // Setup WhatsApp button
-                const whatsappBtn = document.getElementById('whatsapp-btn');
-                const phoneNumber = '27123456789'; // Replace with your actual WhatsApp number (format: country code + number, no + or spaces)
-                const message = `Hi, I want to buy the ${escapeHTML(note.title || 'notes')} notes for ${priceDisplay === 'FREE' ? 'free' : priceDisplay}.`;
-                const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-                whatsappBtn.href = whatsappUrl;
+                // Setup Buy Now button
+                const buyBtn = document.getElementById('buy-btn');
+                const buyBtnText = document.getElementById('buy-btn-text');
+                
+                if (priceValue === 0) {
+                    buyBtnText.textContent = 'Download Free';
+                    buyBtn.disabled = false;
+                } else {
+                    buyBtnText.textContent = `Buy Note - ${priceDisplay}`;
+                    buyBtn.disabled = false;
+                }
+                
+                buyBtn.onclick = () => {
+                    // Paystack integration placeholder
+                    // TODO: Initialize Paystack payment
+                    // Example:
+                    // const handler = PaystackPop.setup({
+                    //     key: 'YOUR_PUBLIC_KEY',
+                    //     email: 'customer@email.com',
+                    //     amount: priceValue * 100, // Convert to kobo
+                    //     currency: 'ZAR',
+                    //     ref: 'note_' + noteId + '_' + Date.now(),
+                    //     callback: function(response) {
+                    //         // Handle successful payment
+                    //         window.location.href = `/download.html?note_id=${noteId}&reference=${response.reference}`;
+                    //     },
+                    //     onClose: function() {
+                    //         alert('Payment cancelled');
+                    //     }
+                    // });
+                    // handler.openIframe();
+                    
+                    // Temporary placeholder
+                    alert('Paystack payment integration coming soon!\n\nNote: ' + (note.title || 'Untitled') + '\nPrice: ' + priceDisplay);
+                };
                 
                 // Check if user is owner (for now, we'll hide this - can be implemented with authentication later)
                 // For demo purposes, you could check localStorage or a cookie

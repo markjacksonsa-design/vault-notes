@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My Vault</title>
+    <title>NoteVault SA | Top South African Study Notes</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         :root {
-            --bg: #181b20;
-            --panel: #23272f;
-            --input-bg: #252932;
-            --accent: #5ecb90;
+            --bg: #001f3f;
+            --panel: #003366;
+            --input-bg: #002244;
+            --accent: #FFD700;
             --text: #f8f8f2;
             --subtitle: #bbbbbb;
         }
@@ -77,7 +77,7 @@
             transition: background 0.2s;
         }
         input[type="file"]::file-selector-button:hover {
-            background: #47a173;
+            background: #FFA500;
         }
         .file-info {
             margin-top: 8px;
@@ -134,7 +134,7 @@
             min-height: 44px;
         }
         button:not(.hamburger):hover {
-            background: #47a173;
+            background: #FFA500;
         }
         .notes-list {
             margin-top: 40px;
@@ -305,6 +305,10 @@
             font-weight: 700;
             color: var(--accent);
             text-decoration: none;
+        }
+        .nav-logo strong {
+            font-weight: 800;
+            color: var(--accent);
         }
         .nav-links {
             display: flex;
@@ -492,7 +496,7 @@
 <body>
     <!-- Global Navigation Header -->
     <nav class="global-nav">
-        <a href="/home.html" class="nav-logo">SA Study Vault</a>
+        <a href="/home.html" class="nav-logo"><strong>🔒 NoteVault SA</strong></a>
         <div class="nav-links">
             <a href="/home.html">Home</a>
             <a href="/list.html">Browse Notes</a>
@@ -521,7 +525,7 @@
     <div class="main-content">
         <div class="container">
         <a href="/list.html" class="back-link">Back to List</a>
-        <h1>My Vault</h1>
+        <h1>NoteVault SA</h1>
         
         <!-- View Mode (for reading) -->
         <div id="view-mode" class="view-mode">
