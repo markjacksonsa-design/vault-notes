@@ -65,7 +65,7 @@
             resize: vertical;
             font-family: inherit;
         }
-        button {
+        button:not(.hamburger) {
             background: var(--accent);
             border: none;
             padding: 12px 25px;
@@ -78,8 +78,9 @@
             transition: background 0.2s;
             display: block;
             width: 100%;
+            min-height: 44px;
         }
-        button:hover {
+        button:not(.hamburger):hover {
             background: #47a173;
         }
         .notes-list {
@@ -121,25 +122,389 @@
             content: '← ';
             margin-right: 4px;
         }
+        .view-mode {
+            display: none;
+        }
+        .edit-mode {
+            display: block;
+        }
+        .view-mode.active {
+            display: block;
+        }
+        .edit-mode.active {
+            display: block;
+        }
+        .note-view {
+            background: var(--input-bg);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .note-view-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .note-view-content {
+            color: var(--text);
+            line-height: 1.7;
+            font-size: 1.05em;
+        }
+        .note-view-content h1,
+        .note-view-content h2,
+        .note-view-content h3 {
+            color: var(--accent);
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        .note-view-content h1 {
+            font-size: 1.8em;
+        }
+        .note-view-content h2 {
+            font-size: 1.5em;
+        }
+        .note-view-content h3 {
+            font-size: 1.3em;
+        }
+        .note-view-content p {
+            margin-bottom: 12px;
+        }
+        .note-view-content ul,
+        .note-view-content ol {
+            margin-bottom: 12px;
+            padding-left: 24px;
+        }
+        .note-view-content li {
+            margin-bottom: 6px;
+        }
+        .note-view-content code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .note-view-content pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 12px;
+        }
+        .note-view-content pre code {
+            background: none;
+            padding: 0;
+        }
+        .note-view-content blockquote {
+            border-left: 3px solid var(--accent);
+            padding-left: 16px;
+            margin-left: 0;
+            margin-bottom: 12px;
+            color: var(--subtitle);
+            font-style: italic;
+        }
+        .note-view-content a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .note-view-content a:hover {
+            text-decoration: underline;
+        }
+        .note-view-content strong {
+            font-weight: bold;
+            color: var(--accent);
+        }
+        .note-view-content em {
+            font-style: italic;
+        }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .button-group button {
+            flex: 1;
+        }
+        .btn-secondary {
+            background: var(--input-bg);
+            color: var(--text);
+        }
+        .btn-secondary:hover {
+            background: var(--panel);
+        }
+        /* Navigation Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 250px;
+            background: var(--panel);
+            padding: 20px;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        .sidebar.open {
+            transform: translateX(0);
+        }
+        .sidebar nav {
+            margin-top: 60px;
+        }
+        .sidebar a {
+            display: block;
+            color: var(--text);
+            text-decoration: none;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .sidebar a:hover {
+            background: var(--input-bg);
+            color: var(--accent);
+        }
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            display: none;
+        }
+        .sidebar-overlay.open {
+            display: block;
+        }
+        .hamburger {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 44px;
+            height: 44px;
+            background: var(--panel);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1001;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            padding: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .hamburger span {
+            display: block;
+            width: 24px;
+            height: 3px;
+            background: var(--text);
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(7px, 7px);
+        }
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+        .main-content {
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+        }
+        /* Make buttons larger for touch */
+        button {
+            min-height: 44px;
+        }
+        input[type="text"], textarea {
+            font-size: 16px; /* Prevents zoom on iOS */
+        }
+        @media (max-width: 768px) {
+            .container {
+                max-width: 100%;
+                margin: 48px auto 48px;
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 1.6em;
+                margin-top: 60px;
+            }
+            .note-view {
+                padding: 16px;
+            }
+            .note-view-title {
+                font-size: 1.5em;
+            }
+            /* Show hamburger menu on mobile */
+            .hamburger {
+                display: flex;
+            }
+            /* Larger touch targets */
+            input[type="text"], textarea {
+                padding: 14px 16px;
+                font-size: 16px;
+                min-height: 44px;
+            }
+            textarea {
+                min-height: 120px;
+            }
+            button {
+                min-height: 48px;
+                padding: 16px 20px;
+                font-size: 1.1em;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+            .back-link {
+                padding: 12px 0;
+                font-size: 1em;
+            }
+        }
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 250px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Hamburger Menu Button (mobile only) -->
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <nav>
+            <a href="/list.html">📝 Notes List</a>
+            <a href="/index.html">➕ New Note</a>
+        </nav>
+    </div>
+    
+    <!-- Sidebar Overlay (mobile only) -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <div class="main-content">
+        <div class="container">
         <a href="/list.html" class="back-link">Back to List</a>
         <h1>My Vault</h1>
-        <form id="note-form">
-            <label for="note-title">Note Title</label>
-            <input type="text" id="note-title" name="title" required maxlength="100" autocomplete="off" placeholder="Enter a title...">
-            <label for="note-content">Note Content</label>
-            <textarea id="note-content" name="content" required maxlength="1000" placeholder="Type your note..."></textarea>
-            <button type="submit" id="save-btn">Save Note</button>
-        </form>
+        
+        <!-- View Mode (for reading) -->
+        <div id="view-mode" class="view-mode">
+            <div class="note-view">
+                <div class="note-view-title" id="view-title"></div>
+                <div class="note-view-content" id="view-content"></div>
+            </div>
+            <div class="button-group">
+                <button id="edit-btn" class="btn-secondary">Edit</button>
+            </div>
+        </div>
+        
+        <!-- Edit Mode (for editing) -->
+        <div id="edit-mode" class="edit-mode">
+            <form id="note-form">
+                <label for="note-title">Note Title</label>
+                <input type="text" id="note-title" name="title" required maxlength="100" autocomplete="off" placeholder="Enter a title...">
+                <label for="note-content">Note Content</label>
+                <textarea id="note-content" name="content" required maxlength="1000" placeholder="Type your note..."></textarea>
+                <div class="button-group">
+                    <button type="button" id="cancel-btn" class="btn-secondary">Cancel</button>
+                    <button type="submit" id="save-btn">Save Note</button>
+                </div>
+            </form>
+        </div>
+        </div>
     </div>
+    
     <script>
+        // Hamburger menu toggle
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+            hamburger.classList.toggle('active');
+        }
+        
+        hamburger.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+        
+        // Close sidebar when clicking a link on mobile
+        const sidebarLinks = sidebar.querySelectorAll('a');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            });
+        });
+    </script>
+    
+    <!-- Markdown parser library -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        // Store current note data
+        let currentNote = null;
+        let isViewMode = false;
+
         // Get note ID from URL parameters
         function getNoteId() {
             const params = new URLSearchParams(window.location.search);
             return params.get('id');
+        }
+
+        // Toggle between view and edit modes
+        function setViewMode(viewMode) {
+            isViewMode = viewMode;
+            const viewModeEl = document.getElementById('view-mode');
+            const editModeEl = document.getElementById('edit-mode');
+            
+            if (viewMode) {
+                viewModeEl.classList.add('active');
+                editModeEl.classList.remove('active');
+            } else {
+                viewModeEl.classList.remove('active');
+                editModeEl.classList.add('active');
+            }
+        }
+
+        // Render markdown content
+        function renderMarkdown(content) {
+            if (!content) return '';
+            // Use marked.js if available, otherwise render as plain text with line breaks
+            if (typeof marked !== 'undefined') {
+                return marked.parse(content);
+            } else {
+                // Fallback: preserve line breaks and basic formatting
+                return content
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.+?)\*/g, '<em>$1</em>');
+            }
+        }
+
+        // Update view mode display
+        function updateViewMode(note) {
+            document.getElementById('view-title').textContent = note.title || 'Untitled';
+            const content = note.content || '';
+            document.getElementById('view-content').innerHTML = renderMarkdown(content);
         }
 
         // Fetch a specific note by ID
@@ -154,17 +519,40 @@
                     }
                     throw new Error('Failed to load note');
                 }
-                const note = await res.json();
+                currentNote = await res.json();
                 
                 // Populate the form with the note data
-                document.getElementById('note-title').value = note.title || '';
-                document.getElementById('note-content').value = note.content || '';
+                document.getElementById('note-title').value = currentNote.title || '';
+                document.getElementById('note-content').value = currentNote.content || '';
+                
+                // Show in view mode by default
+                updateViewMode(currentNote);
+                setViewMode(true);
             } catch (err) {
                 console.error('Error loading note:', err);
                 alert('Failed to load note.');
                 window.location.href = '/list.html';
             }
         }
+
+        // Handle Edit button click
+        document.getElementById('edit-btn').addEventListener('click', () => {
+            setViewMode(false);
+        });
+
+        // Handle Cancel button click
+        document.getElementById('cancel-btn').addEventListener('click', () => {
+            const noteId = getNoteId();
+            if (noteId && currentNote) {
+                // Restore original values and switch back to view mode
+                document.getElementById('note-title').value = currentNote.title || '';
+                document.getElementById('note-content').value = currentNote.content || '';
+                setViewMode(true);
+            } else {
+                // For new notes, redirect to list
+                window.location.href = '/list.html';
+            }
+        });
 
         // Handle note submission
         document.getElementById('note-form').addEventListener('submit', async function(e) {
@@ -193,8 +581,14 @@
                 
                 if (!res.ok) throw new Error(isEditing ? 'Update failed' : 'Save failed');
                 
-                // Redirect to list after successful save/update
-                window.location.href = '/list.html';
+                // Update current note data and switch to view mode
+                if (isEditing) {
+                    // Reload the note to get latest data from server
+                    await loadNote(noteId);
+                } else {
+                    // For new notes, redirect to list
+                    window.location.href = '/list.html';
+                }
             } catch (err) {
                 console.error('Error saving note:', err);
                 alert(isEditing ? 'Failed to update note.' : 'Failed to save note.');
@@ -204,13 +598,16 @@
             }
         });
 
-        // Check if we're editing an existing note
+        // Initialize: Check if we're editing an existing note
         const noteId = getNoteId();
         if (noteId) {
             // Update button text for editing mode
             document.getElementById('save-btn').innerText = 'Update Note';
-            // Load the note data
+            // Load the note data (will show in view mode)
             loadNote(noteId);
+        } else {
+            // For new notes, show edit mode by default
+            setViewMode(false);
         }
     </script>
 </body>

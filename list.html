@@ -92,6 +92,34 @@
             margin-top: 60px;
             font-size: 1.1em;
         }
+        .search-container {
+            margin-bottom: 32px;
+        }
+        .search-input {
+            width: 100%;
+            background: var(--input-bg);
+            color: var(--text);
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            padding: 12px 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: box-shadow 0.2s;
+        }
+        .search-input:focus {
+            box-shadow: 0 0 0 2px var(--accent);
+        }
+        .search-input::placeholder {
+            color: var(--subtitle);
+            opacity: 0.6;
+        }
+        .highlight {
+            background-color: rgba(94, 203, 144, 0.3);
+            color: var(--accent);
+            font-weight: bold;
+            padding: 2px 0;
+        }
         .fab {
             position: fixed;
             bottom: 32px;
@@ -119,12 +147,99 @@
         .fab:active {
             transform: scale(0.95);
         }
+        /* Navigation Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 250px;
+            background: var(--panel);
+            padding: 20px;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        .sidebar.open {
+            transform: translateX(0);
+        }
+        .sidebar nav {
+            margin-top: 60px;
+        }
+        .sidebar a {
+            display: block;
+            color: var(--text);
+            text-decoration: none;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .sidebar a:hover {
+            background: var(--input-bg);
+            color: var(--accent);
+        }
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            display: none;
+        }
+        .sidebar-overlay.open {
+            display: block;
+        }
+        .hamburger {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 44px;
+            height: 44px;
+            background: var(--panel);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1001;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            padding: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .hamburger span {
+            display: block;
+            width: 24px;
+            height: 3px;
+            background: var(--text);
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(7px, 7px);
+        }
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+        .main-content {
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+        }
         @media (max-width: 768px) {
             .container {
                 padding: 24px 16px 100px 16px;
             }
             h1 {
                 font-size: 1.8em;
+                margin-top: 60px;
             }
             .fab {
                 bottom: 24px;
@@ -132,18 +247,100 @@
                 width: 56px;
                 height: 56px;
                 font-size: 28px;
+                min-height: 56px;
+            }
+            /* Show hamburger menu on mobile */
+            .hamburger {
+                display: flex;
+            }
+            /* Full width cards on mobile */
+            .note-card {
+                width: 100%;
+                padding: 16px;
+            }
+            /* Larger touch targets */
+            .search-input {
+                padding: 14px 16px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+            button {
+                min-height: 48px;
+                padding: 16px 20px;
+                font-size: 1.1em;
+            }
+        }
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 250px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Hamburger Menu Button (mobile only) -->
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <nav>
+            <a href="/list.html">📝 Notes List</a>
+            <a href="/index.html">➕ New Note</a>
+        </nav>
+    </div>
+    
+    <!-- Sidebar Overlay (mobile only) -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <div class="main-content">
+        <div class="container">
         <h1>My Notes</h1>
+        <div class="search-container">
+            <input 
+                type="text" 
+                id="search-input" 
+                class="search-input" 
+                placeholder="Search notes by title or content..."
+                autocomplete="off"
+            >
+        </div>
         <div class="notes-grid" id="notes-grid">
             <div class="loading">Loading notes...</div>
         </div>
+        </div>
     </div>
     <button class="fab" id="create-fab" title="Create New Note">+</button>
+    <script>
+        // Hamburger menu toggle
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+            hamburger.classList.toggle('active');
+        }
+        
+        hamburger.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+        
+        // Close sidebar when clicking a link on mobile
+        const sidebarLinks = sidebar.querySelectorAll('a');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            });
+        });
+    </script>
     <script>
         // Helper for XSS-safe text
         function escapeHTML(str) {
@@ -190,6 +387,69 @@
             return content.substring(0, maxLength).trim() + '...';
         }
 
+        // Highlight search term in text
+        function highlightText(text, searchTerm) {
+            if (!searchTerm || !text) return escapeHTML(text);
+            const escapedText = escapeHTML(text);
+            const escapedSearch = escapeHTML(searchTerm);
+            const regex = new RegExp(`(${escapedSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return escapedText.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        // Store all notes globally for filtering
+        let allNotes = [];
+
+        // Display filtered notes
+        function displayNotes(notes, searchTerm = '') {
+            const grid = document.getElementById('notes-grid');
+            
+            if (!notes || notes.length === 0) {
+                if (searchTerm) {
+                    grid.innerHTML = '<div class="notes-empty">No notes found. Try a different search term.</div>';
+                } else {
+                    grid.innerHTML = '<div class="notes-empty">No notes yet. Click the + button to create one!</div>';
+                }
+                return;
+            }
+            
+            grid.innerHTML = '';
+            notes.forEach((note) => {
+                const card = document.createElement('div');
+                card.className = 'note-card';
+                card.onclick = () => {
+                    window.location.href = `/index.html?id=${note.id}`;
+                };
+                
+                const title = highlightText(note.title || 'Untitled', searchTerm);
+                const contentSnippet = escapeHTML(getContentSnippet(note.content || ''));
+                const date = formatDate(note.created_at || note.date || null);
+                
+                card.innerHTML = `
+                    <div class="note-title">${title}</div>
+                    <div class="note-content-snippet">${contentSnippet}</div>
+                    <div class="note-date">${date}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Filter notes based on search term
+        function filterNotes(searchTerm) {
+            if (!searchTerm.trim()) {
+                displayNotes(allNotes, '');
+                return;
+            }
+            
+            const searchLower = searchTerm.toLowerCase().trim();
+            const filtered = allNotes.filter(note => {
+                const title = (note.title || '').toLowerCase();
+                const content = (note.content || '').toLowerCase();
+                return title.includes(searchLower) || content.includes(searchLower);
+            });
+            
+            displayNotes(filtered, searchTerm);
+        }
+
         // Fetch and display all notes
         async function loadNotes() {
             const grid = document.getElementById('notes-grid');
@@ -198,32 +458,10 @@
             try {
                 const res = await fetch('/api/notes');
                 if (!res.ok) throw new Error('Failed to load notes');
-                const notes = await res.json();
+                allNotes = await res.json() || [];
                 
-                if (!notes || notes.length === 0) {
-                    grid.innerHTML = '<div class="notes-empty">No notes yet. Click the + button to create one!</div>';
-                    return;
-                }
-                
-                grid.innerHTML = '';
-                notes.forEach((note) => {
-                    const card = document.createElement('div');
-                    card.className = 'note-card';
-                    card.onclick = () => {
-                        window.location.href = `/index.html?id=${note.id}`;
-                    };
-                    
-                    const title = escapeHTML(note.title || 'Untitled');
-                    const contentSnippet = escapeHTML(getContentSnippet(note.content || ''));
-                    const date = formatDate(note.created_at || note.date || null);
-                    
-                    card.innerHTML = `
-                        <div class="note-title">${title}</div>
-                        <div class="note-content-snippet">${contentSnippet}</div>
-                        <div class="note-date">${date}</div>
-                    `;
-                    grid.appendChild(card);
-                });
+                // Display all notes initially
+                displayNotes(allNotes, '');
             } catch (e) {
                 console.error('Error loading notes:', e);
                 grid.innerHTML = '<div class="notes-empty">Failed to load notes. Please try again later.</div>';
@@ -233,6 +471,11 @@
         // Handle FAB click - redirect to index.html to create new note
         document.getElementById('create-fab').addEventListener('click', () => {
             window.location.href = '/index.html';
+        });
+
+        // Handle search input
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            filterNotes(e.target.value);
         });
 
         // Initial load
