@@ -645,6 +645,10 @@
                             // Hide spinner
                             spinnerOverlay.classList.remove('active');
                             
+                            // Get personalized data from backend response
+                            const noteTitle = verifyData.noteTitle || 'Your Note';
+                            const customerEmail = verifyData.customerEmail || '';
+                            
                             // Trigger confetti celebration with Neon Green and White
                             if (typeof confetti !== 'undefined') {
                                 // Neon Green and White confetti burst
@@ -678,6 +682,9 @@
                                 }, 300);
                             }
                             
+                            // Show personalized success message (optional - can be displayed in a toast/notification)
+                            console.log(`Payment verified successfully! Note: ${noteTitle}, Customer: ${customerEmail}`);
+                            
                             // Hide Buy Now button and show Download PDF button
                             buyBtn.classList.add('hidden');
                             const downloadBtn = document.getElementById('download-btn');
@@ -690,8 +697,15 @@
                                 downloadBtn.dataset.downloadUrl = verifyData.downloadUrl;
                             }
 
-                            // Show success message
-                            console.log('Payment verified successfully!');
+                            // Optional: Show a brief personalized success message
+                            // You can uncomment this to show a toast notification
+                            /*
+                            const successMsg = document.createElement('div');
+                            successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: var(--accent); color: #000; padding: 16px 24px; border-radius: 8px; z-index: 10001; box-shadow: 0 4px 16px rgba(0, 255, 133, 0.4);';
+                            successMsg.textContent = `🎉 Success! ${noteTitle} is ready for download!`;
+                            document.body.appendChild(successMsg);
+                            setTimeout(() => successMsg.remove(), 5000);
+                            */
                         } catch (verifyErr) {
                             console.error('Verification error:', verifyErr);
                             spinnerOverlay.classList.remove('active');

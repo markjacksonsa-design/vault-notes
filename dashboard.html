@@ -304,6 +304,10 @@
                 <div class="stat-value" id="total-notes">-</div>
             </div>
             <div class="stat-card">
+                <div class="stat-label">Total Revenue (ZAR)</div>
+                <div class="stat-value currency" id="total-revenue">R 0.00</div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-label">Total Earnings (ZAR)</div>
                 <div class="stat-value currency" id="total-earnings">R 0.00</div>
             </div>
@@ -333,6 +337,29 @@
                 <div id="notes-empty" class="empty-state" style="display: none;">
                     <p>You haven't created any notes yet.</p>
                     <a href="/index.html" class="btn-primary">Create Your First Note</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales History Section -->
+        <div class="table-section" style="margin-top: 40px;">
+            <h2>Sales History</h2>
+            <div class="table-container">
+                <div id="sales-loading" class="loading">Loading sales history...</div>
+                <table id="sales-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Note Title</th>
+                            <th>Price (ZAR)</th>
+                            <th>Customer Email</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sales-tbody">
+                    </tbody>
+                </table>
+                <div id="sales-empty" class="empty-state" style="display: none;">
+                    <p>No sales yet. Start selling your notes to see them here!</p>
                 </div>
             </div>
         </div>
@@ -368,6 +395,23 @@
             return `<span class="category-badge ${badgeClass}">${escapeHTML(curriculum)}</span>`;
         }
 
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-ZA', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                return dateString;
+            }
+        }
+
         // Load statistics
         async function loadStats() {
             try {
@@ -381,6 +425,52 @@
             } catch (err) {
                 console.error('Error loading stats:', err);
                 // Keep default values on error
+            }
+        }
+
+        // Load sales history
+        async function loadSales() {
+            const loadingEl = document.getElementById('sales-loading');
+            const tableEl = document.getElementById('sales-table');
+            const emptyEl = document.getElementById('sales-empty');
+            const tbodyEl = document.getElementById('sales-tbody');
+            
+            try {
+                const res = await fetch('/api/admin/sales');
+                if (!res.ok) throw new Error('Failed to load sales');
+                const data = await res.json();
+                
+                loadingEl.style.display = 'none';
+                
+                if (!data.success || !data.sales || data.sales.length === 0) {
+                    tableEl.style.display = 'none';
+                    emptyEl.style.display = 'block';
+                    return;
+                }
+                
+                // Update Total Revenue in stats
+                document.getElementById('total-revenue').textContent = formatCurrency(data.totalRevenue);
+                
+                // Display sales
+                tableEl.style.display = 'table';
+                emptyEl.style.display = 'none';
+                tbodyEl.innerHTML = '';
+                
+                data.sales.forEach(sale => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formatDate(sale.created_at)}</td>
+                        <td>${escapeHTML(sale.note_title || 'Unknown Note')}</td>
+                        <td style="color: var(--accent); font-weight: 600;">${formatCurrency(sale.amount)}</td>
+                        <td>${escapeHTML(sale.customer_email || '-')}</td>
+                    `;
+                    tbodyEl.appendChild(row);
+                });
+            } catch (err) {
+                console.error('Error loading sales:', err);
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+                emptyEl.innerHTML = '<p>Error loading sales history. Please try again later.</p>';
             }
         }
 
@@ -454,6 +544,7 @@
         // Initialize on page load
         loadStats();
         loadMyNotes();
+        loadSales();
     </script>
 </body>
 </html>

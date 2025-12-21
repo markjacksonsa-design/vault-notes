@@ -70,7 +70,43 @@ export async function onRequest(context) {
                 );
             }
 
-            // Fetch note details to get PDF key from D1 database
+            // Extract payment details from Paystack response
+            const customerEmail = paystackData.data.customer?.email || paystackData.data.authorization?.email || 'unknown@example.com';
+            const amount = paystackData.data.amount ? (paystackData.data.amount / 100) : 0; // Convert from kobo to ZAR
+
+            // Check if this reference has already been logged (prevent double-logging)
+            const existingSale = await db.prepare("SELECT id FROM sales WHERE reference = ?")
+                .bind(reference)
+                .first();
+
+            if (existingSale) {
+                // Reference already logged, but continue with verification
+                console.log(`Sale with reference ${reference} already logged, skipping duplicate insert`);
+            } else {
+                // Log the successful purchase to sales table
+                try {
+                    const insertResult = await db.prepare(
+                        "INSERT INTO sales (noteId, customer_email, amount, reference, created_at) VALUES (?, ?, ?, ?, ?)"
+                    )
+                        .bind(noteId, customerEmail, amount, reference, new Date().toISOString())
+                        .run();
+
+                    if (insertResult.success) {
+                        console.log(`Sale logged successfully: Reference ${reference}, Note ${noteId}, Amount R${amount}, Email ${customerEmail}`);
+                    } else {
+                        console.error(`Failed to log sale: Reference ${reference}`);
+                    }
+                } catch (insertError) {
+                    // Log error but don't fail the payment verification
+                    console.error('Error logging sale to database:', insertError);
+                    // If table doesn't exist, log a warning
+                    if (insertError.message && insertError.message.includes('no such table')) {
+                        console.warn('Sales table does not exist. Please create it with: CREATE TABLE sales (id INTEGER PRIMARY KEY AUTOINCREMENT, noteId TEXT NOT NULL, customer_email TEXT NOT NULL, amount REAL NOT NULL, reference TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)');
+                    }
+                }
+            }
+
+            // Fetch note details to get PDF key and title from D1 database
             const note = await db.prepare("SELECT pdf_key, title FROM notes WHERE id = ?")
                 .bind(noteId)
                 .first();
@@ -112,14 +148,16 @@ export async function onRequest(context) {
             // This is more secure than presigned URLs as we can verify payment on each download
             const downloadUrl = `/api/download?noteId=${noteId}&reference=${reference}`;
 
-            // Return success with secure download link
+            // Return success with secure download link and personalized data
             return new Response(
                 JSON.stringify({
                     success: true,
                     message: 'Payment verified successfully',
                     downloadUrl: downloadUrl,
                     reference: reference,
-                    pdfKey: note.pdf_key // Include for reference (not used client-side for security)
+                    noteTitle: note.title || 'Untitled Note',
+                    customerEmail: customerEmail,
+                    amount: amount
                 }),
                 {
                     status: 200,
