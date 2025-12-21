@@ -1,10 +1,9 @@
 export async function onRequest(context) {
-    // This looks for a database binding named "DB"
-    const db = context.env.DB;
+    const db = context.env.DB; // This grabs your "DB" binding
     
-    if (!db) {
-        return new Response("Database not linked yet!", { status: 200 });
-    }
+    // This part sends a real SQL command to the database
+    const { results } = await db.prepare("SELECT * FROM users").all();
 
-    return new Response("Database is Connected!");
+    // This sends the data back to your website
+    return Response.json(results);
 }
