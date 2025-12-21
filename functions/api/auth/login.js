@@ -25,8 +25,10 @@ export async function onRequest(context) {
             // Get AUTH_SECRET from environment
             const authSecret = env.AUTH_SECRET || 'mnbvcxz';
             
-            // Hash password using Web Crypto API with AUTH_SECRET (HMAC-SHA256)
+            // Create TextEncoder instance (reusable)
             const encoder = new TextEncoder();
+            
+            // Hash password using Web Crypto API with AUTH_SECRET (HMAC-SHA256)
             const keyData = encoder.encode(authSecret);
             const passwordData = encoder.encode(password);
             
@@ -81,10 +83,9 @@ export async function onRequest(context) {
             // Create secure session cookie
             // Encode session data as base64 (works in Cloudflare Workers)
             const sessionJson = JSON.stringify(sessionData);
-            // Use TextEncoder/TextDecoder for base64 encoding (works in Workers)
-            const encoder = new TextEncoder();
-            const data = encoder.encode(sessionJson);
-            const cookieValue = btoa(String.fromCharCode(...data)); // Base64 encode
+            // Reuse encoder for session cookie encoding
+            const sessionDataEncoded = encoder.encode(sessionJson);
+            const cookieValue = btoa(String.fromCharCode(...sessionDataEncoded)); // Base64 encode
             
             // Set cookie with HttpOnly, Secure, SameSite for security
             const cookie = `session=${cookieValue}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`; // 24 hours
