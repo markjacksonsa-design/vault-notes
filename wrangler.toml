@@ -12,3 +12,6 @@ database_id = "your-database-id-here"
 binding = "BUCKET"
 bucket_name = "student-notes-bucket"
 
+# Environment variables (set these in Cloudflare Dashboard or via wrangler secret)
+# PAYSTACK_SECRET should be set using: wrangler secret put PAYSTACK_SECRET
+

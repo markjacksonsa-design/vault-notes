@@ -3,6 +3,7 @@
 <head>
     <title>NoteVault SA | Top South African Study Notes</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src='https://js.paystack.co/v2/inline.js'></script>
     <style>
         :root {
             --bg: #0D0D0D;
@@ -241,14 +242,63 @@
             justify-content: center;
             gap: 12px;
             transition: all 0.3s;
-            box-shadow: 0 4px 16px rgba(0, 255, 133, 0.4);
+            box-shadow: 0 0 10px #00FF85, 0 4px 16px rgba(0, 255, 133, 0.4);
             margin-bottom: 12px;
+            position: relative;
         }
         .btn-buy:hover {
             background: var(--accent);
             color: #000000;
             transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(0, 255, 133, 0.6);
+            box-shadow: 0 0 15px #00FF85, 0 6px 24px rgba(0, 255, 133, 0.6);
+        }
+        .btn-buy:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 0, 0, 0.3);
+            border-radius: 50%;
+            border-top-color: #000000;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 13, 13, 0.9);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .spinner-overlay.active {
+            display: flex;
+        }
+        .spinner-overlay .spinner {
+            width: 50px;
+            height: 50px;
+            border-width: 4px;
+            border-top-color: var(--accent);
+            border-color: rgba(0, 255, 133, 0.3);
+        }
+        .spinner-overlay p {
+            color: var(--text);
+            font-size: 1.1em;
+            font-weight: 500;
         }
         .btn-buy:disabled {
             opacity: 0.6;
@@ -434,6 +484,12 @@
         </div>
     </div>
 
+    <!-- Loading Spinner Overlay -->
+    <div id="spinner-overlay" class="spinner-overlay">
+        <div class="spinner"></div>
+        <p>Verifying payment...</p>
+    </div>
+
     <script>
         // Helper for XSS-safe text
         function escapeHTML(str) {
@@ -468,6 +524,112 @@
         function getNoteId() {
             const params = new URLSearchParams(window.location.search);
             return params.get('id');
+        }
+
+        // Paystack payment function
+        async function payWithPaystack(noteId, amount, noteTitle) {
+            // Validate inputs
+            if (!noteId) {
+                alert('Error: Note ID is missing');
+                return;
+            }
+
+            if (amount === 0) {
+                // Free download - directly download
+                window.location.href = `/api/download?noteId=${noteId}&reference=free`;
+                return;
+            }
+
+            // Show loading spinner
+            const spinnerOverlay = document.getElementById('spinner-overlay');
+            const buyBtn = document.getElementById('buy-btn');
+            const buyBtnText = document.getElementById('buy-btn-text');
+
+            try {
+                // Generate unique reference
+                const reference = 'note_' + noteId + '_' + Date.now();
+
+                // Initialize Paystack payment
+                const handler = PaystackPop.setup({
+                    key: 'pk_test_918f2bc75973d584115dd168b8f302f3b5bc64de', // Public Key
+                    email: 'customer@notevaultsa.com', // You can make this dynamic later
+                    amount: Math.round(amount * 100), // Convert to kobo (cents)
+                    currency: 'ZAR',
+                    ref: reference,
+                    metadata: {
+                        custom_fields: [
+                            {
+                                display_name: 'Note Title',
+                                variable_name: 'note_title',
+                                value: noteTitle
+                            },
+                            {
+                                display_name: 'Note ID',
+                                variable_name: 'note_id',
+                                value: noteId
+                            }
+                        ]
+                    },
+                    callback: async function(response) {
+                        // Payment successful - verify with backend
+                        spinnerOverlay.classList.add('active');
+                        buyBtn.disabled = true;
+                        buyBtnText.innerHTML = '<span class="spinner"></span> Verifying...';
+
+                        try {
+                            // Verify payment with backend
+                            const verifyRes = await fetch('/api/verify-payment', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    reference: response.reference,
+                                    noteId: noteId
+                                })
+                            });
+
+                            if (!verifyRes.ok) {
+                                const errorData = await verifyRes.json();
+                                throw new Error(errorData.error || 'Payment verification failed');
+                            }
+
+                            const verifyData = await verifyRes.json();
+
+                            // Hide spinner
+                            spinnerOverlay.classList.remove('active');
+                            buyBtn.disabled = false;
+                            buyBtnText.textContent = buyBtnText.textContent.replace(/<span.*<\/span>/, '').trim() || 'Buy Note';
+
+                            // Redirect to download
+                            if (verifyData.downloadUrl) {
+                                window.location.href = verifyData.downloadUrl;
+                            } else {
+                                alert('Payment verified! Download link will be sent to your email.');
+                            }
+                        } catch (verifyErr) {
+                            console.error('Verification error:', verifyErr);
+                            spinnerOverlay.classList.remove('active');
+                            buyBtn.disabled = false;
+                            buyBtnText.textContent = buyBtnText.textContent.replace(/<span.*<\/span>/, '').trim() || 'Buy Note';
+                            alert('Payment verification failed: ' + verifyErr.message + '\nPlease contact support with reference: ' + response.reference);
+                        }
+                    },
+                    onClose: function() {
+                        // User closed the payment modal
+                        console.log('Payment cancelled');
+                    }
+                });
+
+                // Open Paystack popup with dark theme
+                handler.openIframe({
+                    theme: 'dark'
+                });
+
+            } catch (err) {
+                console.error('Paystack error:', err);
+                alert('Error initializing payment: ' + err.message);
+            }
         }
 
         // Load note details
@@ -538,27 +700,7 @@
                 }
                 
                 buyBtn.onclick = () => {
-                    // Paystack integration placeholder
-                    // TODO: Initialize Paystack payment
-                    // Example:
-                    // const handler = PaystackPop.setup({
-                    //     key: 'YOUR_PUBLIC_KEY',
-                    //     email: 'customer@email.com',
-                    //     amount: priceValue * 100, // Convert to kobo
-                    //     currency: 'ZAR',
-                    //     ref: 'note_' + noteId + '_' + Date.now(),
-                    //     callback: function(response) {
-                    //         // Handle successful payment
-                    //         window.location.href = `/download.html?note_id=${noteId}&reference=${response.reference}`;
-                    //     },
-                    //     onClose: function() {
-                    //         alert('Payment cancelled');
-                    //     }
-                    // });
-                    // handler.openIframe();
-                    
-                    // Temporary placeholder
-                    alert('Paystack payment integration coming soon!\n\nNote: ' + (note.title || 'Untitled') + '\nPrice: ' + priceDisplay);
+                    payWithPaystack(noteId, priceValue, note.title || 'Untitled');
                 };
                 
                 // Check if user is owner (for now, we'll hide this - can be implemented with authentication later)
