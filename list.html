@@ -55,12 +55,63 @@
             background: var(--input-bg);
             border-color: var(--accent);
         }
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
         .note-title {
             font-size: 1.3em;
             font-weight: bold;
             color: var(--accent);
-            margin-bottom: 8px;
             word-wrap: break-word;
+            flex: 1;
+        }
+        .note-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge.caps {
+            background: rgba(94, 203, 144, 0.2);
+            color: #5ecb90;
+            border: 1px solid rgba(94, 203, 144, 0.4);
+        }
+        .badge.ieb {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+        .badge.university {
+            background: rgba(168, 85, 247, 0.2);
+            color: #a855f7;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+        }
+        .badge.level {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--subtitle);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.7em;
+        }
+        .badge.subject {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.7em;
+            text-transform: none;
         }
         .note-content-snippet {
             color: var(--subtitle);
@@ -92,10 +143,53 @@
             margin-top: 60px;
             font-size: 1.1em;
         }
-        .search-container {
-            margin-bottom: 32px;
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
         }
-        .search-input {
+        .filter-btn {
+            background: var(--input-bg);
+            color: var(--text);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 0.95em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 44px;
+        }
+        .filter-btn:hover {
+            background: var(--panel);
+            border-color: var(--accent);
+        }
+        .filter-btn.active {
+            background: var(--accent);
+            color: var(--panel);
+            border-color: var(--accent);
+        }
+        .filter-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        .search-container {
+            margin-bottom: 0;
+        }
+        .subject-filter-container {
+            flex: 1;
+            min-width: 200px;
+        }
+        .search-input, .subject-filter-input {
             width: 100%;
             background: var(--input-bg);
             color: var(--text);
@@ -107,10 +201,10 @@
             outline: none;
             transition: box-shadow 0.2s;
         }
-        .search-input:focus {
+        .search-input:focus, .subject-filter-input:focus {
             box-shadow: 0 0 0 2px var(--accent);
         }
-        .search-input::placeholder {
+        .search-input::placeholder, .subject-filter-input::placeholder {
             color: var(--subtitle);
             opacity: 0.6;
         }
@@ -259,9 +353,25 @@
                 padding: 16px;
             }
             /* Larger touch targets */
-            .search-input {
+            .search-input, .subject-filter-input {
                 padding: 14px 16px;
                 font-size: 16px; /* Prevents zoom on iOS */
+            }
+            .filter-bar {
+                gap: 8px;
+            }
+            .filter-btn {
+                flex: 1;
+                min-width: 0;
+                padding: 12px 16px;
+            }
+            .filter-row {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .filter-group, .subject-filter-container {
+                width: 100%;
+                min-width: 100%;
             }
             button {
                 min-height: 48px;
@@ -301,15 +411,37 @@
     <div class="main-content">
         <div class="container">
         <h1>My Notes</h1>
-        <div class="search-container">
-            <input 
-                type="text" 
-                id="search-input" 
-                class="search-input" 
-                placeholder="Search notes by title or content..."
-                autocomplete="off"
-            >
+        
+        <!-- Curriculum Filter Bar -->
+        <div class="filter-bar">
+            <button class="filter-btn active" data-curriculum="all">All</button>
+            <button class="filter-btn" data-curriculum="CAPS">CAPS</button>
+            <button class="filter-btn" data-curriculum="IEB">IEB</button>
+            <button class="filter-btn" data-curriculum="University">University</button>
         </div>
+        
+        <!-- Search and Subject Filter Row -->
+        <div class="filter-row">
+            <div class="filter-group search-container">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    class="search-input" 
+                    placeholder="Search notes by title or content..."
+                    autocomplete="off"
+                >
+            </div>
+            <div class="subject-filter-container">
+                <input 
+                    type="text" 
+                    id="subject-filter-input" 
+                    class="subject-filter-input" 
+                    placeholder="Filter by subject..."
+                    autocomplete="off"
+                >
+            </div>
+        </div>
+        
         <div class="notes-grid" id="notes-grid">
             <div class="loading">Loading notes...</div>
         </div>
@@ -399,13 +531,26 @@
         // Store all notes globally for filtering
         let allNotes = [];
 
+        // Get curriculum badge HTML
+        function getCurriculumBadge(curriculum) {
+            if (!curriculum) return '';
+            const curriculumLower = curriculum.toLowerCase();
+            let badgeClass = '';
+            if (curriculumLower === 'caps') badgeClass = 'caps';
+            else if (curriculumLower === 'ieb') badgeClass = 'ieb';
+            else if (curriculumLower === 'university') badgeClass = 'university';
+            else return '';
+            
+            return `<span class="badge ${badgeClass}">${escapeHTML(curriculum)}</span>`;
+        }
+
         // Display filtered notes
         function displayNotes(notes, searchTerm = '') {
             const grid = document.getElementById('notes-grid');
             
             if (!notes || notes.length === 0) {
-                if (searchTerm) {
-                    grid.innerHTML = '<div class="notes-empty">No notes found. Try a different search term.</div>';
+                if (searchTerm || currentCurriculum !== 'all' || currentSubjectFilter) {
+                    grid.innerHTML = '<div class="notes-empty">No notes found. Try adjusting your filters.</div>';
                 } else {
                     grid.innerHTML = '<div class="notes-empty">No notes yet. Click the + button to create one!</div>';
                 }
@@ -424,8 +569,24 @@
                 const contentSnippet = escapeHTML(getContentSnippet(note.content || ''));
                 const date = formatDate(note.created_at || note.date || null);
                 
+                // Build badges
+                const badges = [];
+                if (note.curriculum) {
+                    badges.push(getCurriculumBadge(note.curriculum));
+                }
+                if (note.level) {
+                    badges.push(`<span class="badge level">${escapeHTML(note.level)}</span>`);
+                }
+                if (note.subject) {
+                    badges.push(`<span class="badge subject">${escapeHTML(note.subject)}</span>`);
+                }
+                const badgesHTML = badges.length > 0 ? `<div class="note-badges">${badges.join('')}</div>` : '';
+                
                 card.innerHTML = `
-                    <div class="note-title">${title}</div>
+                    <div class="note-header">
+                        <div class="note-title">${title}</div>
+                        ${badgesHTML}
+                    </div>
                     <div class="note-content-snippet">${contentSnippet}</div>
                     <div class="note-date">${date}</div>
                 `;
@@ -433,21 +594,46 @@
             });
         }
 
-        // Filter notes based on search term
-        function filterNotes(searchTerm) {
-            if (!searchTerm.trim()) {
-                displayNotes(allNotes, '');
-                return;
+        // Store current filter state
+        let currentCurriculum = 'all';
+        let currentSubjectFilter = '';
+
+        // Apply all filters
+        function applyFilters() {
+            let filtered = [...allNotes];
+            const searchTerm = document.getElementById('search-input').value.trim();
+            
+            // Filter by curriculum
+            if (currentCurriculum !== 'all') {
+                filtered = filtered.filter(note => 
+                    (note.curriculum || '').toLowerCase() === currentCurriculum.toLowerCase()
+                );
             }
             
-            const searchLower = searchTerm.toLowerCase().trim();
-            const filtered = allNotes.filter(note => {
-                const title = (note.title || '').toLowerCase();
-                const content = (note.content || '').toLowerCase();
-                return title.includes(searchLower) || content.includes(searchLower);
-            });
+            // Filter by subject
+            if (currentSubjectFilter.trim()) {
+                const subjectLower = currentSubjectFilter.toLowerCase().trim();
+                filtered = filtered.filter(note => 
+                    (note.subject || '').toLowerCase().includes(subjectLower)
+                );
+            }
+            
+            // Filter by search term (title/content)
+            if (searchTerm) {
+                const searchLower = searchTerm.toLowerCase().trim();
+                filtered = filtered.filter(note => {
+                    const title = (note.title || '').toLowerCase();
+                    const content = (note.content || '').toLowerCase();
+                    return title.includes(searchLower) || content.includes(searchLower);
+                });
+            }
             
             displayNotes(filtered, searchTerm);
+        }
+
+        // Filter notes based on search term (legacy function, now uses applyFilters)
+        function filterNotes(searchTerm) {
+            applyFilters();
         }
 
         // Fetch and display all notes
@@ -460,8 +646,8 @@
                 if (!res.ok) throw new Error('Failed to load notes');
                 allNotes = await res.json() || [];
                 
-                // Display all notes initially
-                displayNotes(allNotes, '');
+                // Apply filters (which will display all notes initially)
+                applyFilters();
             } catch (e) {
                 console.error('Error loading notes:', e);
                 grid.innerHTML = '<div class="notes-empty">Failed to load notes. Please try again later.</div>';
@@ -473,9 +659,29 @@
             window.location.href = '/index.html';
         });
 
+        // Handle curriculum filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                btn.classList.add('active');
+                // Update current curriculum filter
+                currentCurriculum = btn.getAttribute('data-curriculum') || 'all';
+                // Apply filters
+                applyFilters();
+            });
+        });
+
         // Handle search input
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            filterNotes(e.target.value);
+        document.getElementById('search-input').addEventListener('input', () => {
+            applyFilters();
+        });
+
+        // Handle subject filter input
+        document.getElementById('subject-filter-input').addEventListener('input', (e) => {
+            currentSubjectFilter = e.target.value;
+            applyFilters();
         });
 
         // Initial load

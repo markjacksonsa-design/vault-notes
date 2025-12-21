@@ -44,7 +44,7 @@
             color: var(--subtitle);
             font-size: 1em;
         }
-        input[type="text"], textarea {
+        input[type="text"], textarea, select {
             width: 100%;
             background: var(--input-bg);
             color: var(--text);
@@ -56,9 +56,18 @@
             box-sizing: border-box;
             outline: none;
             transition: box-shadow 0.2s;
+            font-family: inherit;
         }
-        input[type="text"]:focus, textarea:focus {
+        input[type="text"]:focus, textarea:focus, select:focus {
             box-shadow: 0 0 0 2px var(--accent);
+        }
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235ecb90' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
         }
         textarea {
             min-height: 70px;
@@ -349,7 +358,7 @@
                 display: flex;
             }
             /* Larger touch targets */
-            input[type="text"], textarea {
+            input[type="text"], textarea, select {
                 padding: 14px 16px;
                 font-size: 16px;
                 min-height: 44px;
@@ -420,6 +429,33 @@
             <form id="note-form">
                 <label for="note-title">Note Title</label>
                 <input type="text" id="note-title" name="title" required maxlength="100" autocomplete="off" placeholder="Enter a title...">
+                
+                <label for="note-curriculum">Curriculum</label>
+                <select id="note-curriculum" name="curriculum">
+                    <option value="">Select curriculum...</option>
+                    <option value="CAPS">CAPS</option>
+                    <option value="IEB">IEB</option>
+                    <option value="University">University</option>
+                </select>
+                
+                <label for="note-level">Level</label>
+                <select id="note-level" name="level">
+                    <option value="">Select level...</option>
+                    <option value="Grade 8">Grade 8</option>
+                    <option value="Grade 9">Grade 9</option>
+                    <option value="Grade 10">Grade 10</option>
+                    <option value="Grade 11">Grade 11</option>
+                    <option value="Grade 12">Grade 12</option>
+                    <option value="1st Year Uni">1st Year Uni</option>
+                    <option value="2nd Year Uni">2nd Year Uni</option>
+                    <option value="3rd Year Uni">3rd Year Uni</option>
+                    <option value="4th Year Uni">4th Year Uni</option>
+                    <option value="Postgraduate">Postgraduate</option>
+                </select>
+                
+                <label for="note-subject">Subject</label>
+                <input type="text" id="note-subject" name="subject" maxlength="100" autocomplete="off" placeholder="e.g., Mathematics, Life Sciences, Economics...">
+                
                 <label for="note-content">Note Content</label>
                 <textarea id="note-content" name="content" required maxlength="1000" placeholder="Type your note..."></textarea>
                 <div class="button-group">
@@ -485,6 +521,16 @@
             }
         }
 
+        // Helper for XSS-safe text
+        function escapeHTML(str) {
+            return String(str || '')
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         // Render markdown content
         function renderMarkdown(content) {
             if (!content) return '';
@@ -503,8 +549,19 @@
         // Update view mode display
         function updateViewMode(note) {
             document.getElementById('view-title').textContent = note.title || 'Untitled';
+            
+            // Build metadata section
+            let metadata = '';
+            if (note.curriculum || note.level || note.subject) {
+                metadata = '<div style="margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9em; color: var(--subtitle);">';
+                if (note.curriculum) metadata += `<div><strong>Curriculum:</strong> ${escapeHTML(note.curriculum)}</div>`;
+                if (note.level) metadata += `<div style="margin-top: 8px;"><strong>Level:</strong> ${escapeHTML(note.level)}</div>`;
+                if (note.subject) metadata += `<div style="margin-top: 8px;"><strong>Subject:</strong> ${escapeHTML(note.subject)}</div>`;
+                metadata += '</div>';
+            }
+            
             const content = note.content || '';
-            document.getElementById('view-content').innerHTML = renderMarkdown(content);
+            document.getElementById('view-content').innerHTML = metadata + renderMarkdown(content);
         }
 
         // Fetch a specific note by ID
@@ -524,6 +581,9 @@
                 // Populate the form with the note data
                 document.getElementById('note-title').value = currentNote.title || '';
                 document.getElementById('note-content').value = currentNote.content || '';
+                document.getElementById('note-curriculum').value = currentNote.curriculum || '';
+                document.getElementById('note-level').value = currentNote.level || '';
+                document.getElementById('note-subject').value = currentNote.subject || '';
                 
                 // Show in view mode by default
                 updateViewMode(currentNote);
@@ -547,6 +607,9 @@
                 // Restore original values and switch back to view mode
                 document.getElementById('note-title').value = currentNote.title || '';
                 document.getElementById('note-content').value = currentNote.content || '';
+                document.getElementById('note-curriculum').value = currentNote.curriculum || '';
+                document.getElementById('note-level').value = currentNote.level || '';
+                document.getElementById('note-subject').value = currentNote.subject || '';
                 setViewMode(true);
             } else {
                 // For new notes, redirect to list
@@ -560,6 +623,9 @@
             const form = e.target;
             const title = form['title'].value.trim();
             const content = form['content'].value.trim();
+            const curriculum = form['curriculum'].value;
+            const level = form['level'].value;
+            const subject = form['subject'].value.trim();
             if (!title || !content) return;
 
             const noteId = getNoteId();
@@ -576,7 +642,13 @@
                 const res = await fetch(url, {
                     method: method,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, content })
+                    body: JSON.stringify({ 
+                        title, 
+                        content,
+                        curriculum,
+                        level,
+                        subject
+                    })
                 });
                 
                 if (!res.ok) throw new Error(isEditing ? 'Update failed' : 'Save failed');

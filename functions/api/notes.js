@@ -57,7 +57,7 @@ export async function onRequest(context) {
         // Handle POST request - create a new note
         if (request.method === 'POST') {
             const body = await request.json();
-            const { title, content } = body;
+            const { title, content, curriculum, level, subject } = body;
 
             // Validate required fields
             if (!title || !content) {
@@ -72,8 +72,8 @@ export async function onRequest(context) {
 
             // Insert the note into the database
             const result = await db.prepare(
-                "INSERT INTO notes (title, content) VALUES (?, ?)"
-            ).bind(title, content).run();
+                "INSERT INTO notes (title, content, curriculum, level, subject) VALUES (?, ?, ?, ?, ?)"
+            ).bind(title, content, curriculum || null, level || null, subject || null).run();
 
             if (result.success) {
                 return new Response(
@@ -108,7 +108,7 @@ export async function onRequest(context) {
             }
 
             const body = await request.json();
-            const { title, content } = body;
+            const { title, content, curriculum, level, subject } = body;
 
             // Validate required fields
             if (!title || !content) {
@@ -135,8 +135,8 @@ export async function onRequest(context) {
 
             // Update the note in the database
             const result = await db.prepare(
-                "UPDATE notes SET title = ?, content = ? WHERE id = ?"
-            ).bind(title, content, noteId).run();
+                "UPDATE notes SET title = ?, content = ?, curriculum = ?, level = ?, subject = ? WHERE id = ?"
+            ).bind(title, content, curriculum || null, level || null, subject || null, noteId).run();
 
             if (result.success) {
                 return new Response(
