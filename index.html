@@ -44,7 +44,7 @@
             color: var(--subtitle);
             font-size: 1em;
         }
-        input[type="text"], input[type="number"], textarea, select {
+        input[type="text"], input[type="number"], input[type="file"], textarea, select {
             width: 100%;
             background: var(--input-bg);
             color: var(--text);
@@ -58,8 +58,34 @@
             transition: box-shadow 0.2s;
             font-family: inherit;
         }
-        input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
+        input[type="text"]:focus, input[type="number"]:focus, input[type="file"]:focus, textarea:focus, select:focus {
             box-shadow: 0 0 0 2px var(--accent);
+        }
+        input[type="file"] {
+            cursor: pointer;
+            padding: 12px;
+        }
+        input[type="file"]::file-selector-button {
+            background: var(--accent);
+            color: var(--panel);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 12px;
+            transition: background 0.2s;
+        }
+        input[type="file"]::file-selector-button:hover {
+            background: #47a173;
+        }
+        .file-info {
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: var(--subtitle);
+        }
+        .file-info.has-file {
+            color: var(--accent);
         }
         .price-input-wrapper {
             position: relative;
@@ -429,7 +455,7 @@
                 display: flex;
             }
             /* Larger touch targets */
-            input[type="text"], input[type="number"], textarea, select {
+            input[type="text"], input[type="number"], input[type="file"], textarea, select {
                 padding: 14px 16px;
                 font-size: 16px;
                 min-height: 44px;
@@ -544,6 +570,10 @@
                 <div class="price-input-wrapper">
                     <input type="number" id="note-price" name="price" step="0.01" min="0" placeholder="0.00">
                 </div>
+                
+                <label for="note-pdf">PDF File (Optional)</label>
+                <input type="file" id="note-pdf" name="pdf" accept=".pdf,application/pdf">
+                <div class="file-info" id="file-info">No file selected</div>
                 
                 <label for="note-content">Note Content</label>
                 <textarea id="note-content" name="content" required maxlength="1000" placeholder="Type your note..."></textarea>
@@ -714,6 +744,19 @@
             }
         });
 
+        // Handle file input change
+        document.getElementById('note-pdf').addEventListener('change', function(e) {
+            const fileInfo = document.getElementById('file-info');
+            const file = e.target.files[0];
+            if (file) {
+                fileInfo.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                fileInfo.classList.add('has-file');
+            } else {
+                fileInfo.textContent = 'No file selected';
+                fileInfo.classList.remove('has-file');
+            }
+        });
+
         // Handle note submission
         document.getElementById('note-form').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -724,6 +767,7 @@
             const level = form['level'].value;
             const subject = form['subject'].value.trim();
             const price = form['price'].value ? parseFloat(form['price'].value) : null;
+            const pdfFile = form['pdf'].files[0];
             if (!title || !content) return;
 
             const noteId = getNoteId();
@@ -734,6 +778,26 @@
             btn.innerText = isEditing ? 'Updating...' : 'Saving...';
             
             try {
+                let pdfKey = null;
+                
+                // Upload PDF if provided
+                if (pdfFile) {
+                    const formData = new FormData();
+                    formData.append('file', pdfFile);
+                    
+                    const uploadRes = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!uploadRes.ok) {
+                        throw new Error('Failed to upload PDF');
+                    }
+                    
+                    const uploadData = await uploadRes.json();
+                    pdfKey = uploadData.key;
+                }
+                
                 const url = isEditing ? `/api/notes?id=${noteId}` : '/api/notes';
                 const method = isEditing ? 'PUT' : 'POST';
                 
@@ -746,7 +810,8 @@
                         curriculum,
                         level,
                         subject,
-                        price
+                        price,
+                        pdf_key: pdfKey
                     })
                 });
                 

@@ -44,14 +44,29 @@ export async function onRequest(context) {
                 // Fetch all notes with optional filtering and sorting
                 const curriculum = url.searchParams.get('curriculum');
                 const sort = url.searchParams.get('sort'); // 'price-asc' or 'price-desc'
+                const myNotes = url.searchParams.get('my'); // 'true' to get user's notes
                 
                 let query = "SELECT * FROM notes";
                 const bindings = [];
+                const conditions = [];
+                
+                // For now, if my=true, return all notes (assuming single user)
+                // Later this can be filtered by user_id when authentication is added
+                if (myNotes === 'true') {
+                    // Currently returns all notes - can be filtered by user_id later
+                    // conditions.push("user_id = ?");
+                    // bindings.push(userId);
+                }
                 
                 // Add curriculum filter if provided
                 if (curriculum && curriculum !== 'all') {
-                    query += " WHERE curriculum = ?";
+                    conditions.push("curriculum = ?");
                     bindings.push(curriculum);
+                }
+                
+                // Combine conditions
+                if (conditions.length > 0) {
+                    query += " WHERE " + conditions.join(" AND ");
                 }
                 
                 // Add sorting
@@ -86,7 +101,7 @@ export async function onRequest(context) {
         // Handle POST request - create a new note
         if (request.method === 'POST') {
             const body = await request.json();
-            const { title, content, curriculum, level, subject, price } = body;
+            const { title, content, curriculum, level, subject, price, pdf_key } = body;
 
             // Validate required fields
             if (!title || !content) {
@@ -101,8 +116,8 @@ export async function onRequest(context) {
 
             // Insert the note into the database
             const result = await db.prepare(
-                "INSERT INTO notes (title, content, curriculum, level, subject, price) VALUES (?, ?, ?, ?, ?, ?)"
-            ).bind(title, content, curriculum || null, level || null, subject || null, price || null).run();
+                "INSERT INTO notes (title, content, curriculum, level, subject, price, pdf_key) VALUES (?, ?, ?, ?, ?, ?, ?)"
+            ).bind(title, content, curriculum || null, level || null, subject || null, price || null, pdf_key || null).run();
 
             if (result.success) {
                 return new Response(
@@ -137,7 +152,7 @@ export async function onRequest(context) {
             }
 
             const body = await request.json();
-            const { title, content, curriculum, level, subject, price } = body;
+            const { title, content, curriculum, level, subject, price, pdf_key } = body;
 
             // Validate required fields
             if (!title || !content) {
@@ -164,8 +179,8 @@ export async function onRequest(context) {
 
             // Update the note in the database
             const result = await db.prepare(
-                "UPDATE notes SET title = ?, content = ?, curriculum = ?, level = ?, subject = ?, price = ? WHERE id = ?"
-            ).bind(title, content, curriculum || null, level || null, subject || null, price || null, noteId).run();
+                "UPDATE notes SET title = ?, content = ?, curriculum = ?, level = ?, subject = ?, price = ?, pdf_key = ? WHERE id = ?"
+            ).bind(title, content, curriculum || null, level || null, subject || null, price || null, pdf_key || null, noteId).run();
 
             if (result.success) {
                 return new Response(
@@ -184,6 +199,53 @@ export async function onRequest(context) {
             }
         }
 
+        // Handle DELETE request - delete a note
+        if (request.method === 'DELETE') {
+            const url = new URL(request.url);
+            const noteId = url.searchParams.get('id');
+            
+            if (!noteId) {
+                return new Response(
+                    JSON.stringify({ error: 'Note ID is required' }),
+                    {
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+            }
+
+            // Check if note exists
+            const existingNote = await db.prepare("SELECT id FROM notes WHERE id = ?").bind(noteId).first();
+            if (!existingNote) {
+                return new Response(
+                    JSON.stringify({ error: 'Note not found' }),
+                    {
+                        status: 404,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+            }
+
+            // Delete the note from the database
+            const result = await db.prepare("DELETE FROM notes WHERE id = ?").bind(noteId).run();
+
+            if (result.success) {
+                return new Response(
+                    JSON.stringify({ 
+                        success: true,
+                        id: noteId,
+                        message: 'Note deleted successfully' 
+                    }),
+                    {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+            } else {
+                throw new Error('Failed to delete note');
+            }
+        }
+
         // Handle unsupported methods
         return new Response(
             JSON.stringify({ error: 'Method not allowed' }),
@@ -191,7 +253,7 @@ export async function onRequest(context) {
                 status: 405,
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Allow': 'GET, POST, PUT'
+                    'Allow': 'GET, POST, PUT, DELETE'
                 }
             }
         );

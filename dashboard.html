@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Seller Dashboard | SA Study Vault</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        :root {
+            --bg: #181b20;
+            --panel: #23272f;
+            --input-bg: #252932;
+            --accent: #5ecb90;
+            --text: #f8f8f2;
+            --subtitle: #bbbbbb;
+            --sa-green: #007a4d;
+            --sa-gold: #ffb612;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+        }
+        
+        /* Global Navigation Header */
+        .global-nav {
+            background: var(--panel);
+            padding: 16px 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1002;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-logo {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            font-size: 0.95em;
+        }
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 32px;
+        }
+        
+        /* Dashboard Header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .dashboard-header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--sa-green) 0%, #005a36 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1em;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(0, 122, 77, 0.4);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(0, 122, 77, 0.6);
+        }
+        
+        /* Statistics Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 50px;
+        }
+        .stat-card {
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+        .stat-label {
+            color: var(--subtitle);
+            font-size: 0.95em;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .stat-value.currency {
+            font-size: 2em;
+        }
+        
+        /* Notes Table */
+        .table-section {
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+        .table-section h2 {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--text);
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead {
+            background: var(--input-bg);
+        }
+        th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--accent);
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+        tbody tr {
+            transition: background 0.2s;
+        }
+        tbody tr:hover {
+            background: var(--input-bg);
+        }
+        .category-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .category-badge.caps {
+            background: rgba(94, 203, 144, 0.2);
+            color: #5ecb90;
+            border: 1px solid rgba(94, 203, 144, 0.4);
+        }
+        .category-badge.ieb {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+        .category-badge.university {
+            background: rgba(168, 85, 247, 0.2);
+            color: #a855f7;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+        }
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: #ef4444;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--subtitle);
+        }
+        .empty-state p {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--subtitle);
+            font-size: 1.1em;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .global-nav {
+                padding: 12px 20px;
+            }
+            .nav-logo {
+                font-size: 1.2em;
+            }
+            .nav-links {
+                gap: 16px;
+                font-size: 0.9em;
+            }
+            .container {
+                padding: 24px 20px;
+            }
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .dashboard-header h1 {
+                font-size: 2em;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .table-container {
+                overflow-x: scroll;
+            }
+            table {
+                min-width: 600px;
+            }
+            th, td {
+                padding: 12px 8px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Navigation Header -->
+    <nav class="global-nav">
+        <a href="/home.html" class="nav-logo">SA Study Vault</a>
+        <div class="nav-links">
+            <a href="/home.html">Home</a>
+            <a href="/list.html">Browse Notes</a>
+            <a href="/index.html">Sell Your Notes</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1>Seller Dashboard</h1>
+            <a href="/index.html" class="btn-primary">Add New Note</a>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="stats-grid" id="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Notes</div>
+                <div class="stat-value" id="total-notes">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Earnings (ZAR)</div>
+                <div class="stat-value currency" id="total-earnings">R 0.00</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Average Note Price</div>
+                <div class="stat-value currency" id="avg-price">R 0.00</div>
+            </div>
+        </div>
+
+        <!-- My Notes Table -->
+        <div class="table-section">
+            <h2>My Notes</h2>
+            <div class="table-container">
+                <div id="notes-loading" class="loading">Loading your notes...</div>
+                <table id="notes-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="notes-tbody">
+                    </tbody>
+                </table>
+                <div id="notes-empty" class="empty-state" style="display: none;">
+                    <p>You haven't created any notes yet.</p>
+                    <a href="/index.html" class="btn-primary">Create Your First Note</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Helper for XSS-safe text
+        function escapeHTML(str) {
+            return String(str || '')
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            if (!amount || isNaN(amount)) return 'R 0.00';
+            return 'R ' + parseFloat(amount).toFixed(2);
+        }
+
+        // Get category badge HTML
+        function getCategoryBadge(curriculum) {
+            if (!curriculum) return '<span class="category-badge">-</span>';
+            const curriculumLower = curriculum.toLowerCase();
+            let badgeClass = '';
+            if (curriculumLower === 'caps') badgeClass = 'caps';
+            else if (curriculumLower === 'ieb') badgeClass = 'ieb';
+            else if (curriculumLower === 'university') badgeClass = 'university';
+            else return '<span class="category-badge">' + escapeHTML(curriculum) + '</span>';
+            
+            return `<span class="category-badge ${badgeClass}">${escapeHTML(curriculum)}</span>`;
+        }
+
+        // Load statistics
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/stats');
+                if (!res.ok) throw new Error('Failed to load statistics');
+                const stats = await res.json();
+                
+                document.getElementById('total-notes').textContent = stats.totalNotes || 0;
+                document.getElementById('total-earnings').textContent = formatCurrency(stats.totalEarnings);
+                document.getElementById('avg-price').textContent = formatCurrency(stats.averagePrice);
+            } catch (err) {
+                console.error('Error loading stats:', err);
+                // Keep default values on error
+            }
+        }
+
+        // Load user's notes
+        async function loadMyNotes() {
+            const loadingEl = document.getElementById('notes-loading');
+            const tableEl = document.getElementById('notes-table');
+            const emptyEl = document.getElementById('notes-empty');
+            const tbodyEl = document.getElementById('notes-tbody');
+            
+            try {
+                const res = await fetch('/api/notes?my=true');
+                if (!res.ok) throw new Error('Failed to load notes');
+                const notes = await res.json() || [];
+                
+                loadingEl.style.display = 'none';
+                
+                if (notes.length === 0) {
+                    emptyEl.style.display = 'block';
+                    tableEl.style.display = 'none';
+                    return;
+                }
+                
+                tableEl.style.display = 'table';
+                emptyEl.style.display = 'none';
+                
+                tbodyEl.innerHTML = '';
+                notes.forEach((note) => {
+                    const row = document.createElement('tr');
+                    const price = note.price ? parseFloat(note.price) : 0;
+                    const priceDisplay = price === 0 ? '<span style="color: var(--accent); font-weight: 600;">FREE</span>' : formatCurrency(price);
+                    
+                    row.innerHTML = `
+                        <td>${escapeHTML(note.title || 'Untitled')}</td>
+                        <td>${getCategoryBadge(note.curriculum)}</td>
+                        <td>${priceDisplay}</td>
+                        <td>
+                            <button class="btn-delete" onclick="deleteNote(${note.id})">Delete</button>
+                        </td>
+                    `;
+                    tbodyEl.appendChild(row);
+                });
+            } catch (err) {
+                console.error('Error loading notes:', err);
+                loadingEl.textContent = 'Failed to load notes. Please try again later.';
+            }
+        }
+
+        // Delete note
+        async function deleteNote(noteId) {
+            if (!confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const res = await fetch(`/api/notes?id=${noteId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!res.ok) throw new Error('Failed to delete note');
+                
+                // Reload notes and stats
+                await loadMyNotes();
+                await loadStats();
+            } catch (err) {
+                console.error('Error deleting note:', err);
+                alert('Failed to delete note. Please try again.');
+            }
+        }
+
+        // Initialize on page load
+        loadStats();
+        loadMyNotes();
+    </script>
+</body>
+</html>
+
