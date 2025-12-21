@@ -74,6 +74,32 @@ export async function onRequest(context) {
             const customerEmail = paystackData.data.customer?.email || paystackData.data.authorization?.email || 'unknown@example.com';
             const amount = paystackData.data.amount ? (paystackData.data.amount / 100) : 0; // Convert from kobo to ZAR
 
+            // Get user_id from session cookie if available
+            let userId = null;
+            try {
+                const cookieHeader = request.headers.get('Cookie');
+                if (cookieHeader) {
+                    const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+                        const [key, value] = cookie.trim().split('=');
+                        acc[key] = value;
+                        return acc;
+                    }, {});
+                    
+                    const sessionCookie = cookies.session;
+                    if (sessionCookie) {
+                        try {
+                            const decoded = atob(sessionCookie);
+                            const sessionData = JSON.parse(decoded);
+                            userId = sessionData.userId || null;
+                        } catch (e) {
+                            console.log('Error parsing session cookie:', e);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log('Could not extract user_id from session:', e);
+            }
+
             // Check if this reference has already been logged (prevent double-logging)
             const existingSale = await db.prepare("SELECT id FROM sales WHERE reference = ?")
                 .bind(reference)
@@ -83,12 +109,12 @@ export async function onRequest(context) {
                 // Reference already logged, but continue with verification
                 console.log(`Sale with reference ${reference} already logged, skipping duplicate insert`);
             } else {
-                // Log the successful purchase to sales table
+                // Log the successful purchase to sales table with user_id
                 try {
                     const insertResult = await db.prepare(
-                        "INSERT INTO sales (noteId, customer_email, amount, reference, created_at) VALUES (?, ?, ?, ?, ?)"
+                        "INSERT INTO sales (noteId, user_id, customer_email, amount, reference, created_at) VALUES (?, ?, ?, ?, ?, ?)"
                     )
-                        .bind(noteId, customerEmail, amount, reference, new Date().toISOString())
+                        .bind(noteId, userId, customerEmail, amount, reference, new Date().toISOString())
                         .run();
 
                     if (insertResult.success) {

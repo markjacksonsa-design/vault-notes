@@ -21,26 +21,61 @@ export async function onRequest(context) {
                 return new Response('Missing noteId or reference', { status: 400 });
             }
 
+            // Get user_id from session cookie if available
+            let userId = null;
+            try {
+                const cookieHeader = request.headers.get('Cookie');
+                if (cookieHeader) {
+                    const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+                        const [key, value] = cookie.trim().split('=');
+                        acc[key] = value;
+                        return acc;
+                    }, {});
+                    
+                    const sessionCookie = cookies.session;
+                    if (sessionCookie) {
+                        const decoded = atob(sessionCookie);
+                        const sessionData = JSON.parse(decoded);
+                        userId = sessionData.userId || null;
+                    }
+                }
+            } catch (e) {
+                console.log('Could not extract user_id from session:', e);
+            }
+
             // Handle free downloads (reference === 'free')
             if (reference !== 'free') {
-                // Verify payment with Paystack (double-check)
-                const paystackResponse = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${paystackSecret}`,
-                        'Content-Type': 'application/json'
+                // Verify that user has a recorded sale for this note
+                if (userId) {
+                    const sale = await db.prepare(
+                        "SELECT id FROM sales WHERE user_id = ? AND noteId = ? AND reference = ?"
+                    )
+                        .bind(userId, noteId, reference)
+                        .first();
+
+                    if (!sale) {
+                        return new Response('Purchase not found. You must have a recorded sale to download this note.', { status: 403 });
                     }
-                });
+                } else {
+                    // If no user session, verify payment with Paystack (fallback)
+                    const paystackResponse = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${paystackSecret}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
 
-                if (!paystackResponse.ok) {
-                    return new Response('Payment verification failed', { status: 403 });
-                }
+                    if (!paystackResponse.ok) {
+                        return new Response('Payment verification failed', { status: 403 });
+                    }
 
-                const paystackData = await paystackResponse.json();
+                    const paystackData = await paystackResponse.json();
 
-                // Check if payment was successful
-                if (paystackData.status !== true || paystackData.data.status !== 'success') {
-                    return new Response('Payment not verified', { status: 403 });
+                    // Check if payment was successful
+                    if (paystackData.status !== true || paystackData.data.status !== 'success') {
+                        return new Response('Payment not verified', { status: 403 });
+                    }
                 }
             }
 
