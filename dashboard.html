@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         :root {
-            --bg: #001f3f;
-            --panel: #003366;
-            --input-bg: #002244;
-            --accent: #FFD700;
-            --text: #f8f8f2;
-            --subtitle: #bbbbbb;
-            --sa-green: #007a4d;
-            --sa-gold: #FFD700;
+            --bg: #0D0D0D;
+            --panel: #1A1A1A;
+            --input-bg: #1A1A1A;
+            --accent: #00FF85;
+            --text: #FFFFFF;
+            --subtitle: #E0E0E0;
+            --sa-green: #00FF85;
+            --sa-gold: #00FF85;
         }
         * {
             margin: 0;
@@ -25,15 +25,17 @@
         body {
             background: var(--bg);
             color: var(--text);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
             line-height: 1.6;
         }
         
         /* Global Navigation Header */
         .global-nav {
-            background: var(--panel);
+            background: rgba(13, 13, 13, 0.85);
+            backdrop-filter: blur(10px);
             padding: 16px 32px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            border-bottom: 2px solid var(--accent);
             position: sticky;
             top: 0;
             z-index: 1002;
@@ -46,6 +48,8 @@
             font-weight: 700;
             color: var(--accent);
             text-decoration: none;
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            letter-spacing: -0.5px;
         }
         .nav-logo strong {
             font-weight: 800;
@@ -89,8 +93,8 @@
             color: var(--text);
         }
         .btn-primary {
-            background: linear-gradient(135deg, var(--sa-green) 0%, #005a36 100%);
-            color: white;
+            background: var(--accent);
+            color: #000000;
             border: none;
             padding: 14px 28px;
             font-size: 1em;
@@ -100,11 +104,11 @@
             text-decoration: none;
             display: inline-block;
             transition: all 0.3s;
-            box-shadow: 0 4px 16px rgba(0, 122, 77, 0.4);
+            box-shadow: 0 4px 16px rgba(0, 255, 133, 0.4);
         }
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(0, 122, 77, 0.6);
+            box-shadow: 0 6px 24px rgba(0, 255, 133, 0.6);
         }
         
         /* Statistics Cards */
@@ -192,9 +196,9 @@
             text-transform: uppercase;
         }
         .category-badge.caps {
-            background: rgba(255, 215, 0, 0.2);
-            color: #FFD700;
-            border: 1px solid rgba(255, 215, 0, 0.4);
+            background: rgba(0, 255, 133, 0.2);
+            color: #00FF85;
+            border: 1px solid rgba(0, 255, 133, 0.4);
         }
         .category-badge.ieb {
             background: rgba(59, 130, 246, 0.2);

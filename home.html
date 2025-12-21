@@ -6,14 +6,14 @@
     <meta name="description" content="The marketplace for CAPS, IEB, and University students to buy and sell quality study resources in South Africa.">
     <style>
         :root {
-            --bg: #001f3f;
-            --panel: #003366;
-            --input-bg: #002244;
-            --accent: #FFD700;
-            --text: #f8f8f2;
-            --subtitle: #bbbbbb;
-            --sa-green: #007a4d;
-            --sa-gold: #FFD700;
+            --bg: #0D0D0D;
+            --panel: #1A1A1A;
+            --input-bg: #1A1A1A;
+            --accent: #00FF85;
+            --text: #FFFFFF;
+            --subtitle: #E0E0E0;
+            --sa-green: #00FF85;
+            --sa-gold: #00FF85;
         }
         * {
             margin: 0;
@@ -26,16 +26,18 @@
         body {
             background: var(--bg);
             color: var(--text);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
             line-height: 1.6;
             overflow-x: hidden;
         }
         
         /* Global Navigation Header */
         .global-nav {
-            background: var(--panel);
+            background: rgba(13, 13, 13, 0.85);
+            backdrop-filter: blur(10px);
             padding: 16px 32px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            border-bottom: 2px solid var(--accent);
             position: sticky;
             top: 0;
             z-index: 1002;
@@ -49,6 +51,8 @@
             font-weight: 700;
             color: var(--accent);
             text-decoration: none;
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            letter-spacing: -0.5px;
         }
         .nav-links {
             display: flex;
@@ -77,7 +81,7 @@
             font-size: clamp(2.5em, 6vw, 4em);
             font-weight: 800;
             margin-bottom: 24px;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--sa-gold) 100%);
+            background: linear-gradient(135deg, var(--accent) 0%, #00CC6A 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -110,25 +114,25 @@
             min-width: 180px;
         }
         .cta-btn.primary {
-            background: linear-gradient(135deg, var(--bg) 0%, #003366 100%);
-            color: var(--accent);
-            border: 2px solid var(--accent);
-            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
+            background: var(--accent);
+            color: #000000;
+            border: none;
+            box-shadow: 0 4px 16px rgba(0, 255, 133, 0.4);
         }
         .cta-btn.primary:hover {
             transform: translateY(-2px);
-            background: linear-gradient(135deg, var(--accent) 0%, #FFA500 100%);
-            color: var(--bg);
-            box-shadow: 0 6px 24px rgba(255, 215, 0, 0.5);
+            background: var(--accent);
+            color: #000000;
+            box-shadow: 0 6px 24px rgba(0, 255, 133, 0.6);
         }
         .cta-btn.secondary {
-            background: linear-gradient(135deg, var(--accent) 0%, #FFA500 100%);
-            color: var(--bg);
-            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.4);
+            background: var(--accent);
+            color: #000000;
+            box-shadow: 0 4px 16px rgba(0, 255, 133, 0.4);
         }
         .cta-btn.secondary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(255, 215, 0, 0.6);
+            box-shadow: 0 6px 24px rgba(0, 255, 133, 0.6);
         }
         
         /* Section Container */
@@ -167,7 +171,7 @@
         .curriculum-card:hover {
             transform: translateY(-8px);
             border-color: var(--accent);
-            box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 255, 133, 0.3);
         }
         .curriculum-card h3 {
             font-size: 2em;
@@ -180,8 +184,8 @@
             font-size: 1.1em;
         }
         .curriculum-card.caps:hover {
-            border-color: #FFD700;
-            box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+            border-color: #00FF85;
+            box-shadow: 0 8px 32px rgba(0, 255, 133, 0.3);
         }
         .curriculum-card.ieb:hover {
             border-color: #3b82f6;
@@ -205,7 +209,7 @@
         .step-number {
             width: 60px;
             height: 60px;
-            background: linear-gradient(135deg, var(--bg) 0%, #003366 100%);
+            background: var(--bg);
             border: 3px solid var(--accent);
             border-radius: 50%;
             display: flex;
@@ -215,7 +219,7 @@
             font-weight: 700;
             color: var(--accent);
             margin: 0 auto 24px;
-            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
+            box-shadow: 0 4px 16px rgba(0, 255, 133, 0.3);
         }
         .step h3 {
             font-size: 1.5em;
