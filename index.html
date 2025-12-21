@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Cloudflare App</title>
+</head>
+<body>
+    <h1>System Online</h1>
+    <p>Database status: <span id="status">Checking...</span></p>
+
+    <script>
+        // This will talk to your database later
+        fetch('/api/check')
+            .then(res => res.text())
+            .then(data => document.getElementById('status').innerText = data);
+    </script>
+</body>
+</html>
