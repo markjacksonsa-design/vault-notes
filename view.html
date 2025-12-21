@@ -257,6 +257,47 @@
             cursor: not-allowed;
             transform: none;
         }
+        .btn-buy.hidden {
+            display: none;
+        }
+        .btn-download {
+            width: 100%;
+            background: var(--accent);
+            color: #000000;
+            border: none;
+            padding: 18px 32px;
+            font-size: 1.2em;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px #00FF85, 0 4px 20px rgba(0, 255, 133, 0.5);
+            margin-bottom: 12px;
+            position: relative;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        .btn-download.show {
+            display: flex;
+        }
+        .btn-download:hover {
+            background: var(--accent);
+            color: #000000;
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px #00FF85, 0 6px 30px rgba(0, 255, 133, 0.7);
+        }
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 15px #00FF85, 0 4px 20px rgba(0, 255, 133, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 25px #00FF85, 0 6px 30px rgba(0, 255, 133, 0.7);
+            }
+        }
         /* Loading Spinner */
         .spinner {
             display: inline-block;
@@ -454,6 +495,10 @@
                                 <span>🛒</span>
                                 <span id="buy-btn-text">Buy Note</span>
                             </button>
+                            <button id="download-btn" class="btn-download">
+                                <span>📥</span>
+                                <span>Download PDF</span>
+                            </button>
                             <div class="secure-badge">
                                 <span class="secure-badge-icon">🔒</span>
                                 <span>Secure Payment</span>
@@ -598,15 +643,18 @@
 
                             // Hide spinner
                             spinnerOverlay.classList.remove('active');
-                            buyBtn.disabled = false;
-                            buyBtnText.textContent = buyBtnText.textContent.replace(/<span.*<\/span>/, '').trim() || 'Buy Note';
+                            
+                            // Hide Buy Now button and show Download PDF button
+                            buyBtn.classList.add('hidden');
+                            const downloadBtn = document.getElementById('download-btn');
+                            downloadBtn.classList.add('show');
+                            
+                            // Store payment reference for download
+                            downloadBtn.dataset.reference = response.reference;
+                            downloadBtn.dataset.noteId = noteId;
 
-                            // Redirect to download
-                            if (verifyData.downloadUrl) {
-                                window.location.href = verifyData.downloadUrl;
-                            } else {
-                                alert('Payment verified! Download link will be sent to your email.');
-                            }
+                            // Show success message
+                            console.log('Payment verified successfully!');
                         } catch (verifyErr) {
                             console.error('Verification error:', verifyErr);
                             spinnerOverlay.classList.remove('active');
@@ -690,17 +738,36 @@
                 // Setup Buy Now button
                 const buyBtn = document.getElementById('buy-btn');
                 const buyBtnText = document.getElementById('buy-btn-text');
+                const downloadBtn = document.getElementById('download-btn');
                 
                 if (priceValue === 0) {
-                    buyBtnText.textContent = 'Download Free';
-                    buyBtn.disabled = false;
+                    // For free notes, hide buy button and show download button
+                    buyBtn.classList.add('hidden');
+                    downloadBtn.classList.add('show');
+                    downloadBtn.dataset.reference = 'free';
+                    downloadBtn.dataset.noteId = noteId;
                 } else {
+                    // For paid notes, show buy button and hide download button
+                    buyBtn.classList.remove('hidden');
+                    downloadBtn.classList.remove('show');
                     buyBtnText.textContent = `Buy Note - ${priceDisplay}`;
                     buyBtn.disabled = false;
                 }
                 
                 buyBtn.onclick = () => {
                     payWithPaystack(noteId, priceValue, note.title || 'Untitled');
+                };
+                
+                // Setup Download PDF button
+                downloadBtn.onclick = () => {
+                    const ref = downloadBtn.dataset.reference;
+                    const noteIdForDownload = downloadBtn.dataset.noteId;
+                    if (ref && noteIdForDownload) {
+                        // Trigger download from R2 bucket
+                        window.location.href = `/api/download?noteId=${noteIdForDownload}&reference=${ref}`;
+                    } else {
+                        alert('Download information not available. Please try again.');
+                    }
                 };
                 
                 // Check if user is owner (for now, we'll hide this - can be implemented with authentication later)
