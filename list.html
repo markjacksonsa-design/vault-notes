@@ -113,6 +113,24 @@
             font-size: 0.7em;
             text-transform: none;
         }
+        .badge.free {
+            background: rgba(94, 203, 144, 0.3);
+            color: #5ecb90;
+            border: 1px solid rgba(94, 203, 144, 0.5);
+            font-weight: 700;
+        }
+        .note-price {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--accent);
+            white-space: nowrap;
+        }
+        .note-card-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
         .note-content-snippet {
             color: var(--subtitle);
             margin: 8px 0;
@@ -373,6 +391,13 @@
                 width: 100%;
                 min-width: 100%;
             }
+            .sort-container {
+                margin-left: 0;
+                width: 100%;
+            }
+            .sort-select {
+                width: 100%;
+            }
             button {
                 min-height: 48px;
                 padding: 16px 20px;
@@ -418,6 +443,13 @@
             <button class="filter-btn" data-curriculum="CAPS">CAPS</button>
             <button class="filter-btn" data-curriculum="IEB">IEB</button>
             <button class="filter-btn" data-curriculum="University">University</button>
+            <div class="sort-container">
+                <select id="sort-select" class="sort-select">
+                    <option value="none">Sort by...</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                </select>
+            </div>
         </div>
         
         <!-- Search and Subject Filter Row -->
@@ -569,6 +601,17 @@
                 const contentSnippet = escapeHTML(getContentSnippet(note.content || ''));
                 const date = formatDate(note.created_at || note.date || null);
                 
+                // Format price
+                let priceHTML = '';
+                const priceValue = note.price ? parseFloat(note.price) : null;
+                if (priceValue !== null && !isNaN(priceValue)) {
+                    if (priceValue === 0) {
+                        priceHTML = '<span class="badge free">FREE</span>';
+                    } else {
+                        priceHTML = `<span class="note-price">R ${priceValue.toFixed(2)}</span>`;
+                    }
+                }
+                
                 // Build badges
                 const badges = [];
                 if (note.curriculum) {
@@ -583,10 +626,11 @@
                 const badgesHTML = badges.length > 0 ? `<div class="note-badges">${badges.join('')}</div>` : '';
                 
                 card.innerHTML = `
-                    <div class="note-header">
+                    <div class="note-card-header-top">
                         <div class="note-title">${title}</div>
-                        ${badgesHTML}
+                        ${priceHTML}
                     </div>
+                    ${badgesHTML}
                     <div class="note-content-snippet">${contentSnippet}</div>
                     <div class="note-date">${date}</div>
                 `;
@@ -597,8 +641,9 @@
         // Store current filter state
         let currentCurriculum = 'all';
         let currentSubjectFilter = '';
+        let currentSort = 'none';
 
-        // Apply all filters
+        // Apply all filters and sorting
         function applyFilters() {
             let filtered = [...allNotes];
             const searchTerm = document.getElementById('search-input').value.trim();
@@ -625,6 +670,21 @@
                     const title = (note.title || '').toLowerCase();
                     const content = (note.content || '').toLowerCase();
                     return title.includes(searchLower) || content.includes(searchLower);
+                });
+            }
+            
+            // Apply sorting
+            if (currentSort === 'price-low') {
+                filtered.sort((a, b) => {
+                    const priceA = a.price ? parseFloat(a.price) : Infinity;
+                    const priceB = b.price ? parseFloat(b.price) : Infinity;
+                    return priceA - priceB;
+                });
+            } else if (currentSort === 'price-high') {
+                filtered.sort((a, b) => {
+                    const priceA = a.price ? parseFloat(a.price) : -1;
+                    const priceB = b.price ? parseFloat(b.price) : -1;
+                    return priceB - priceA;
                 });
             }
             
@@ -681,6 +741,12 @@
         // Handle subject filter input
         document.getElementById('subject-filter-input').addEventListener('input', (e) => {
             currentSubjectFilter = e.target.value;
+            applyFilters();
+        });
+
+        // Handle sort select
+        document.getElementById('sort-select').addEventListener('change', (e) => {
+            currentSort = e.target.value;
             applyFilters();
         });
 

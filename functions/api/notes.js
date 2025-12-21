@@ -41,8 +41,37 @@ export async function onRequest(context) {
                     }
                 );
             } else {
-                // Fetch all notes
-                const { results } = await db.prepare("SELECT * FROM notes ORDER BY id DESC").all();
+                // Fetch all notes with optional filtering and sorting
+                const curriculum = url.searchParams.get('curriculum');
+                const sort = url.searchParams.get('sort'); // 'price-asc' or 'price-desc'
+                
+                let query = "SELECT * FROM notes";
+                const bindings = [];
+                
+                // Add curriculum filter if provided
+                if (curriculum && curriculum !== 'all') {
+                    query += " WHERE curriculum = ?";
+                    bindings.push(curriculum);
+                }
+                
+                // Add sorting
+                if (sort === 'price-asc') {
+                    // Sort by price ascending, null prices at the end
+                    query += " ORDER BY CASE WHEN price IS NULL THEN 1 ELSE 0 END, price ASC, id DESC";
+                } else if (sort === 'price-desc') {
+                    // Sort by price descending, null prices at the end
+                    query += " ORDER BY CASE WHEN price IS NULL THEN 1 ELSE 0 END, price DESC, id DESC";
+                } else {
+                    // Default: order by id DESC
+                    query += " ORDER BY id DESC";
+                }
+                
+                // Execute query with bindings
+                let stmt = db.prepare(query);
+                if (bindings.length > 0) {
+                    stmt = stmt.bind(...bindings);
+                }
+                const { results } = await stmt.all();
                 
                 return new Response(
                     JSON.stringify(results || []),
@@ -57,7 +86,7 @@ export async function onRequest(context) {
         // Handle POST request - create a new note
         if (request.method === 'POST') {
             const body = await request.json();
-            const { title, content, curriculum, level, subject } = body;
+            const { title, content, curriculum, level, subject, price } = body;
 
             // Validate required fields
             if (!title || !content) {
@@ -72,8 +101,8 @@ export async function onRequest(context) {
 
             // Insert the note into the database
             const result = await db.prepare(
-                "INSERT INTO notes (title, content, curriculum, level, subject) VALUES (?, ?, ?, ?, ?)"
-            ).bind(title, content, curriculum || null, level || null, subject || null).run();
+                "INSERT INTO notes (title, content, curriculum, level, subject, price) VALUES (?, ?, ?, ?, ?, ?)"
+            ).bind(title, content, curriculum || null, level || null, subject || null, price || null).run();
 
             if (result.success) {
                 return new Response(
@@ -108,7 +137,7 @@ export async function onRequest(context) {
             }
 
             const body = await request.json();
-            const { title, content, curriculum, level, subject } = body;
+            const { title, content, curriculum, level, subject, price } = body;
 
             // Validate required fields
             if (!title || !content) {
@@ -135,8 +164,8 @@ export async function onRequest(context) {
 
             // Update the note in the database
             const result = await db.prepare(
-                "UPDATE notes SET title = ?, content = ?, curriculum = ?, level = ?, subject = ? WHERE id = ?"
-            ).bind(title, content, curriculum || null, level || null, subject || null, noteId).run();
+                "UPDATE notes SET title = ?, content = ?, curriculum = ?, level = ?, subject = ?, price = ? WHERE id = ?"
+            ).bind(title, content, curriculum || null, level || null, subject || null, price || null, noteId).run();
 
             if (result.success) {
                 return new Response(

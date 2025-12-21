@@ -44,7 +44,7 @@
             color: var(--subtitle);
             font-size: 1em;
         }
-        input[type="text"], textarea, select {
+        input[type="text"], input[type="number"], textarea, select {
             width: 100%;
             background: var(--input-bg);
             color: var(--text);
@@ -58,8 +58,26 @@
             transition: box-shadow 0.2s;
             font-family: inherit;
         }
-        input[type="text"]:focus, textarea:focus, select:focus {
+        input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
             box-shadow: 0 0 0 2px var(--accent);
+        }
+        .price-input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        .price-input-wrapper::before {
+            content: 'R';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--subtitle);
+            font-weight: 500;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .price-input-wrapper input[type="number"] {
+            padding-left: 28px;
         }
         select {
             cursor: pointer;
@@ -358,10 +376,13 @@
                 display: flex;
             }
             /* Larger touch targets */
-            input[type="text"], textarea, select {
+            input[type="text"], input[type="number"], textarea, select {
                 padding: 14px 16px;
                 font-size: 16px;
                 min-height: 44px;
+            }
+            .price-input-wrapper input[type="number"] {
+                padding-left: 28px;
             }
             textarea {
                 min-height: 120px;
@@ -455,6 +476,11 @@
                 
                 <label for="note-subject">Subject</label>
                 <input type="text" id="note-subject" name="subject" maxlength="100" autocomplete="off" placeholder="e.g., Mathematics, Life Sciences, Economics...">
+                
+                <label for="note-price">Price (ZAR)</label>
+                <div class="price-input-wrapper">
+                    <input type="number" id="note-price" name="price" step="0.01" min="0" placeholder="0.00">
+                </div>
                 
                 <label for="note-content">Note Content</label>
                 <textarea id="note-content" name="content" required maxlength="1000" placeholder="Type your note..."></textarea>
@@ -552,11 +578,17 @@
             
             // Build metadata section
             let metadata = '';
-            if (note.curriculum || note.level || note.subject) {
+            if (note.curriculum || note.level || note.subject || note.price) {
                 metadata = '<div style="margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9em; color: var(--subtitle);">';
                 if (note.curriculum) metadata += `<div><strong>Curriculum:</strong> ${escapeHTML(note.curriculum)}</div>`;
                 if (note.level) metadata += `<div style="margin-top: 8px;"><strong>Level:</strong> ${escapeHTML(note.level)}</div>`;
                 if (note.subject) metadata += `<div style="margin-top: 8px;"><strong>Subject:</strong> ${escapeHTML(note.subject)}</div>`;
+                if (note.price) {
+                    const priceValue = parseFloat(note.price);
+                    if (!isNaN(priceValue)) {
+                        metadata += `<div style="margin-top: 8px;"><strong>Price:</strong> R ${priceValue.toFixed(2)}</div>`;
+                    }
+                }
                 metadata += '</div>';
             }
             
@@ -584,6 +616,7 @@
                 document.getElementById('note-curriculum').value = currentNote.curriculum || '';
                 document.getElementById('note-level').value = currentNote.level || '';
                 document.getElementById('note-subject').value = currentNote.subject || '';
+                document.getElementById('note-price').value = currentNote.price || '';
                 
                 // Show in view mode by default
                 updateViewMode(currentNote);
@@ -610,6 +643,7 @@
                 document.getElementById('note-curriculum').value = currentNote.curriculum || '';
                 document.getElementById('note-level').value = currentNote.level || '';
                 document.getElementById('note-subject').value = currentNote.subject || '';
+                document.getElementById('note-price').value = currentNote.price || '';
                 setViewMode(true);
             } else {
                 // For new notes, redirect to list
@@ -626,6 +660,7 @@
             const curriculum = form['curriculum'].value;
             const level = form['level'].value;
             const subject = form['subject'].value.trim();
+            const price = form['price'].value ? parseFloat(form['price'].value) : null;
             if (!title || !content) return;
 
             const noteId = getNoteId();
@@ -647,7 +682,8 @@
                         content,
                         curriculum,
                         level,
-                        subject
+                        subject,
+                        price
                     })
                 });
                 
