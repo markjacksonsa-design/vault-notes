@@ -22,11 +22,26 @@ export async function onRequest(context) {
                 );
             }
 
-            // Hash password to compare
+            // Get AUTH_SECRET from environment
+            const authSecret = env.AUTH_SECRET || 'mnbvcxz';
+            
+            // Hash password using Web Crypto API with AUTH_SECRET (HMAC-SHA256)
             const encoder = new TextEncoder();
-            const data = encoder.encode(password);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const keyData = encoder.encode(authSecret);
+            const passwordData = encoder.encode(password);
+            
+            // Import key for HMAC
+            const key = await crypto.subtle.importKey(
+                'raw',
+                keyData,
+                { name: 'HMAC', hash: 'SHA-256' },
+                false,
+                ['sign']
+            );
+            
+            // Sign (hash) the password with the secret key
+            const signature = await crypto.subtle.sign('HMAC', key, passwordData);
+            const hashArray = Array.from(new Uint8Array(signature));
             const passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
             // Find user by email

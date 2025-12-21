@@ -106,8 +106,20 @@ export async function onRequest(context) {
                 .first();
 
             if (existingSale) {
-                // Reference already logged, but continue with verification
-                console.log(`Sale with reference ${reference} already logged, skipping duplicate insert`);
+                // Reference already logged - update with user_id if missing and user is logged in
+                if (userId) {
+                    try {
+                        await db.prepare(
+                            "UPDATE sales SET user_id = ? WHERE reference = ? AND user_id IS NULL"
+                        )
+                            .bind(userId, reference)
+                            .run();
+                        console.log(`Updated sale ${reference} with user_id ${userId}`);
+                    } catch (updateError) {
+                        console.log('Could not update sale with user_id:', updateError);
+                    }
+                }
+                console.log(`Sale with reference ${reference} already logged`);
             } else {
                 // Log the successful purchase to sales table with user_id
                 try {

@@ -14,4 +14,8 @@ bucket_name = "student-notes-bucket"
 
 # Environment variables (set these in Cloudflare Dashboard or via wrangler secret)
 # PAYSTACK_SECRET should be set using: wrangler secret put PAYSTACK_SECRET
+# AUTH_SECRET should be set using: wrangler secret put AUTH_SECRET
+# For development, you can also set it in wrangler.toml (not recommended for production):
+# [vars]
+# AUTH_SECRET = "mnbvcxz"
 

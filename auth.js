@@ -46,10 +46,17 @@ async function updateNavAuth() {
         userSpan.textContent = user.name || user.email;
         authLink.appendChild(userSpan);
         
-        // Show "My Vault" link if it exists
+        // Show "My Vault" link if it exists, or create it
         const myVaultLink = document.getElementById('my-vault-link');
         if (myVaultLink) {
             myVaultLink.style.display = 'block';
+        } else {
+            // Create My Vault link if it doesn't exist
+            const vaultLink = document.createElement('a');
+            vaultLink.href = '/my-vault.html';
+            vaultLink.textContent = 'My Vault';
+            vaultLink.style.marginRight = '16px';
+            authLink.appendChild(vaultLink);
         }
         
         const logoutLink = document.createElement('a');
@@ -68,19 +75,19 @@ async function updateNavAuth() {
         if (myVaultLink) {
             myVaultLink.style.display = 'none';
         }
-        // User not logged in - show login/register
-        const loginLink = document.createElement('a');
-        loginLink.href = '/login.html';
-        loginLink.textContent = 'Login';
-        authLink.appendChild(loginLink);
+        // User not logged in - show Login and Register buttons
+        const loginBtn = document.createElement('a');
+        loginBtn.href = '/login.html';
+        loginBtn.textContent = 'Login';
+        loginBtn.className = 'nav-btn';
+        authLink.appendChild(loginBtn);
         
-        const separator = document.createTextNode(' / ');
-        authLink.appendChild(separator);
-        
-        const registerLink = document.createElement('a');
-        registerLink.href = '/register.html';
-        registerLink.textContent = 'Register';
-        authLink.appendChild(registerLink);
+        const registerBtn = document.createElement('a');
+        registerBtn.href = '/register.html';
+        registerBtn.textContent = 'Register';
+        registerBtn.className = 'nav-btn';
+        registerBtn.style.cssText = 'background: var(--accent); color: #000; padding: 8px 16px; border-radius: 6px; font-weight: 600; margin-left: 8px;';
+        authLink.appendChild(registerBtn);
     }
 }
 
