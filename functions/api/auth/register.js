@@ -82,11 +82,11 @@ export async function onRequest(context) {
             const hashArray = Array.from(new Uint8Array(signature));
             const passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-            // Insert new user into database
+            // Insert new user into database with default role 'student'
             const result = await db.prepare(
-                "INSERT INTO users (name, email, password_hash, created_at) VALUES (?, ?, ?, ?)"
+                "INSERT INTO users (name, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?)"
             )
-                .bind(name, email, passwordHash, new Date().toISOString())
+                .bind(name, email, passwordHash, 'student', new Date().toISOString())
                 .run();
 
             if (result.success) {

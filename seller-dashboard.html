@@ -42,6 +42,21 @@
             justify-content: space-between;
             align-items: center;
         }
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+        .nav-left a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            font-size: 0.95em;
+        }
+        .nav-left a:hover {
+            color: var(--accent);
+        }
         .nav-logo {
             font-size: 1.4em;
             font-weight: 700;
@@ -290,12 +305,15 @@
 <body>
     <!-- Global Navigation Header -->
     <nav class="global-nav">
-        <a href="/home.html" class="nav-logo"><span class="logo-text">NoteVault</span> <span class="logo-sa">SA</span></a>
-        <div class="nav-links">
+        <div class="nav-left">
+            <a href="/home.html" class="nav-logo"><span class="logo-text">NoteVault</span> <span class="logo-sa">SA</span></a>
             <a href="/home.html">Home</a>
+        </div>
+        <div class="nav-links">
             <a href="/list.html">Browse Notes</a>
             <a href="/index.html">Sell Your Notes</a>
             <a href="/my-vault.html" id="my-vault-link" style="display: none;">My Vault</a>
+            <a href="/seller-dashboard.html" id="seller-dashboard-link" style="display: none;">Seller Dashboard</a>
         </div>
     </nav>
 
