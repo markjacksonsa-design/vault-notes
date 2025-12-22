@@ -273,12 +273,12 @@
             errorMsg.classList.remove('show');
             successMsg.classList.remove('show');
             
-            const name = document.getElementById('name').value.trim();
+            const full_name = document.getElementById('name').value.trim();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
             
-            if (!name || !email || !password || !confirmPassword) {
+            if (!full_name || !email || !password || !confirmPassword) {
                 errorMsg.textContent = 'Please fill in all fields';
                 errorMsg.classList.add('show');
                 return;
@@ -305,7 +305,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ name, email, password })
+                    body: JSON.stringify({ full_name, email, password })
                 });
                 
                 const data = await res.json();

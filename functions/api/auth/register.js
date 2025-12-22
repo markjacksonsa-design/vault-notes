@@ -39,10 +39,10 @@ export async function onRequest(context) {
 
         // Handle POST request - register new user
         if (request.method === 'POST') {
-            const { name, email, password } = await request.json();
+            const { full_name, email, password } = await request.json();
 
             // Validate required fields
-            if (!name || !email || !password) {
+            if (!full_name || !email || !password) {
                 return new Response(
                     JSON.stringify({ error: 'Missing required fields' }),
                     {
@@ -126,9 +126,9 @@ export async function onRequest(context) {
 
             // Insert new user into database with default role 'student'
             const result = await db.prepare(
-                "INSERT INTO users (name, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?)"
+                "INSERT INTO users (full_name, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?)"
             )
-                .bind(name, email, passwordHash, 'student', new Date().toISOString())
+                .bind(full_name, email, passwordHash, 'student', new Date().toISOString())
                 .run();
 
             if (result.success) {

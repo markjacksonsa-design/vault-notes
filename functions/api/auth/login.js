@@ -80,7 +80,7 @@ export async function onRequest(context) {
             const passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
             // Find user by email
-            const user = await db.prepare("SELECT id, name, email, password_hash FROM users WHERE email = ?")
+            const user = await db.prepare("SELECT id, full_name, email, password_hash FROM users WHERE email = ?")
                 .bind(email)
                 .first();
 
@@ -116,7 +116,7 @@ export async function onRequest(context) {
             const sessionData = {
                 userId: user.id,
                 email: user.email,
-                name: user.name
+                name: user.full_name
             };
 
             // Create secure session cookie
@@ -135,7 +135,7 @@ export async function onRequest(context) {
                     message: 'Login successful',
                     user: {
                         id: user.id,
-                        name: user.name,
+                        name: user.full_name,
                         email: user.email
                     }
                 }),
