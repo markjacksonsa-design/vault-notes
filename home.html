@@ -50,10 +50,15 @@
         .nav-logo {
             font-size: 1.4em;
             font-weight: 700;
-            color: var(--accent);
             text-decoration: none;
             font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
             letter-spacing: -0.5px;
+        }
+        .nav-logo .logo-text {
+            color: var(--text);
+        }
+        .nav-logo .logo-sa {
+            color: var(--accent);
         }
         .nav-links {
             display: flex;
@@ -289,7 +294,7 @@
 <body>
     <!-- Global Navigation Header -->
     <nav class="global-nav">
-        <a href="/home.html" class="nav-logo"><strong>🔒 NoteVault SA</strong></a>
+        <a href="/home.html" class="nav-logo"><span class="logo-text">NoteVault</span> <span class="logo-sa">SA</span></a>
         <div class="nav-links">
             <a href="/home.html">Home</a>
             <a href="/list.html">Browse Notes</a>

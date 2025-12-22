@@ -43,12 +43,47 @@ export async function onRequest(context) {
                 const bindings = [];
                 const conditions = [];
                 
-                // For now, if my=true, return all notes (assuming single user)
-                // Later this can be filtered by user_id when authentication is added
+                // Filter by seller_id if my=true
                 if (myNotes === 'true') {
-                    // Currently returns all notes - can be filtered by user_id later
-                    // conditions.push("user_id = ?");
-                    // bindings.push(userId);
+                    // Get user_id from session cookie
+                    let userId = null;
+                    try {
+                        const cookieHeader = request.headers.get('Cookie');
+                        if (cookieHeader) {
+                            const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+                                const [key, value] = cookie.trim().split('=');
+                                acc[key] = value;
+                                return acc;
+                            }, {});
+                            
+                            const sessionCookie = cookies.session;
+                            if (sessionCookie) {
+                                try {
+                                    const decoded = atob(sessionCookie);
+                                    const sessionData = JSON.parse(decoded);
+                                    userId = sessionData.userId || null;
+                                } catch (e) {
+                                    console.log('Error parsing session cookie:', e);
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.log('Could not extract user_id from session:', e);
+                    }
+
+                    if (userId) {
+                        conditions.push("seller_id = ?");
+                        bindings.push(userId);
+                    } else {
+                        // If not authenticated, return empty array
+                        return new Response(
+                            JSON.stringify([]),
+                            {
+                                status: 200,
+                                headers: { 'Content-Type': 'application/json' }
+                            }
+                        );
+                    }
                 }
                 
                 // Add curriculum filter if provided
@@ -93,6 +128,43 @@ export async function onRequest(context) {
 
         // Handle POST request - create a new note
         if (request.method === 'POST') {
+            // Get user_id from session cookie
+            let userId = null;
+            try {
+                const cookieHeader = request.headers.get('Cookie');
+                if (cookieHeader) {
+                    const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+                        const [key, value] = cookie.trim().split('=');
+                        acc[key] = value;
+                        return acc;
+                    }, {});
+                    
+                    const sessionCookie = cookies.session;
+                    if (sessionCookie) {
+                        try {
+                            const decoded = atob(sessionCookie);
+                            const sessionData = JSON.parse(decoded);
+                            userId = sessionData.userId || null;
+                        } catch (e) {
+                            console.log('Error parsing session cookie:', e);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log('Could not extract user_id from session:', e);
+            }
+
+            // Require authentication for creating notes
+            if (!userId) {
+                return new Response(
+                    JSON.stringify({ error: 'Authentication required to create notes' }),
+                    {
+                        status: 401,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+            }
+
             const body = await request.json();
             const { title, content, curriculum, level, subject, price, pdf_key } = body;
 
@@ -107,10 +179,10 @@ export async function onRequest(context) {
                 );
             }
 
-            // Insert the note into the database
+            // Insert the note into the database with seller_id
             const result = await db.prepare(
-                "INSERT INTO notes (title, content, curriculum, level, subject, price, pdf_key) VALUES (?, ?, ?, ?, ?, ?, ?)"
-            ).bind(title, content, curriculum || null, level || null, subject || null, price || null, pdf_key || null).run();
+                "INSERT INTO notes (title, content, curriculum, level, subject, price, pdf_key, seller_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            ).bind(title, content, curriculum || null, level || null, subject || null, price || null, pdf_key || null, userId).run();
 
             if (result.success) {
                 return new Response(

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Seller Dashboard | NoteVault SA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="/auth.js"></script>
+    <style>
+        :root {
+            --bg: #0D0D0D;
+            --panel: #1A1A1A;
+            --input-bg: #1A1A1A;
+            --accent: #00FF85;
+            --text: #FFFFFF;
+            --subtitle: #E0E0E0;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+        }
+        
+        /* Global Navigation Header */
+        .global-nav {
+            background: rgba(13, 13, 13, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 16px 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            border-bottom: 2px solid var(--accent);
+            position: sticky;
+            top: 0;
+            z-index: 1002;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-logo {
+            font-size: 1.4em;
+            font-weight: 700;
+            text-decoration: none;
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            letter-spacing: -0.5px;
+        }
+        .nav-logo .logo-text {
+            color: var(--text);
+        }
+        .nav-logo .logo-sa {
+            color: var(--accent);
+        }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            font-size: 0.95em;
+        }
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 32px;
+        }
+        
+        /* Dashboard Header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .dashboard-header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        /* Upload Button */
+        .btn-upload {
+            background: var(--accent);
+            color: #000000;
+            border: none;
+            padding: 16px 32px;
+            font-size: 1.1em;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(0, 255, 133, 0.4);
+        }
+        .btn-upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(0, 255, 133, 0.6);
+        }
+        .btn-upload::before {
+            content: '+';
+            font-size: 1.3em;
+            font-weight: 800;
+        }
+        
+        /* Statistics Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 50px;
+        }
+        .stat-card {
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+            border: 1px solid rgba(0, 255, 133, 0.1);
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 255, 133, 0.3);
+        }
+        .stat-label {
+            color: var(--subtitle);
+            font-size: 0.95em;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .stat-value.currency {
+            font-size: 2em;
+        }
+        
+        /* Notes Table Section */
+        .table-section {
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+        }
+        .table-section h2 {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--text);
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead {
+            background: var(--input-bg);
+        }
+        th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--accent);
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+        tbody tr {
+            transition: background 0.2s;
+        }
+        tbody tr:hover {
+            background: var(--input-bg);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-badge.live {
+            background: rgba(0, 255, 133, 0.2);
+            color: #00FF85;
+            border: 1px solid rgba(0, 255, 133, 0.4);
+        }
+        .status-badge.pending {
+            background: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+            border: 1px solid rgba(255, 193, 7, 0.4);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--subtitle);
+        }
+        .empty-state p {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--subtitle);
+            font-size: 1.1em;
+        }
+        
+        /* Access Denied Message */
+        .access-denied {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--subtitle);
+        }
+        .access-denied h2 {
+            color: var(--accent);
+            font-size: 2em;
+            margin-bottom: 16px;
+        }
+        .access-denied p {
+            font-size: 1.1em;
+            margin-bottom: 24px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .global-nav {
+                padding: 12px 20px;
+            }
+            .nav-logo {
+                font-size: 1.2em;
+            }
+            .nav-links {
+                gap: 16px;
+                font-size: 0.9em;
+            }
+            .container {
+                padding: 24px 20px;
+            }
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .dashboard-header h1 {
+                font-size: 2em;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .table-container {
+                overflow-x: scroll;
+            }
+            table {
+                min-width: 700px;
+            }
+            th, td {
+                padding: 12px 8px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Navigation Header -->
+    <nav class="global-nav">
+        <a href="/home.html" class="nav-logo"><span class="logo-text">NoteVault</span> <span class="logo-sa">SA</span></a>
+        <div class="nav-links">
+            <a href="/home.html">Home</a>
+            <a href="/list.html">Browse Notes</a>
+            <a href="/index.html">Sell Your Notes</a>
+            <a href="/my-vault.html" id="my-vault-link" style="display: none;">My Vault</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Access Control Check -->
+        <div id="access-denied" class="access-denied" style="display: none;">
+            <h2>Access Denied</h2>
+            <p>You must be a seller or admin to access this page.</p>
+            <a href="/home.html" class="btn-upload" style="text-decoration: none;">Return to Home</a>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboard-content" style="display: none;">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h1>Seller Dashboard</h1>
+                <a href="/index.html" class="btn-upload">Upload New Notes</a>
+            </div>
+
+            <!-- Statistics Section -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Earnings (ZAR)</div>
+                    <div class="stat-value currency" id="total-earnings">R 0.00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Downloads</div>
+                    <div class="stat-value" id="total-downloads">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Listings</div>
+                    <div class="stat-value" id="active-listings">0</div>
+                </div>
+            </div>
+
+            <!-- Notes Management Table -->
+            <div class="table-section">
+                <h2>My Notes</h2>
+                <div class="table-container">
+                    <div id="notes-loading" class="loading">Loading your notes...</div>
+                    <table id="notes-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Total Sales</th>
+                            </tr>
+                        </thead>
+                        <tbody id="notes-tbody">
+                        </tbody>
+                    </table>
+                    <div id="notes-empty" class="empty-state" style="display: none;">
+                        <p>You haven't uploaded any notes yet.</p>
+                        <a href="/index.html" class="btn-upload" style="text-decoration: none;">Upload Your First Note</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Helper for XSS-safe text
+        function escapeHTML(str) {
+            return String(str || '')
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            if (!amount || isNaN(amount)) return 'R 0.00';
+            return 'R ' + parseFloat(amount).toFixed(2);
+        }
+
+        // Check user role and access
+        async function checkSellerAccess() {
+            try {
+                const user = await checkAuth();
+                
+                if (!user) {
+                    // Not authenticated - redirect to home
+                    window.location.href = '/home.html';
+                    return false;
+                }
+
+                // Check if user has seller/admin role
+                // Note: This is a basic check. For production, you should:
+                // 1. Add a 'role' field to the users table in the database
+                // 2. Check the role from the database via an API endpoint
+                // 3. For now, we'll check if the user has uploaded notes as a proxy
+                
+                const res = await fetch('/api/notes?my=true');
+                if (!res.ok) {
+                    // If API fails, allow access but note that proper role checking is needed
+                    console.warn('Could not verify seller status. Please implement proper role checking in the backend.');
+                    return true; // Allow access for now
+                }
+                
+                const notes = await res.json() || [];
+                
+                // For now, allow access if user is authenticated
+                // TODO: Implement proper role checking with 'seller' or 'admin' role from database
+                // You should add a role field to the users table and check it here
+                
+                return true;
+            } catch (error) {
+                console.error('Error checking seller access:', error);
+                // On error, redirect to home for security
+                window.location.href = '/home.html';
+                return false;
+            }
+        }
+
+        // Load seller statistics
+        async function loadStats() {
+            try {
+                // Get user's notes
+                const notesRes = await fetch('/api/notes?my=true');
+                if (!notesRes.ok) throw new Error('Failed to load notes');
+                const notes = await notesRes.json() || [];
+
+                // Get sales data
+                let sales = [];
+                try {
+                    const salesRes = await fetch('/api/admin/sales');
+                    if (salesRes.ok) {
+                        const salesData = await salesRes.json();
+                        if (salesData.success && salesData.sales) {
+                            sales = salesData.sales;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Could not load sales data:', e);
+                }
+
+                // Calculate statistics
+                let totalEarnings = 0;
+                let totalDownloads = 0;
+                let activeListings = 0;
+
+                // Get note IDs for this seller
+                const noteIds = notes.map(n => String(n.id));
+
+                // Calculate earnings and downloads from sales
+                sales.forEach(sale => {
+                    if (noteIds.includes(String(sale.noteId))) {
+                        totalEarnings += parseFloat(sale.amount || 0);
+                        totalDownloads += 1;
+                    }
+                });
+
+                // Count active listings (notes with price > 0 or with sales)
+                notes.forEach(note => {
+                    const hasSales = sales.some(s => String(s.noteId) === String(note.id));
+                    const hasPrice = note.price && parseFloat(note.price) > 0;
+                    if (hasSales || hasPrice) {
+                        activeListings += 1;
+                    }
+                });
+
+                // Update UI
+                document.getElementById('total-earnings').textContent = formatCurrency(totalEarnings);
+                document.getElementById('total-downloads').textContent = totalDownloads;
+                document.getElementById('active-listings').textContent = activeListings;
+            } catch (err) {
+                console.error('Error loading stats:', err);
+                // Keep default values on error
+            }
+        }
+
+        // Load user's notes with sales data
+        async function loadMyNotes() {
+            const loadingEl = document.getElementById('notes-loading');
+            const tableEl = document.getElementById('notes-table');
+            const emptyEl = document.getElementById('notes-empty');
+            const tbodyEl = document.getElementById('notes-tbody');
+            
+            try {
+                // Get user's notes
+                const notesRes = await fetch('/api/notes?my=true');
+                if (!notesRes.ok) throw new Error('Failed to load notes');
+                const notes = await notesRes.json() || [];
+
+                // Get sales data
+                let sales = [];
+                try {
+                    const salesRes = await fetch('/api/admin/sales');
+                    if (salesRes.ok) {
+                        const salesData = await salesRes.json();
+                        if (salesData.success && salesData.sales) {
+                            sales = salesData.sales;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Could not load sales data:', e);
+                }
+
+                loadingEl.style.display = 'none';
+                
+                if (notes.length === 0) {
+                    emptyEl.style.display = 'block';
+                    tableEl.style.display = 'none';
+                    return;
+                }
+                
+                tableEl.style.display = 'table';
+                emptyEl.style.display = 'none';
+                
+                tbodyEl.innerHTML = '';
+                notes.forEach((note) => {
+                    const price = note.price ? parseFloat(note.price) : 0;
+                    const priceDisplay = price === 0 ? '<span style="color: var(--subtitle);">FREE</span>' : formatCurrency(price);
+                    
+                    // Determine status (Live if has price or sales, Pending otherwise)
+                    const noteSales = sales.filter(s => String(s.noteId) === String(note.id));
+                    const hasSales = noteSales.length > 0;
+                    const isLive = price > 0 || hasSales;
+                    const statusClass = isLive ? 'live' : 'pending';
+                    const statusText = isLive ? 'Live' : 'Pending';
+                    
+                    // Count total sales for this note
+                    const totalSales = noteSales.length;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${escapeHTML(note.title || 'Untitled')}</td>
+                        <td style="color: var(--accent); font-weight: 600;">${priceDisplay}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td style="color: var(--accent); font-weight: 600;">${totalSales}</td>
+                    `;
+                    tbodyEl.appendChild(row);
+                });
+            } catch (err) {
+                console.error('Error loading notes:', err);
+                loadingEl.textContent = 'Failed to load notes. Please try again later.';
+            }
+        }
+
+        // Initialize page
+        async function init() {
+            const hasAccess = await checkSellerAccess();
+            
+            if (hasAccess) {
+                document.getElementById('dashboard-content').style.display = 'block';
+                document.getElementById('access-denied').style.display = 'none';
+                await loadStats();
+                await loadMyNotes();
+            } else {
+                document.getElementById('dashboard-content').style.display = 'none';
+                document.getElementById('access-denied').style.display = 'block';
+            }
+        }
+
+        // Run on page load
+        init();
+    </script>
+</body>
+</html>
+
