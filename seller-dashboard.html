@@ -386,10 +386,16 @@
                 .replace(/'/g, "&#039;");
         }
 
-        // Format currency
+        // Format currency as South African Rand
         function formatCurrency(amount) {
-            if (!amount || isNaN(amount)) return 'R 0.00';
-            return 'R ' + parseFloat(amount).toFixed(2);
+            if (!amount || isNaN(amount) || amount === null) return 'R 0.00';
+            const numAmount = parseFloat(amount);
+            if (isNaN(numAmount)) return 'R 0.00';
+            // Format with thousands separator (e.g., R 1,250.00)
+            return 'R ' + numAmount.toLocaleString('en-ZA', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            });
         }
 
         // Check user role and access
@@ -434,57 +440,38 @@
         // Load seller statistics
         async function loadStats() {
             try {
-                // Get user's notes
-                const notesRes = await fetch('/api/notes?my=true');
-                if (!notesRes.ok) throw new Error('Failed to load notes');
-                const notes = await notesRes.json() || [];
-
-                // Get sales data
-                let sales = [];
-                try {
-                    const salesRes = await fetch('/api/admin/sales');
-                    if (salesRes.ok) {
-                        const salesData = await salesRes.json();
-                        if (salesData.success && salesData.sales) {
-                            sales = salesData.sales;
-                        }
+                // Fetch statistics from seller stats API
+                const statsRes = await fetch('/api/seller/stats');
+                
+                if (!statsRes.ok) {
+                    if (statsRes.status === 401) {
+                        // Not authenticated - redirect handled by checkSellerAccess
+                        return;
                     }
-                } catch (e) {
-                    console.warn('Could not load sales data:', e);
+                    throw new Error('Failed to load statistics');
                 }
 
-                // Calculate statistics
-                let totalEarnings = 0;
-                let totalDownloads = 0;
-                let activeListings = 0;
+                const statsData = await statsRes.json();
+                
+                if (!statsData.success) {
+                    throw new Error('Invalid response from stats API');
+                }
 
-                // Get note IDs for this seller
-                const noteIds = notes.map(n => String(n.id));
+                // Update UI with data from API
+                // Handle null/empty totalEarnings gracefully
+                const totalEarnings = statsData.totalEarnings || 0;
+                const totalDownloads = statsData.totalDownloads || 0;
+                const activeListings = statsData.activeListings || 0;
 
-                // Calculate earnings and downloads from sales
-                sales.forEach(sale => {
-                    if (noteIds.includes(String(sale.noteId))) {
-                        totalEarnings += parseFloat(sale.amount || 0);
-                        totalDownloads += 1;
-                    }
-                });
-
-                // Count active listings (notes with price > 0 or with sales)
-                notes.forEach(note => {
-                    const hasSales = sales.some(s => String(s.noteId) === String(note.id));
-                    const hasPrice = note.price && parseFloat(note.price) > 0;
-                    if (hasSales || hasPrice) {
-                        activeListings += 1;
-                    }
-                });
-
-                // Update UI
                 document.getElementById('total-earnings').textContent = formatCurrency(totalEarnings);
                 document.getElementById('total-downloads').textContent = totalDownloads;
                 document.getElementById('active-listings').textContent = activeListings;
             } catch (err) {
                 console.error('Error loading stats:', err);
-                // Keep default values on error
+                // On error, display default values
+                document.getElementById('total-earnings').textContent = 'R 0.00';
+                document.getElementById('total-downloads').textContent = '0';
+                document.getElementById('active-listings').textContent = '0';
             }
         }
 
@@ -496,19 +483,30 @@
             const tbodyEl = document.getElementById('notes-tbody');
             
             try {
+                // Get current user ID (seller ID)
+                const user = await checkAuth();
+                if (!user || !user.id) {
+                    console.error('User not authenticated');
+                    return;
+                }
+                const sellerId = user.id;
+
                 // Get user's notes
                 const notesRes = await fetch('/api/notes?my=true');
                 if (!notesRes.ok) throw new Error('Failed to load notes');
                 const notes = await notesRes.json() || [];
 
-                // Get sales data
-                let sales = [];
+                // Get completed sales for this seller
+                let completedSales = [];
                 try {
                     const salesRes = await fetch('/api/admin/sales');
                     if (salesRes.ok) {
                         const salesData = await salesRes.json();
                         if (salesData.success && salesData.sales) {
-                            sales = salesData.sales;
+                            // Filter sales by sellerId and status='completed'
+                            completedSales = salesData.sales.filter(sale => 
+                                sale.sellerId === sellerId && sale.status === 'completed'
+                            );
                         }
                     }
                 } catch (e) {
@@ -532,13 +530,13 @@
                     const priceDisplay = price === 0 ? '<span style="color: var(--subtitle);">FREE</span>' : formatCurrency(price);
                     
                     // Determine status (Live if has price or sales, Pending otherwise)
-                    const noteSales = sales.filter(s => String(s.noteId) === String(note.id));
+                    const noteSales = completedSales.filter(s => String(s.noteId) === String(note.id));
                     const hasSales = noteSales.length > 0;
                     const isLive = price > 0 || hasSales;
                     const statusClass = isLive ? 'live' : 'pending';
                     const statusText = isLive ? 'Live' : 'Pending';
                     
-                    // Count total sales for this note
+                    // Count total completed sales for this note
                     const totalSales = noteSales.length;
                     
                     const row = document.createElement('tr');

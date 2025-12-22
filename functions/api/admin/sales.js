@@ -15,9 +15,11 @@ export async function onRequest(context) {
                 SELECT 
                     s.id,
                     s.noteId,
-                    s.customer_email,
+                    s.buyerId,
+                    s.sellerId,
                     s.amount,
-                    s.reference,
+                    s.status,
+                    s.paystackRef,
                     s.created_at,
                     n.title as note_title
                 FROM sales s
@@ -27,16 +29,11 @@ export async function onRequest(context) {
 
             const { results } = await db.prepare(query).all();
 
-            // Calculate total revenue
-            const totalRevenueResult = await db.prepare("SELECT SUM(amount) as total FROM sales").first();
-            const totalRevenue = totalRevenueResult?.total || 0;
-
-            // Return sales data with total revenue
+            // Return sales data
             return new Response(
                 JSON.stringify({
                     success: true,
                     sales: results || [],
-                    totalRevenue: parseFloat(totalRevenue).toFixed(2),
                     count: results?.length || 0
                 }),
                 {
