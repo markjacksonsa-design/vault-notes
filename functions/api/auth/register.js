@@ -3,8 +3,38 @@ export async function onRequest(context) {
         const { request } = context;
         const db = context.env.DB; // D1 database binding
 
+        // Handle CORS preflight requests
+        if (request.method === 'OPTIONS') {
+            return new Response(null, {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                    'Access-Control-Max-Age': '86400',
+                },
+            });
+        }
+
+        // Get origin from request
+        const origin = request.headers.get('Origin') || '';
+        // Allow requests from your custom domain
+        const allowedOrigins = [
+            'https://notevault.co.za',
+            'https://www.notevault.co.za',
+        ];
+        const isAllowedOrigin = allowedOrigins.some(allowed => origin.includes(allowed)) || !origin;
+        const corsHeaders = {
+            'Access-Control-Allow-Origin': isAllowedOrigin ? origin : allowedOrigins[0],
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        };
+
         if (!db) {
-            return new Response('Database not available', { status: 500 });
+            return new Response('Database not available', { 
+                status: 500,
+                headers: corsHeaders
+            });
         }
 
         // Handle POST request - register new user
@@ -17,7 +47,10 @@ export async function onRequest(context) {
                     JSON.stringify({ error: 'Missing required fields' }),
                     {
                         status: 400,
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...corsHeaders
+                        }
                     }
                 );
             }
@@ -29,7 +62,10 @@ export async function onRequest(context) {
                     JSON.stringify({ error: 'Invalid email format' }),
                     {
                         status: 400,
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...corsHeaders
+                        }
                     }
                 );
             }
@@ -40,7 +76,10 @@ export async function onRequest(context) {
                     JSON.stringify({ error: 'Password must be at least 8 characters' }),
                     {
                         status: 400,
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...corsHeaders
+                        }
                     }
                 );
             }
@@ -55,7 +94,10 @@ export async function onRequest(context) {
                     JSON.stringify({ error: 'Email already registered' }),
                     {
                         status: 409,
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...corsHeaders
+                        }
                     }
                 );
             }
@@ -98,7 +140,10 @@ export async function onRequest(context) {
                     }),
                     {
                         status: 201,
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...corsHeaders
+                        }
                     }
                 );
             } else {
@@ -113,13 +158,28 @@ export async function onRequest(context) {
                 status: 405,
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Allow': 'POST'
+                    'Allow': 'POST',
+                    ...corsHeaders
                 }
             }
         );
 
     } catch (error) {
         console.error('Registration error:', error);
+        // Get origin for CORS headers (fallback if request is not available)
+        const origin = context?.request?.headers?.get('Origin') || '';
+        const allowedOrigins = [
+            'https://notevault.co.za',
+            'https://www.notevault.co.za',
+        ];
+        const isAllowedOrigin = allowedOrigins.some(allowed => origin.includes(allowed)) || !origin;
+        const corsHeaders = {
+            'Access-Control-Allow-Origin': isAllowedOrigin ? origin : allowedOrigins[0],
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        };
+
         return new Response(
             JSON.stringify({ 
                 error: 'Internal server error', 
@@ -127,7 +187,10 @@ export async function onRequest(context) {
             }),
             { 
                 status: 500,
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...corsHeaders
+                }
             }
         );
     }

@@ -5,15 +5,51 @@ export async function onRequest(context) {
         const bucket = context.env.BUCKET; // R2 bucket binding
         const paystackSecret = context.env.PAYSTACK_SECRET; // Paystack secret key
 
+        // Handle CORS preflight requests
+        if (request.method === 'OPTIONS') {
+            return new Response(null, {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                    'Access-Control-Max-Age': '86400',
+                },
+            });
+        }
+
+        // Get origin from request
+        const origin = request.headers.get('Origin') || '';
+        // Allow requests from your custom domain
+        const allowedOrigins = [
+            'https://notevault.co.za',
+            'https://www.notevault.co.za',
+        ];
+        const isAllowedOrigin = allowedOrigins.some(allowed => origin.includes(allowed)) || !origin;
+        const corsHeaders = {
+            'Access-Control-Allow-Origin': isAllowedOrigin ? origin : allowedOrigins[0],
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        };
+
         // Check if required bindings are available
         if (!db) {
-            return new Response('Database not available', { status: 500 });
+            return new Response('Database not available', { 
+                status: 500,
+                headers: corsHeaders
+            });
         }
         if (!bucket) {
-            return new Response('Storage bucket not available', { status: 500 });
+            return new Response('Storage bucket not available', { 
+                status: 500,
+                headers: corsHeaders
+            });
         }
         if (!paystackSecret) {
-            return new Response('Paystack secret key not configured', { status: 500 });
+            return new Response('Paystack secret key not configured', { 
+                status: 500,
+                headers: corsHeaders
+            });
         }
 
         // Handle POST request - verify payment
@@ -26,7 +62,10 @@ export async function onRequest(context) {
                     JSON.stringify({ error: 'Missing reference or noteId' }),
                     {
                         status: 400,
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...corsHeaders
+                        }
                     }
                 );
             }
@@ -49,7 +88,10 @@ export async function onRequest(context) {
                     }),
                     {
                         status: 400,
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...corsHeaders
+                        }
                     }
                 );
             }
@@ -65,7 +107,10 @@ export async function onRequest(context) {
                     }),
                     {
                         status: 400,
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...corsHeaders
+                        }
                     }
                 );
             }
@@ -110,7 +155,10 @@ export async function onRequest(context) {
                     JSON.stringify({ error: 'Note not found' }),
                     {
                         status: 404,
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...corsHeaders
+                        }
                     }
                 );
             }
@@ -186,7 +234,10 @@ export async function onRequest(context) {
                     JSON.stringify({ error: 'No PDF file available for this note' }),
                     {
                         status: 404,
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...corsHeaders
+                        }
                     }
                 );
             }
@@ -198,7 +249,10 @@ export async function onRequest(context) {
                     JSON.stringify({ error: 'PDF file not found in storage' }),
                     {
                         status: 404,
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...corsHeaders
+                        }
                     }
                 );
             }
@@ -221,7 +275,10 @@ export async function onRequest(context) {
                 }),
                 {
                     status: 200,
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        ...corsHeaders
+                    }
                 }
             );
         }
@@ -233,13 +290,28 @@ export async function onRequest(context) {
                 status: 405,
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Allow': 'POST'
+                    'Allow': 'POST',
+                    ...corsHeaders
                 }
             }
         );
 
     } catch (error) {
         console.error('Payment verification error:', error);
+        // Get origin for CORS headers (fallback if request is not available)
+        const origin = context?.request?.headers?.get('Origin') || '';
+        const allowedOrigins = [
+            'https://notevault.co.za',
+            'https://www.notevault.co.za',
+        ];
+        const isAllowedOrigin = allowedOrigins.some(allowed => origin.includes(allowed)) || !origin;
+        const corsHeaders = {
+            'Access-Control-Allow-Origin': isAllowedOrigin ? origin : allowedOrigins[0],
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        };
+
         return new Response(
             JSON.stringify({ 
                 error: 'Internal server error', 
@@ -247,7 +319,10 @@ export async function onRequest(context) {
             }),
             { 
                 status: 500,
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...corsHeaders
+                }
             }
         );
     }

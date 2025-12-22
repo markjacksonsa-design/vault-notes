@@ -662,6 +662,7 @@
                     amount: Math.round(amount * 100), // Convert to kobo (cents)
                     currency: 'ZAR',
                     ref: reference,
+                    callback_url: 'https://notevault.co.za/api/verify-payment', // Server-side callback URL
                     metadata: {
                         custom_fields: [
                             {
