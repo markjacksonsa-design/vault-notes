@@ -46,8 +46,9 @@ export async function onRequest(context) {
                 SELECT 
                     s.id as sale_id,
                     s.noteId,
-                    s.reference,
+                    s.paystackRef as reference,
                     s.amount,
+                    s.status,
                     s.created_at as purchase_date,
                     n.title as note_title,
                     n.subject,
@@ -56,7 +57,7 @@ export async function onRequest(context) {
                     n.pdf_key
                 FROM sales s
                 LEFT JOIN notes n ON s.noteId = n.id
-                WHERE s.user_id = ?
+                WHERE s.buyerId = ?
                 ORDER BY s.created_at DESC
             `;
 

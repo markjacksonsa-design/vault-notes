@@ -167,38 +167,38 @@ export async function onRequest(context) {
             const sellerId = note.seller_id || null;
 
             // Check if this reference has already been logged (prevent double-logging)
-            const existingSale = await db.prepare("SELECT id FROM sales WHERE reference = ?")
+            const existingSale = await db.prepare("SELECT id FROM sales WHERE paystackRef = ?")
                 .bind(reference)
                 .first();
 
             if (existingSale) {
-                // Reference already logged - update with buyer_id, seller_id, note_id if missing
-                if (userId || sellerId) {
+                // Reference already logged - update with buyerId, sellerId, noteId if missing
+                if (userId || sellerId || noteId) {
                     try {
                         const updateFields = [];
                         const updateValues = [];
                         
                         if (userId) {
-                            updateFields.push('buyer_id = ?');
+                            updateFields.push('buyerId = ?');
                             updateValues.push(userId);
                         }
                         if (sellerId) {
-                            updateFields.push('seller_id = ?');
+                            updateFields.push('sellerId = ?');
                             updateValues.push(sellerId);
                         }
                         if (noteId) {
-                            updateFields.push('note_id = ?');
+                            updateFields.push('noteId = ?');
                             updateValues.push(noteId);
                         }
                         
                         if (updateFields.length > 0) {
                             updateValues.push(reference);
                             await db.prepare(
-                                `UPDATE sales SET ${updateFields.join(', ')} WHERE reference = ?`
+                                `UPDATE sales SET ${updateFields.join(', ')} WHERE paystackRef = ?`
                             )
                                 .bind(...updateValues)
                                 .run();
-                            console.log(`Updated sale ${reference} with buyer_id, seller_id, note_id`);
+                            console.log(`Updated sale ${reference} with buyerId, sellerId, noteId`);
                         }
                     } catch (updateError) {
                         console.log('Could not update sale:', updateError);
@@ -206,16 +206,16 @@ export async function onRequest(context) {
                 }
                 console.log(`Sale with reference ${reference} already logged`);
             } else {
-                // Log the successful purchase to sales table with buyer_id, seller_id, and note_id
+                // Log the successful purchase to sales table with buyerId, sellerId, noteId, and paystackRef
                 try {
                     const insertResult = await db.prepare(
-                        "INSERT INTO sales (note_id, buyer_id, seller_id, customer_email, amount, reference, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
+                        "INSERT INTO sales (noteId, buyerId, sellerId, amount, status, paystackRef) VALUES (?, ?, ?, ?, ?, ?)"
                     )
-                        .bind(noteId, userId, sellerId, customerEmail, amount, reference, new Date().toISOString())
+                        .bind(noteId, userId, sellerId, amount, 'completed', reference)
                         .run();
 
                     if (insertResult.success) {
-                        console.log(`Sale logged successfully: Reference ${reference}, Note ${noteId}, Buyer ${userId}, Seller ${sellerId}, Amount R${amount}, Email ${customerEmail}`);
+                        console.log(`Sale logged successfully: PaystackRef ${reference}, Note ${noteId}, Buyer ${userId}, Seller ${sellerId}, Amount R${amount}`);
                     } else {
                         console.error(`Failed to log sale: Reference ${reference}`);
                     }
@@ -224,7 +224,7 @@ export async function onRequest(context) {
                     console.error('Error logging sale to database:', insertError);
                     // If table doesn't exist, log a warning
                     if (insertError.message && insertError.message.includes('no such table')) {
-                        console.warn('Sales table does not exist. Please create it with: CREATE TABLE sales (id INTEGER PRIMARY KEY AUTOINCREMENT, note_id TEXT NOT NULL, buyer_id INTEGER, seller_id INTEGER, customer_email TEXT NOT NULL, amount REAL NOT NULL, reference TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)');
+                        console.warn('Sales table does not exist. Please create it with: CREATE TABLE sales (id INTEGER PRIMARY KEY AUTOINCREMENT, noteId TEXT NOT NULL, buyerId INTEGER, sellerId INTEGER, amount REAL NOT NULL, status TEXT, paystackRef TEXT UNIQUE NOT NULL)');
                     }
                 }
             }

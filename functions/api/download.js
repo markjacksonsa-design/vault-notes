@@ -48,7 +48,7 @@ export async function onRequest(context) {
                 // Verify that user has a recorded sale for this note
                 if (userId) {
                     const sale = await db.prepare(
-                        "SELECT id FROM sales WHERE user_id = ? AND noteId = ? AND reference = ?"
+                        "SELECT id FROM sales WHERE buyerId = ? AND noteId = ? AND paystackRef = ?"
                     )
                         .bind(userId, noteId, reference)
                         .first();
