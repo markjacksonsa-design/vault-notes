@@ -163,12 +163,57 @@
             margin-top: 60px;
             font-size: 1.1em;
         }
+        .filter-section {
+            margin-bottom: 24px;
+        }
+        .filter-section-label {
+            font-size: 0.9em;
+            color: var(--subtitle);
+            margin-bottom: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
         .filter-bar {
             display: flex;
             gap: 12px;
             margin-bottom: 20px;
             flex-wrap: wrap;
             align-items: center;
+        }
+        .pill-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .pill-btn {
+            background: var(--input-bg);
+            color: var(--text);
+            border: 2px solid transparent;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 0.9em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 36px;
+            white-space: nowrap;
+        }
+        .pill-btn:hover:not(.disabled) {
+            background: var(--panel);
+            border-color: var(--accent);
+        }
+        .pill-btn.active {
+            background: var(--accent);
+            color: var(--panel);
+            border-color: var(--accent);
+        }
+        .pill-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: var(--input-bg);
+            color: var(--subtitle);
         }
         .filter-btn {
             background: var(--input-bg);
@@ -190,6 +235,44 @@
             background: var(--accent);
             color: var(--panel);
             border-color: var(--accent);
+        }
+        .active-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .active-filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent);
+            color: var(--panel);
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        .active-filter-tag .clear-btn {
+            background: transparent;
+            border: none;
+            color: var(--panel);
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+            font-size: 14px;
+            line-height: 1;
+        }
+        .active-filter-tag .clear-btn:hover {
+            background: rgba(0, 0, 0, 0.2);
         }
         .filter-row {
             display: flex;
@@ -454,6 +537,23 @@
                 padding: 14px 16px;
                 font-size: 16px; /* Prevents zoom on iOS */
             }
+            .filter-section {
+                margin-bottom: 20px;
+            }
+            .pill-row {
+                gap: 6px;
+            }
+            .pill-btn {
+                padding: 8px 14px;
+                font-size: 0.85em;
+            }
+            .active-filters {
+                gap: 6px;
+            }
+            .active-filter-tag {
+                font-size: 0.8em;
+                padding: 5px 10px;
+            }
             .filter-bar {
                 gap: 8px;
             }
@@ -466,17 +566,34 @@
                 flex-direction: column;
                 gap: 12px;
             }
-            .filter-group, .subject-filter-container {
+            .filter-group, .search-container {
                 width: 100%;
                 min-width: 100%;
             }
             .sort-container {
-                margin-left: 0;
                 width: 100%;
+                min-width: 100%;
             }
-            .sort-select {
-                width: 100%;
-            }
+        .sort-container {
+            flex: 1;
+            min-width: 200px;
+        }
+        .sort-select {
+            width: 100%;
+            background: var(--input-bg);
+            color: var(--text);
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            padding: 12px 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .sort-select:focus {
+            box-shadow: 0 0 0 2px var(--accent);
+        }
             button {
                 min-height: 48px;
                 padding: 16px 20px;
@@ -530,22 +647,43 @@
         <div class="container">
         <h1>Browse Notes</h1>
         
-        <!-- Curriculum Filter Bar -->
-        <div class="filter-bar">
-            <button class="filter-btn active" data-curriculum="all">All</button>
-            <button class="filter-btn" data-curriculum="CAPS">CAPS</button>
-            <button class="filter-btn" data-curriculum="IEB">IEB</button>
-            <button class="filter-btn" data-curriculum="University">University</button>
-            <div class="sort-container">
-                <select id="sort-select" class="sort-select">
-                    <option value="none">Sort by...</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                </select>
+        <!-- Active Filters Tags -->
+        <div class="active-filters" id="active-filters"></div>
+        
+        <!-- Curriculum Filter -->
+        <div class="filter-section">
+            <div class="filter-section-label">Curriculum</div>
+            <div class="pill-row" id="curriculum-pills">
+                <button class="pill-btn" data-category="curriculum" data-value="CAPS">CAPS</button>
+                <button class="pill-btn" data-category="curriculum" data-value="IEB">IEB</button>
+                <button class="pill-btn" data-category="curriculum" data-value="University">University</button>
             </div>
         </div>
         
-        <!-- Search and Subject Filter Row -->
+        <!-- Grade Filter -->
+        <div class="filter-section">
+            <div class="filter-section-label">Grade</div>
+            <div class="pill-row" id="grade-pills">
+                <button class="pill-btn" data-category="grade" data-value="Grade 8">Grade 8</button>
+                <button class="pill-btn" data-category="grade" data-value="Grade 9">Grade 9</button>
+                <button class="pill-btn" data-category="grade" data-value="Grade 10">Grade 10</button>
+                <button class="pill-btn" data-category="grade" data-value="Grade 11">Grade 11</button>
+                <button class="pill-btn" data-category="grade" data-value="Grade 12">Grade 12</button>
+                <button class="pill-btn" data-category="grade" data-value="1st Year Uni">1st Year Uni</button>
+                <button class="pill-btn" data-category="grade" data-value="2nd Year Uni">2nd Year Uni</button>
+                <button class="pill-btn" data-category="grade" data-value="3rd Year Uni">3rd Year Uni</button>
+                <button class="pill-btn" data-category="grade" data-value="4th Year Uni">4th Year Uni</button>
+                <button class="pill-btn" data-category="grade" data-value="Postgraduate">Postgraduate</button>
+            </div>
+        </div>
+        
+        <!-- Subject Filter -->
+        <div class="filter-section">
+            <div class="filter-section-label">Subject</div>
+            <div class="pill-row" id="subject-pills"></div>
+        </div>
+        
+        <!-- Search and Sort Row -->
         <div class="filter-row">
             <div class="filter-group search-container">
                 <input 
@@ -556,14 +694,12 @@
                     autocomplete="off"
                 >
             </div>
-            <div class="subject-filter-container">
-                <input 
-                    type="text" 
-                    id="subject-filter-input" 
-                    class="subject-filter-input" 
-                    placeholder="Filter by subject..."
-                    autocomplete="off"
-                >
+            <div class="sort-container">
+                <select id="sort-select" class="sort-select">
+                    <option value="none">Sort by...</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                </select>
             </div>
         </div>
         
@@ -653,8 +789,18 @@
             return escapedText.replace(regex, '<span class="highlight">$1</span>');
         }
 
-        // Store all notes globally for filtering
+        // State Management: Active Filters
+        let activeFilters = {
+            curriculum: null,
+            grade: null,
+            subject: null
+        };
+        
+        // Store all notes and available subjects
         let allNotes = [];
+        let allSubjects = new Set(); // All unique subjects from entire dataset
+        let currentSort = 'none';
+        let pillAvailabilityCache = {}; // Cache for checking if pills have results
 
         // Get curriculum badge HTML
         function getCurriculumBadge(curriculum) {
@@ -674,7 +820,8 @@
             const grid = document.getElementById('notes-grid');
             
             if (!notes || notes.length === 0) {
-                if (searchTerm || currentCurriculum !== 'all' || currentSubjectFilter) {
+                const hasFilters = activeFilters.curriculum || activeFilters.grade || activeFilters.subject || searchTerm;
+                if (hasFilters) {
                     grid.innerHTML = '<div class="notes-empty">No notes found. Try adjusting your filters.</div>';
                 } else {
                     grid.innerHTML = '<div class="notes-empty">No notes yet. Click the + button to create one!</div>';
@@ -731,133 +878,275 @@
             });
         }
 
-        // Store current filter state
-        let currentCurriculum = 'all';
-        let currentSubjectFilter = '';
-        let currentSort = 'none';
-
-        // Apply all filters and sorting
-        function applyFilters() {
-            let filtered = [...allNotes];
-            const searchTerm = document.getElementById('search-input').value.trim();
+        // Update active filter tags
+        function updateActiveFilterTags() {
+            const container = document.getElementById('active-filters');
+            container.innerHTML = '';
             
-            // Filter by curriculum
-            if (currentCurriculum !== 'all') {
-                filtered = filtered.filter(note => 
-                    (note.curriculum || '').toLowerCase() === currentCurriculum.toLowerCase()
-                );
-            }
+            Object.keys(activeFilters).forEach(category => {
+                if (activeFilters[category]) {
+                    const tag = document.createElement('div');
+                    tag.className = 'active-filter-tag';
+                    const label = category === 'grade' ? activeFilters[category] : activeFilters[category];
+                    tag.innerHTML = `
+                        <span>${escapeHTML(label)}</span>
+                        <button class="clear-btn" data-category="${category}" aria-label="Clear ${category} filter">×</button>
+                    `;
+                    container.appendChild(tag);
+                }
+            });
             
-            // Filter by subject
-            if (currentSubjectFilter.trim()) {
-                const subjectLower = currentSubjectFilter.toLowerCase().trim();
-                filtered = filtered.filter(note => 
-                    (note.subject || '').toLowerCase().includes(subjectLower)
-                );
-            }
-            
-            // Filter by search term (title/content)
-            if (searchTerm) {
-                const searchLower = searchTerm.toLowerCase().trim();
-                filtered = filtered.filter(note => {
-                    const title = (note.title || '').toLowerCase();
-                    const content = (note.content || '').toLowerCase();
-                    return title.includes(searchLower) || content.includes(searchLower);
+            // Add event listeners to clear buttons
+            container.querySelectorAll('.clear-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const category = btn.getAttribute('data-category');
+                    activeFilters[category] = null;
+                    updateActiveFilterTags();
+                    updatePillStates();
+                    refreshResults();
                 });
-            }
-            
-            // Apply sorting
-            if (currentSort === 'price-low') {
-                filtered.sort((a, b) => {
-                    const priceA = a.price ? parseFloat(a.price) : Infinity;
-                    const priceB = b.price ? parseFloat(b.price) : Infinity;
-                    return priceA - priceB;
-                });
-            } else if (currentSort === 'price-high') {
-                filtered.sort((a, b) => {
-                    const priceA = a.price ? parseFloat(a.price) : -1;
-                    const priceB = b.price ? parseFloat(b.price) : -1;
-                    return priceB - priceA;
-                });
-            }
-            
-            displayNotes(filtered, searchTerm);
+            });
         }
 
-        // Filter notes based on search term (legacy function, now uses applyFilters)
-        function filterNotes(searchTerm) {
-            applyFilters();
+        // Update pill button states (active/disabled)
+        function updatePillStates() {
+            // Update active states
+            document.querySelectorAll('.pill-btn').forEach(btn => {
+                const category = btn.getAttribute('data-category');
+                const value = btn.getAttribute('data-value');
+                btn.classList.remove('active');
+                if (activeFilters[category] === value) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Check and update disabled states for subject pills
+            checkPillAvailability();
         }
 
-        // Fetch and display all notes
-        async function loadNotes() {
+        // Check if a pill combination has results (for disabled state)
+        async function checkPillAvailability() {
+            // Get all subject pills
+            const subjectPills = document.querySelectorAll('#subject-pills .pill-btn');
+            
+            if (subjectPills.length === 0) return;
+            
+            // For each subject pill, check if it would have results with current filters
+            const checkPromises = Array.from(subjectPills).map(async (pill) => {
+                const subjectValue = pill.getAttribute('data-value');
+                const cacheKey = `${activeFilters.curriculum || 'null'}_${activeFilters.grade || 'null'}_${subjectValue}`;
+                
+                // Skip if already cached
+                if (pillAvailabilityCache[cacheKey] !== undefined) {
+                    if (pillAvailabilityCache[cacheKey] === 0) {
+                        pill.classList.add('disabled');
+                    } else {
+                        pill.classList.remove('disabled');
+                    }
+                    return;
+                }
+                
+                // Build query params
+                const params = new URLSearchParams();
+                if (activeFilters.curriculum) params.append('curriculum', activeFilters.curriculum);
+                if (activeFilters.grade) params.append('grade', activeFilters.grade);
+                params.append('subject', subjectValue);
+                
+                try {
+                    const res = await fetch(`/api/search?${params.toString()}`);
+                    if (res.ok) {
+                        const results = await res.json();
+                        const count = results ? results.length : 0;
+                        pillAvailabilityCache[cacheKey] = count;
+                        
+                        if (count === 0) {
+                            pill.classList.add('disabled');
+                        } else {
+                            pill.classList.remove('disabled');
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error checking pill availability:', e);
+                    // On error, don't disable the pill
+                    pill.classList.remove('disabled');
+                }
+            });
+            
+            await Promise.all(checkPromises);
+        }
+
+        // Refresh results by fetching from API
+        async function refreshResults() {
             const grid = document.getElementById('notes-grid');
             grid.innerHTML = '<div class="loading">Loading notes...</div>';
             
+            const searchTerm = document.getElementById('search-input').value.trim();
+            
+            // Build query params
+            const params = new URLSearchParams();
+            if (activeFilters.curriculum) params.append('curriculum', activeFilters.curriculum);
+            if (activeFilters.grade) params.append('grade', activeFilters.grade);
+            if (activeFilters.subject) params.append('subject', activeFilters.subject);
+            
             try {
-                const res = await fetch('/api/notes');
+                const res = await fetch(`/api/search?${params.toString()}`);
                 if (!res.ok) throw new Error('Failed to load notes');
                 allNotes = await res.json() || [];
                 
-                // Apply filters (which will display all notes initially)
-                applyFilters();
+                // Apply client-side search filter and sorting
+                let filtered = [...allNotes];
+                
+                // Filter by search term (title/content)
+                if (searchTerm) {
+                    const searchLower = searchTerm.toLowerCase().trim();
+                    filtered = filtered.filter(note => {
+                        const title = (note.title || '').toLowerCase();
+                        const content = (note.content || '').toLowerCase();
+                        return title.includes(searchLower) || content.includes(searchLower);
+                    });
+                }
+                
+                // Apply sorting
+                if (currentSort === 'price-low') {
+                    filtered.sort((a, b) => {
+                        const priceA = a.price ? parseFloat(a.price) : Infinity;
+                        const priceB = b.price ? parseFloat(b.price) : Infinity;
+                        return priceA - priceB;
+                    });
+                } else if (currentSort === 'price-high') {
+                    filtered.sort((a, b) => {
+                        const priceA = a.price ? parseFloat(a.price) : -1;
+                        const priceB = b.price ? parseFloat(b.price) : -1;
+                        return priceB - priceA;
+                    });
+                }
+                
+                displayNotes(filtered, searchTerm);
+                
+                // Clear cache when filters change
+                pillAvailabilityCache = {};
+                updatePillStates();
             } catch (e) {
                 console.error('Error loading notes:', e);
                 grid.innerHTML = '<div class="notes-empty">Failed to load notes. Please try again later.</div>';
             }
         }
 
-        // Handle FAB click - redirect to index.html to create new note
-        document.getElementById('create-fab').addEventListener('click', () => {
-            window.location.href = '/index.html';
-        });
-
-        // Handle curriculum filter buttons
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                // Remove active class from all buttons
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                // Add active class to clicked button
-                btn.classList.add('active');
-                // Update current curriculum filter
-                currentCurriculum = btn.getAttribute('data-curriculum') || 'all';
-                // Apply filters
-                applyFilters();
+        // Update subject pills - show all subjects, mark disabled ones
+        function updateSubjectPills() {
+            const subjectPillsContainer = document.getElementById('subject-pills');
+            
+            // Clear existing pills
+            subjectPillsContainer.innerHTML = '';
+            
+            // Create pills for each unique subject from entire dataset
+            const sortedSubjects = Array.from(allSubjects).sort();
+            sortedSubjects.forEach(subject => {
+                const pill = document.createElement('button');
+                pill.className = 'pill-btn';
+                pill.setAttribute('data-category', 'subject');
+                pill.setAttribute('data-value', subject);
+                pill.textContent = subject;
+                subjectPillsContainer.appendChild(pill);
             });
-        });
+            
+            // Add event listeners to new pills
+            attachPillListeners();
+            
+            // Check availability after a short delay to allow API calls
+            setTimeout(() => {
+                checkPillAvailability();
+            }, 100);
+        }
+        
+        // Load all subjects from entire dataset
+        async function loadAllSubjects() {
+            try {
+                const res = await fetch('/api/notes');
+                if (res.ok) {
+                    const allNotesData = await res.json() || [];
+                    allSubjects.clear();
+                    allNotesData.forEach(note => {
+                        if (note.subject) {
+                            allSubjects.add(note.subject);
+                        }
+                    });
+                    updateSubjectPills();
+                    // Check availability after subjects are loaded
+                    setTimeout(() => {
+                        checkPillAvailability();
+                    }, 200);
+                }
+            } catch (e) {
+                console.error('Error loading all subjects:', e);
+            }
+        }
+
+        // Attach event listeners to pill buttons
+        function attachPillListeners() {
+            document.querySelectorAll('.pill-btn').forEach(btn => {
+                // Remove existing listeners by cloning
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+                
+                newBtn.addEventListener('click', () => {
+                    if (newBtn.classList.contains('disabled')) return;
+                    
+                    const category = newBtn.getAttribute('data-category');
+                    const value = newBtn.getAttribute('data-value');
+                    
+                    // Toggle filter: if already active, clear it; otherwise set it
+                    if (activeFilters[category] === value) {
+                        activeFilters[category] = null;
+                    } else {
+                        activeFilters[category] = value;
+                    }
+                    
+                    updateActiveFilterTags();
+                    updatePillStates();
+                    refreshResults();
+                });
+            });
+        }
 
         // Handle search input
         document.getElementById('search-input').addEventListener('input', () => {
-            applyFilters();
-        });
-
-        // Handle subject filter input
-        document.getElementById('subject-filter-input').addEventListener('input', (e) => {
-            currentSubjectFilter = e.target.value;
-            applyFilters();
+            refreshResults();
         });
 
         // Handle sort select
         document.getElementById('sort-select').addEventListener('change', (e) => {
             currentSort = e.target.value;
-            applyFilters();
+            refreshResults();
         });
 
-        // Check for curriculum parameter in URL
+        // Handle FAB click - redirect to index.html to create new note
+        document.getElementById('create-fab').addEventListener('click', () => {
+            window.location.href = '/index.html';
+        });
+
+        // Check for URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const curriculumParam = urlParams.get('curriculum');
-        if (curriculumParam && curriculumParam !== 'all') {
-            // Set the curriculum filter and activate the button
-            currentCurriculum = curriculumParam;
-            const matchingBtn = document.querySelector(`.filter-btn[data-curriculum="${curriculumParam}"]`);
-            if (matchingBtn) {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                matchingBtn.classList.add('active');
-            }
+        const gradeParam = urlParams.get('grade');
+        const subjectParam = urlParams.get('subject');
+        
+        if (curriculumParam && curriculumParam !== 'null') {
+            activeFilters.curriculum = curriculumParam;
+        }
+        if (gradeParam && gradeParam !== 'null') {
+            activeFilters.grade = gradeParam;
+        }
+        if (subjectParam && subjectParam !== 'null') {
+            activeFilters.subject = subjectParam;
         }
 
         // Initial load
-        loadNotes();
+        updateActiveFilterTags();
+        attachPillListeners();
+        loadAllSubjects(); // Load all subjects first
+        refreshResults();
     </script>
 </body>
 </html>
