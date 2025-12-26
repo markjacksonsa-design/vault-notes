@@ -4,6 +4,7 @@
     <title>Dashboard | NoteVault SA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="/auth.js"></script>
+    <script src="/global-layout.js"></script>
     <style>
         :root {
             --bg: #0D0D0D;
@@ -406,34 +407,6 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-search">
-            <input type="text" placeholder="Search notes..." id="header-search-input">
-        </div>
-        <div class="profile-container">
-            <div class="profile-icon" id="profile-icon">U</div>
-            <div class="profile-dropdown" id="profile-dropdown">
-                <a href="#" id="settings-link">Settings</a>
-                <a href="#" id="logout-link">Logout</a>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Layout -->
-    <div class="main-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <nav class="sidebar-nav">
-                <a href="/list.html">Browse</a>
-                <a href="/my-vault.html">My Vault</a>
-                <a href="/seller-dashboard.html">Earnings</a>
-            </nav>
-            <div class="sidebar-upload">
-                <a href="/index.html" class="btn-upload">Upload Note</a>
-            </div>
-        </aside>
-
         <!-- Main Content -->
         <main class="main-content">
             <div class="container">
@@ -510,7 +483,6 @@
                 </div>
             </div>
         </main>
-    </div>
 
     <script>
         // Helper for XSS-safe text
@@ -559,58 +531,6 @@
             }
         }
 
-        // Profile dropdown toggle
-        const profileIcon = document.getElementById('profile-icon');
-        const profileDropdown = document.getElementById('profile-dropdown');
-        
-        profileIcon.addEventListener('click', (e) => {
-            e.stopPropagation();
-            profileDropdown.classList.toggle('open');
-        });
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
-                profileDropdown.classList.remove('open');
-            }
-        });
-
-        // Update profile icon with user initial
-        async function updateProfileIcon() {
-            try {
-                const user = await checkAuth();
-                if (user && user.name) {
-                    const initial = user.name.charAt(0).toUpperCase();
-                    profileIcon.textContent = initial;
-                }
-            } catch (e) {
-                console.error('Error updating profile icon:', e);
-            }
-        }
-
-        // Logout handler
-        document.getElementById('logout-link').addEventListener('click', (e) => {
-            e.preventDefault();
-            // Clear session cookie
-            document.cookie = 'session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-            window.location.href = '/home.html';
-        });
-
-        // Settings handler (placeholder)
-        document.getElementById('settings-link').addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('Settings page coming soon!');
-        });
-
-        // Header search handler
-        document.getElementById('header-search-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const query = e.target.value.trim();
-                if (query) {
-                    window.location.href = `/list.html?search=${encodeURIComponent(query)}`;
-                }
-            }
-        });
 
         // Load statistics
         async function loadStats() {
@@ -742,7 +662,6 @@
         }
 
         // Initialize on page load
-        updateProfileIcon();
         loadStats();
         loadMyNotes();
         loadSales();
