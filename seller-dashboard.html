@@ -223,10 +223,10 @@
         /* Statistics Cards */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 24px;
             margin-bottom: 50px;
-            max-width: 800px;
+            max-width: 1000px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -395,6 +395,9 @@
                 grid-template-columns: 1fr;
                 max-width: 100%;
             }
+            .stat-card {
+                min-width: 0;
+            }
             .table-container {
                 overflow-x: scroll;
             }
@@ -435,6 +438,10 @@
                         <div class="stat-card">
                             <div class="stat-label">Total Sales</div>
                             <div class="stat-value" id="total-downloads">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Average Note Price</div>
+                            <div class="stat-value currency" id="avg-price">R 0.00</div>
                         </div>
                     </div>
 
@@ -533,12 +540,30 @@
                 const totalEarnings = statsData.totalEarnings || 0;
                 const totalDownloads = statsData.totalDownloads || 0;
 
+                // Calculate average note price from user's notes
+                let avgPrice = 0;
+                try {
+                    const notesRes = await fetch('/api/notes?my=true');
+                    if (notesRes.ok) {
+                        const notes = await notesRes.json() || [];
+                        const notesWithPrice = notes.filter(note => note.price && parseFloat(note.price) > 0);
+                        if (notesWithPrice.length > 0) {
+                            const totalPrice = notesWithPrice.reduce((sum, note) => sum + parseFloat(note.price), 0);
+                            avgPrice = totalPrice / notesWithPrice.length;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Could not calculate average price:', e);
+                }
+
                 document.getElementById('total-earnings').textContent = formatCurrency(totalEarnings);
                 document.getElementById('total-downloads').textContent = totalDownloads;
+                document.getElementById('avg-price').textContent = formatCurrency(avgPrice);
             } catch (err) {
                 console.error('Error loading stats:', err);
                 document.getElementById('total-earnings').textContent = 'R 0.00';
                 document.getElementById('total-downloads').textContent = '0';
+                document.getElementById('avg-price').textContent = 'R 0.00';
             }
         }
 

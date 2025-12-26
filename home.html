@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="The marketplace for CAPS, IEB, and University students to buy and sell quality study resources in South Africa.">
     <script src="/auth.js"></script>
+    <script src="/global-layout.js"></script>
     <style>
         :root {
             --bg: #0D0D0D;
@@ -30,71 +31,6 @@
             font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
             line-height: 1.6;
             overflow-x: hidden;
-        }
-        
-        /* Global Navigation Header */
-        .global-nav {
-            background: rgba(13, 13, 13, 0.85);
-            backdrop-filter: blur(10px);
-            padding: 16px 32px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            border-bottom: 2px solid var(--accent);
-            position: sticky;
-            top: 0;
-            z-index: 1002;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 100%;
-        }
-        .nav-left {
-            display: flex;
-            align-items: center;
-            gap: 32px;
-        }
-        .nav-left a {
-            color: var(--text);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-            font-size: 0.95em;
-        }
-        .nav-left a:hover {
-            color: var(--accent);
-        }
-        .nav-logo {
-            font-size: 1.4em;
-            font-weight: 700;
-            text-decoration: none;
-            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-            letter-spacing: -0.5px;
-        }
-        .nav-logo .logo-text {
-            color: var(--text);
-        }
-        .nav-logo .logo-sa {
-            color: var(--accent);
-        }
-        .nav-links {
-            display: flex;
-            gap: 24px;
-            align-items: center;
-        }
-        .nav-links a {
-            color: var(--text);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-            font-size: 0.95em;
-        }
-        .nav-links a:hover {
-            color: var(--accent);
-        }
-        .nav-btn {
-            transition: all 0.2s;
-        }
-        .nav-btn:hover {
-            opacity: 0.8;
         }
         
         /* Hero Section */
@@ -271,17 +207,6 @@
         
         /* Mobile Responsive */
         @media (max-width: 768px) {
-            .global-nav {
-                padding: 12px 20px;
-                flex-direction: row;
-            }
-            .nav-logo {
-                font-size: 1.2em;
-            }
-            .nav-links {
-                gap: 16px;
-                font-size: 0.9em;
-            }
             .hero {
                 padding: 60px 20px;
             }
@@ -307,20 +232,6 @@
     </style>
 </head>
 <body>
-    <!-- Global Navigation Header -->
-    <nav class="global-nav">
-        <div class="nav-left">
-            <a href="/home.html" class="nav-logo"><span class="logo-text">NoteVault</span> <span class="logo-sa">SA</span></a>
-            <a href="/home.html">Home</a>
-        </div>
-        <div class="nav-links">
-            <a href="/list.html">Browse Notes</a>
-            <a href="/index.html">Sell Your Notes</a>
-            <a href="/my-vault.html" id="my-vault-link" style="display: none;">My Vault</a>
-            <a href="/seller-dashboard.html" id="seller-dashboard-link" style="display: none;">Seller Dashboard</a>
-        </div>
-    </nav>
-
     <!-- Hero Section -->
     <section class="hero">
         <h1>Ace Your Exams with Top-Tier SA Notes</h1>
