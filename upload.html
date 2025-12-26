@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Note | NoteVault SA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="/auth.js"></script>
+    <script src="/global-layout.js"></script>
+    <style>
+        :root {
+            --bg: #0D0D0D;
+            --panel: #1A1A1A;
+            --input-bg: #1A1A1A;
+            --accent: #00FF85;
+            --text: #FFFFFF;
+            --subtitle: #E0E0E0;
+        }
+        html, body {
+            height: 100%;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 480px;
+            margin: 48px auto;
+            padding: 32px;
+            background: var(--panel);
+            border-radius: 14px;
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.13);
+        }
+        h1 {
+            margin-top: 0;
+            color: var(--accent);
+            font-size: 2.2em;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin: 14px 0 4px 2px;
+            color: var(--subtitle);
+            font-size: 1em;
+        }
+        input[type="text"], input[type="number"], input[type="file"], textarea, select {
+            width: 100%;
+            background: var(--input-bg);
+            color: var(--text);
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            outline: none;
+            transition: box-shadow 0.2s;
+            font-family: inherit;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, input[type="file"]:focus, textarea:focus, select:focus {
+            box-shadow: 0 0 0 2px var(--accent);
+        }
+        input[type="file"] {
+            cursor: pointer;
+            padding: 12px;
+        }
+        input[type="file"]::file-selector-button {
+            background: var(--accent);
+            color: var(--panel);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 12px;
+            transition: background 0.2s;
+        }
+        input[type="file"]::file-selector-button:hover {
+            background: #00CC6A;
+        }
+        .file-info {
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: var(--subtitle);
+        }
+        .file-info.has-file {
+            color: var(--accent);
+        }
+        .price-input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        .price-input-wrapper::before {
+            content: 'R';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--subtitle);
+            font-weight: 500;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .price-input-wrapper input[type="number"] {
+            padding-left: 28px;
+        }
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300FF85' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+        textarea {
+            min-height: 70px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        button:not(.hamburger) {
+            background: var(--accent);
+            border: none;
+            padding: 12px 25px;
+            color: #000000;
+            font-weight: bold;
+            border-radius: 6px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+            display: block;
+            width: 100%;
+            min-height: 44px;
+            box-shadow: 0 4px 16px rgba(0, 255, 133, 0.4);
+        }
+        button:not(.hamburger):hover {
+            background: var(--accent);
+            box-shadow: 0 6px 24px rgba(0, 255, 133, 0.6);
+            transform: translateY(-2px);
+        }
+        .notes-list {
+            margin-top: 40px;
+        }
+        .note {
+            background: var(--input-bg);
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+        }
+        .note-title {
+            font-size: 1.08em;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        .note-content {
+            white-space: pre-wrap;
+            margin: 7px 0 0 0;
+        }
+        .notes-empty {
+            color: #888;
+            text-align: center;
+            margin-top: 30px;
+            font-style: italic;
+        }
+        .back-link {
+            display: inline-block;
+            color: var(--subtitle);
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: var(--accent);
+        }
+        .back-link::before {
+            content: '← ';
+            margin-right: 4px;
+        }
+        .view-mode {
+            display: none;
+        }
+        .edit-mode {
+            display: block;
+        }
+        .view-mode.active {
+            display: block;
+        }
+        .edit-mode.active {
+            display: block;
+        }
+        .note-view {
+            background: var(--input-bg);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .note-view-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .note-view-content {
+            color: var(--text);
+            line-height: 1.7;
+            font-size: 1.05em;
+        }
+        .note-view-content h1,
+        .note-view-content h2,
+        .note-view-content h3 {
+            color: var(--accent);
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        .note-view-content h1 {
+            font-size: 1.8em;
+        }
+        .note-view-content h2 {
+            font-size: 1.5em;
+        }
+        .note-view-content h3 {
+            font-size: 1.3em;
+        }
+        .note-view-content p {
+            margin-bottom: 12px;
+        }
+        .note-view-content ul,
+        .note-view-content ol {
+            margin-bottom: 12px;
+            padding-left: 24px;
+        }
+        .note-view-content li {
+            margin-bottom: 6px;
+        }
+        .note-view-content code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .note-view-content pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 12px;
+        }
+        .note-view-content pre code {
+            background: none;
+            padding: 0;
+        }
+        .note-view-content blockquote {
+            border-left: 3px solid var(--accent);
+            padding-left: 16px;
+            margin-left: 0;
+            margin-bottom: 12px;
+            color: var(--subtitle);
+            font-style: italic;
+        }
+        .note-view-content a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .note-view-content a:hover {
+            text-decoration: underline;
+        }
+        .note-view-content strong {
+            font-weight: bold;
+            color: var(--accent);
+        }
+        .note-view-content em {
+            font-style: italic;
+        }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .button-group button {
+            flex: 1;
+        }
+        .btn-secondary {
+            background: var(--input-bg);
+            color: var(--text);
+        }
+        .btn-secondary:hover {
+            background: var(--panel);
+        }
+        /* Global Navigation Header */
+        .global-nav {
+            background: rgba(13, 13, 13, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 16px 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            border-bottom: 2px solid var(--accent);
+            position: sticky;
+            top: 0;
+            z-index: 1002;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+        .nav-left a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            font-size: 0.95em;
+        }
+        .nav-left a:hover {
+            color: var(--accent);
+        }
+        .nav-logo {
+            font-size: 1.4em;
+            font-weight: 700;
+            text-decoration: none;
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            letter-spacing: -0.5px;
+        }
+        .nav-logo .logo-text {
+            color: var(--text);
+        }
+        .nav-logo .logo-sa {
+            color: var(--accent);
+        }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            font-size: 0.95em;
+        }
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+        /* Navigation Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 64px;
+            height: calc(100vh - 64px);
+            width: 250px;
+            background: var(--panel);
+            padding: 20px;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        .sidebar.open {
+            transform: translateX(0);
+        }
+        .sidebar nav {
+            margin-top: 60px;
+        }
+        .sidebar a {
+            display: block;
+            color: var(--text);
+            text-decoration: none;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .sidebar a:hover {
+            background: var(--input-bg);
+            color: var(--accent);
+        }
+        .sidebar-overlay {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            display: none;
+        }
+        .sidebar-overlay.open {
+            display: block;
+        }
+        .hamburger {
+            position: fixed;
+            top: 72px;
+            left: 20px;
+            width: 44px;
+            height: 44px;
+            background: var(--panel);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1001;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            padding: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .hamburger span {
+            display: block;
+            width: 24px;
+            height: 3px;
+            background: var(--text);
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(7px, 7px);
+        }
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+        .main-content {
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+        }
+        /* Make buttons larger for touch */
+        button {
+            min-height: 44px;
+        }
+        input[type="text"], textarea {
+            font-size: 16px; /* Prevents zoom on iOS */
+        }
+        @media (max-width: 768px) {
+            .container {
+                max-width: 100%;
+                margin: 48px auto 48px;
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 1.6em;
+                margin-top: 20px;
+            }
+            .global-nav {
+                padding: 12px 20px;
+            }
+            .nav-logo {
+                font-size: 1.2em;
+            }
+            .nav-links {
+                gap: 16px;
+                font-size: 0.9em;
+            }
+            .hamburger {
+                top: 64px;
+            }
+            .sidebar {
+                top: 64px;
+                height: calc(100vh - 64px);
+            }
+            .sidebar-overlay {
+                top: 64px;
+            }
+            .note-view {
+                padding: 16px;
+            }
+            .note-view-title {
+                font-size: 1.5em;
+            }
+            /* Show hamburger menu on mobile */
+            .hamburger {
+                display: flex;
+            }
+            /* Larger touch targets */
+            input[type="text"], input[type="number"], input[type="file"], textarea, select {
+                padding: 14px 16px;
+                font-size: 16px;
+                min-height: 44px;
+            }
+            .price-input-wrapper input[type="number"] {
+                padding-left: 28px;
+            }
+            textarea {
+                min-height: 120px;
+            }
+            button {
+                min-height: 48px;
+                padding: 16px 20px;
+                font-size: 1.1em;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+            .back-link {
+                padding: 12px 0;
+                font-size: 1em;
+            }
+        }
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="container">
+        <a href="/list.html" class="back-link">Back to List</a>
+        <h1>NoteVault SA</h1>
+        
+        <!-- View Mode (for reading) -->
+        <div id="view-mode" class="view-mode">
+            <div class="note-view">
+                <div class="note-view-title" id="view-title"></div>
+                <div class="note-view-content" id="view-content"></div>
+            </div>
+            <div class="button-group">
+                <button id="edit-btn" class="btn-secondary">Edit</button>
+            </div>
+        </div>
+        
+        <!-- Edit Mode (for editing) -->
+        <div id="edit-mode" class="edit-mode">
+            <form id="note-form">
+                <label for="note-title">Note Title</label>
+                <input type="text" id="note-title" name="title" required maxlength="100" autocomplete="off" placeholder="Enter a title...">
+                
+                <label for="note-curriculum">Curriculum</label>
+                <select id="note-curriculum" name="curriculum">
+                    <option value="">Select curriculum...</option>
+                    <option value="CAPS">CAPS</option>
+                    <option value="IEB">IEB</option>
+                    <option value="University">University</option>
+                </select>
+                
+                <label for="note-level">Level</label>
+                <select id="note-level" name="level">
+                    <option value="">Select level...</option>
+                    <option value="Grade 8">Grade 8</option>
+                    <option value="Grade 9">Grade 9</option>
+                    <option value="Grade 10">Grade 10</option>
+                    <option value="Grade 11">Grade 11</option>
+                    <option value="Grade 12">Grade 12</option>
+                    <option value="1st Year Uni">1st Year Uni</option>
+                    <option value="2nd Year Uni">2nd Year Uni</option>
+                    <option value="3rd Year Uni">3rd Year Uni</option>
+                    <option value="4th Year Uni">4th Year Uni</option>
+                    <option value="Postgraduate">Postgraduate</option>
+                </select>
+                
+                <label for="note-subject">Subject</label>
+                <input type="text" id="note-subject" name="subject" maxlength="100" autocomplete="off" placeholder="e.g., Mathematics, Life Sciences, Economics...">
+                
+                <label for="note-price">Price (ZAR)</label>
+                <div class="price-input-wrapper">
+                    <input type="number" id="note-price" name="price" step="0.01" min="0" placeholder="0.00">
+                </div>
+                
+                <label for="note-pdf">PDF File (Optional)</label>
+                <input type="file" id="note-pdf" name="pdf" accept=".pdf,application/pdf">
+                <div class="file-info" id="file-info">No file selected</div>
+                
+                <label for="note-content">Note Content</label>
+                <textarea id="note-content" name="content" required maxlength="1000" placeholder="Type your note..."></textarea>
+                <div class="button-group">
+                    <button type="button" id="cancel-btn" class="btn-secondary">Cancel</button>
+                    <button type="submit" id="save-btn">Save Note</button>
+                </div>
+            </form>
+        </div>
+        </div>
+    </div>
+    
+    
+    <!-- Markdown parser library -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        // Store current note data
+        let currentNote = null;
+        let isViewMode = false;
+
+        // Get note ID from URL parameters
+        function getNoteId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+
+        // Toggle between view and edit modes
+        function setViewMode(viewMode) {
+            isViewMode = viewMode;
+            const viewModeEl = document.getElementById('view-mode');
+            const editModeEl = document.getElementById('edit-mode');
+            
+            if (viewMode) {
+                viewModeEl.classList.add('active');
+                editModeEl.classList.remove('active');
+            } else {
+                viewModeEl.classList.remove('active');
+                editModeEl.classList.add('active');
+            }
+        }
+
+        // Helper for XSS-safe text
+        function escapeHTML(str) {
+            return String(str || '')
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Render markdown content
+        function renderMarkdown(content) {
+            if (!content) return '';
+            // Use marked.js if available, otherwise render as plain text with line breaks
+            if (typeof marked !== 'undefined') {
+                return marked.parse(content);
+            } else {
+                // Fallback: preserve line breaks and basic formatting
+                return content
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.+?)\*/g, '<em>$1</em>');
+            }
+        }
+
+        // Update view mode display
+        function updateViewMode(note) {
+            document.getElementById('view-title').textContent = note.title || 'Untitled';
+            
+            // Build metadata section
+            let metadata = '';
+            if (note.curriculum || note.level || note.subject || note.price) {
+                metadata = '<div style="margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9em; color: var(--subtitle);">';
+                if (note.curriculum) metadata += `<div><strong>Curriculum:</strong> ${escapeHTML(note.curriculum)}</div>`;
+                if (note.level) metadata += `<div style="margin-top: 8px;"><strong>Level:</strong> ${escapeHTML(note.level)}</div>`;
+                if (note.subject) metadata += `<div style="margin-top: 8px;"><strong>Subject:</strong> ${escapeHTML(note.subject)}</div>`;
+                if (note.price) {
+                    const priceValue = parseFloat(note.price);
+                    if (!isNaN(priceValue)) {
+                        metadata += `<div style="margin-top: 8px;"><strong>Price:</strong> R ${priceValue.toFixed(2)}</div>`;
+                    }
+                }
+                metadata += '</div>';
+            }
+            
+            const content = note.content || '';
+            document.getElementById('view-content').innerHTML = metadata + renderMarkdown(content);
+        }
+
+        // Fetch a specific note by ID
+        async function loadNote(id) {
+            try {
+                const res = await fetch(`/api/notes?id=${id}`);
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        alert('Note not found.');
+                        window.location.href = '/list.html';
+                        return;
+                    }
+                    throw new Error('Failed to load note');
+                }
+                currentNote = await res.json();
+                
+                // Populate the form with the note data
+                document.getElementById('note-title').value = currentNote.title || '';
+                document.getElementById('note-content').value = currentNote.content || '';
+                document.getElementById('note-curriculum').value = currentNote.curriculum || '';
+                document.getElementById('note-level').value = currentNote.level || '';
+                document.getElementById('note-subject').value = currentNote.subject || '';
+                document.getElementById('note-price').value = currentNote.price || '';
+                
+                // Show in view mode by default
+                updateViewMode(currentNote);
+                setViewMode(true);
+            } catch (err) {
+                console.error('Error loading note:', err);
+                alert('Failed to load note.');
+                window.location.href = '/list.html';
+            }
+        }
+
+        // Handle Edit button click
+        document.getElementById('edit-btn').addEventListener('click', () => {
+            setViewMode(false);
+        });
+
+        // Handle Cancel button click
+        document.getElementById('cancel-btn').addEventListener('click', () => {
+            const noteId = getNoteId();
+            if (noteId && currentNote) {
+                // Restore original values and switch back to view mode
+                document.getElementById('note-title').value = currentNote.title || '';
+                document.getElementById('note-content').value = currentNote.content || '';
+                document.getElementById('note-curriculum').value = currentNote.curriculum || '';
+                document.getElementById('note-level').value = currentNote.level || '';
+                document.getElementById('note-subject').value = currentNote.subject || '';
+                document.getElementById('note-price').value = currentNote.price || '';
+                setViewMode(true);
+            } else {
+                // For new notes, redirect to list
+                window.location.href = '/list.html';
+            }
+        });
+
+        // Handle file input change
+        document.getElementById('note-pdf').addEventListener('change', function(e) {
+            const fileInfo = document.getElementById('file-info');
+            const file = e.target.files[0];
+            if (file) {
+                fileInfo.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                fileInfo.classList.add('has-file');
+            } else {
+                fileInfo.textContent = 'No file selected';
+                fileInfo.classList.remove('has-file');
+            }
+        });
+
+        // Handle note submission
+        document.getElementById('note-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const title = form['title'].value.trim();
+            const content = form['content'].value.trim();
+            const curriculum = form['curriculum'].value;
+            const level = form['level'].value;
+            const subject = form['subject'].value.trim();
+            const price = form['price'].value ? parseFloat(form['price'].value) : null;
+            const pdfFile = form['pdf'].files[0];
+            if (!title || !content) return;
+
+            const noteId = getNoteId();
+            const isEditing = noteId !== null;
+            const btn = document.getElementById('save-btn');
+            
+            btn.disabled = true;
+            btn.innerText = isEditing ? 'Updating...' : 'Saving...';
+            
+            try {
+                let pdfKey = null;
+                
+                // Upload PDF if provided
+                if (pdfFile) {
+                    const formData = new FormData();
+                    formData.append('file', pdfFile);
+                    
+                    const uploadRes = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!uploadRes.ok) {
+                        throw new Error('Failed to upload PDF');
+                    }
+                    
+                    const uploadData = await uploadRes.json();
+                    pdfKey = uploadData.key;
+                }
+                
+                const url = isEditing ? `/api/notes?id=${noteId}` : '/api/notes';
+                const method = isEditing ? 'PUT' : 'POST';
+                
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        title, 
+                        content,
+                        curriculum,
+                        level,
+                        subject,
+                        price,
+                        pdf_key: pdfKey
+                    })
+                });
+                
+                if (!res.ok) throw new Error(isEditing ? 'Update failed' : 'Save failed');
+                
+                // Update current note data and switch to view mode
+                if (isEditing) {
+                    // Reload the note to get latest data from server
+                    await loadNote(noteId);
+                } else {
+                    // For new notes, redirect to list
+                    window.location.href = '/list.html';
+                }
+            } catch (err) {
+                console.error('Error saving note:', err);
+                alert(isEditing ? 'Failed to update note.' : 'Failed to save note.');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = isEditing ? 'Update Note' : 'Save Note';
+            }
+        });
+
+        // Initialize: Check if we're editing an existing note
+        const noteId = getNoteId();
+        if (noteId) {
+            // Update button text for editing mode
+            document.getElementById('save-btn').innerText = 'Update Note';
+            // Load the note data (will show in view mode)
+            loadNote(noteId);
+        } else {
+            // For new notes, show edit mode by default
+            setViewMode(false);
+        }
+    </script>
+</body>
+</html>

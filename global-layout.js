@@ -1,6 +1,23 @@
 // Global Layout System - Simple and consistent sidebar and header
 
 /**
+ * Check if current page should show sidebar
+ */
+function shouldShowSidebar() {
+    const path = window.location.pathname;
+    // Show sidebar on app pages, hide on home page
+    const appPages = ['/list.html', '/browse.html', '/my-vault.html', '/vault.html', '/seller-dashboard.html', '/earnings.html', '/profile.html', '/upload.html'];
+    const homePages = ['/', '/index.html', '/home.html'];
+    
+    // Don't show sidebar on home pages
+    if (homePages.some(page => path === page || path === page.replace('.html', ''))) {
+        return false;
+    }
+    
+    return appPages.some(page => path.includes(page) || path === page.replace('.html', ''));
+}
+
+/**
  * Initialize global layout (sidebar and header)
  */
 async function initGlobalLayout() {
@@ -9,8 +26,9 @@ async function initGlobalLayout() {
         injectGlobalHeader();
     }
     
-    // Inject sidebar if it doesn't exist
-    if (!document.querySelector('.global-sidebar')) {
+    // Inject sidebar only on app pages
+    const showSidebar = shouldShowSidebar();
+    if (showSidebar && !document.querySelector('.global-sidebar')) {
         injectGlobalSidebar();
     }
     
@@ -21,21 +39,44 @@ async function initGlobalLayout() {
     await updateHeaderProfile();
     
     // Adjust main content for sidebar
-    adjustMainContentForSidebar();
+    if (showSidebar) {
+        adjustMainContentForSidebar();
+    }
 }
 
 /**
  * Inject global header with search and profile/login
  */
 function injectGlobalHeader() {
-    const headerHTML = `
+    const path = window.location.pathname;
+    const isHomePage = path === '/' || path === '/index.html' || path === '/home.html';
+    
+    const headerHTML = isHomePage ? `
+        <header class="global-header home-header">
+            <a href="/" class="header-logo">
+                <span class="logo-text">NoteVault</span> <span class="logo-sa">SA</span>
+            </a>
+            <div class="profile-container">
+                <div class="profile-icon" id="profile-icon">Login</div>
+                <div class="profile-dropdown" id="profile-dropdown" style="display: none;">
+                    <a href="#" id="settings-link">Settings</a>
+                    <a href="#" id="logout-link">Logout</a>
+                </div>
+            </div>
+        </header>
+    ` : `
         <header class="global-header">
             <div class="header-search">
                 <input type="text" placeholder="Search notes..." id="header-search-input" class="header-search-input">
             </div>
             <div class="profile-container">
-                <div class="profile-icon" id="profile-icon">Login</div>
-                <div class="profile-dropdown" id="profile-dropdown" style="display: none;">
+                <button class="profile-button" id="profile-button">
+                    <span class="profile-text">Profile</span>
+                    <span class="profile-bubble" id="profile-bubble">U</span>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="profile-dropdown" id="profile-dropdown">
+                    <a href="/profile.html" id="profile-link">My Profile</a>
                     <a href="#" id="settings-link">Settings</a>
                     <a href="#" id="logout-link">Logout</a>
                 </div>
@@ -67,6 +108,22 @@ function injectGlobalHeader() {
                 align-items: center;
                 gap: 24px;
                 height: 72px;
+            }
+            .global-header.home-header {
+                justify-content: space-between;
+            }
+            .header-logo {
+                font-size: 1.4em;
+                font-weight: 700;
+                text-decoration: none;
+                font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+                letter-spacing: -0.5px;
+            }
+            .header-logo .logo-text {
+                color: var(--text);
+            }
+            .header-logo .logo-sa {
+                color: var(--accent);
             }
             .header-search {
                 flex: 1;
@@ -115,20 +172,46 @@ function injectGlobalHeader() {
                 color: var(--bg);
                 border-color: var(--accent);
             }
-            .profile-icon.logged-in {
-                width: 40px;
-                height: 40px;
-                min-width: 40px;
+            .profile-button {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: var(--input-bg);
+                color: var(--text);
+                border: 2px solid transparent;
+                border-radius: 8px;
+                padding: 8px 16px;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.95em;
+                transition: all 0.2s;
+            }
+            .profile-button:hover {
+                background: var(--panel);
+                border-color: var(--accent);
+            }
+            .profile-text {
+                color: var(--text);
+            }
+            .profile-bubble {
+                width: 32px;
+                height: 32px;
                 border-radius: 50%;
                 background: var(--accent);
                 color: var(--bg);
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 font-weight: 700;
-                font-size: 1.1em;
-                padding: 0;
+                font-size: 0.9em;
             }
-            .profile-icon.logged-in:hover {
-                transform: scale(1.05);
-                box-shadow: 0 0 0 3px rgba(0, 255, 133, 0.2);
+            .dropdown-arrow {
+                font-size: 0.7em;
+                color: var(--subtitle);
+                transition: transform 0.2s;
+            }
+            .profile-button.open .dropdown-arrow {
+                transform: rotate(180deg);
             }
             .profile-dropdown {
                 position: absolute;
@@ -158,7 +241,7 @@ function injectGlobalHeader() {
                 background: var(--input-bg);
                 color: var(--accent);
             }
-            .profile-dropdown a:first-child {
+            .profile-dropdown a:not(:last-child) {
                 border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             }
             body {
@@ -180,6 +263,13 @@ function injectGlobalHeader() {
                     padding: 8px 16px;
                     font-size: 0.85em;
                 }
+                .profile-button {
+                    padding: 6px 12px;
+                    font-size: 0.85em;
+                }
+                .profile-text {
+                    display: none;
+                }
             }
         `;
         document.head.appendChild(style);
@@ -199,9 +289,10 @@ function injectGlobalSidebar() {
                 <a href="/list.html" class="sidebar-link" data-page="browse">Browse</a>
                 <a href="/my-vault.html" class="sidebar-link" data-page="vault">My Vault</a>
                 <a href="/seller-dashboard.html" class="sidebar-link" data-page="earnings">Earnings</a>
+                <a href="/profile.html" class="sidebar-link" data-page="profile">My Profile</a>
             </nav>
             <div class="sidebar-upload">
-                <a href="/index.html" class="btn-upload">Upload Note</a>
+                <a href="/upload.html" class="btn-upload">Upload Note</a>
             </div>
         </aside>
     `;
@@ -392,10 +483,29 @@ function adjustMainContentForSidebar() {
  * Setup header event listeners
  */
 function setupHeaderListeners() {
+    const profileButton = document.getElementById('profile-button');
     const profileIcon = document.getElementById('profile-icon');
     const profileDropdown = document.getElementById('profile-dropdown');
     const searchInput = document.getElementById('header-search-input');
     
+    // Handle profile button (app pages)
+    if (profileButton && profileDropdown) {
+        profileButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileButton.classList.toggle('open');
+            profileDropdown.classList.toggle('open');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!profileButton.contains(e.target) && !profileDropdown.contains(e.target)) {
+                profileButton.classList.remove('open');
+                profileDropdown.classList.remove('open');
+            }
+        });
+    }
+    
+    // Handle profile icon (home page)
     if (profileIcon && profileDropdown) {
         profileIcon.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -433,7 +543,7 @@ function setupHeaderListeners() {
         logoutLink.addEventListener('click', (e) => {
             e.preventDefault();
             document.cookie = 'session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-            window.location.href = '/home.html';
+            window.location.href = '/';
         });
     }
     
@@ -459,13 +569,14 @@ function setupSidebarListeners() {
         if (currentPath === href || 
             (currentPath === '/' && href === '/list.html') ||
             (currentPath.includes('seller-dashboard') && href.includes('seller-dashboard')) ||
-            (currentPath.includes('my-vault') && href.includes('my-vault'))) {
+            (currentPath.includes('my-vault') && href.includes('my-vault')) ||
+            (currentPath.includes('profile') && href.includes('profile'))) {
             link.classList.add('active');
         }
     });
     
-    // Handle protected links (My Vault, Earnings)
-    document.querySelectorAll('.sidebar-link[data-page="vault"], .sidebar-link[data-page="earnings"]').forEach(link => {
+    // Handle protected links (My Vault, Earnings, Profile)
+    document.querySelectorAll('.sidebar-link[data-page="vault"], .sidebar-link[data-page="earnings"], .sidebar-link[data-page="profile"]').forEach(link => {
         link.addEventListener('click', async (e) => {
             const user = await checkAuth();
             if (!user) {
@@ -485,39 +596,57 @@ async function updateSidebarAuth() {
 }
 
 /**
- * Update header profile icon
+ * Update header profile icon/button
  */
 async function updateHeaderProfile() {
+    const profileButton = document.getElementById('profile-button');
+    const profileBubble = document.getElementById('profile-bubble');
     const profileIcon = document.getElementById('profile-icon');
-    if (!profileIcon) return;
     
     try {
         const user = await checkAuth();
         if (user && user.name) {
             const initial = user.name.charAt(0).toUpperCase();
-            profileIcon.textContent = initial;
-            profileIcon.classList.add('logged-in');
             
-            // Show dropdown menu
-            const dropdown = document.getElementById('profile-dropdown');
-            if (dropdown) {
-                dropdown.style.display = 'block';
+            // Update app page profile button
+            if (profileBubble) {
+                profileBubble.textContent = initial;
+            }
+            
+            // Update home page profile icon
+            if (profileIcon) {
+                profileIcon.textContent = initial;
+                profileIcon.classList.add('logged-in');
+                
+                // Show dropdown menu
+                const dropdown = document.getElementById('profile-dropdown');
+                if (dropdown) {
+                    dropdown.style.display = 'block';
+                }
             }
         } else {
-            // Not logged in - show login button
-            profileIcon.textContent = 'Login / Sign Up';
-            profileIcon.classList.remove('logged-in');
+            // Not logged in
+            if (profileBubble) {
+                profileBubble.textContent = '?';
+            }
             
-            // Hide dropdown
-            const dropdown = document.getElementById('profile-dropdown');
-            if (dropdown) {
-                dropdown.style.display = 'none';
+            if (profileIcon) {
+                profileIcon.textContent = 'Login';
+                profileIcon.classList.remove('logged-in');
+                
+                // Hide dropdown
+                const dropdown = document.getElementById('profile-dropdown');
+                if (dropdown) {
+                    dropdown.style.display = 'none';
+                }
             }
         }
     } catch (e) {
         console.error('Error updating header profile:', e);
-        profileIcon.textContent = 'Login / Sign Up';
-        profileIcon.classList.remove('logged-in');
+        if (profileIcon) {
+            profileIcon.textContent = 'Login';
+            profileIcon.classList.remove('logged-in');
+        }
     }
 }
 
