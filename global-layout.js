@@ -372,7 +372,7 @@ function injectGlobalSidebar() {
                 color: var(--accent);
             }
             .sidebar-upload {
-                padding: 16px 20px;
+                padding: 12px 16px;
                 border-top: 1px solid rgba(255, 255, 255, 0.1);
                 margin-top: auto;
             }
@@ -381,28 +381,28 @@ function injectGlobalSidebar() {
                 background: var(--accent);
                 color: #000000;
                 border: none;
-                padding: 10px 16px;
-                font-size: 0.9em;
-                font-weight: 600;
-                border-radius: 6px;
+                padding: 6px 12px;
+                font-size: 0.8em;
+                font-weight: 500;
+                border-radius: 4px;
                 cursor: pointer;
                 text-decoration: none;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 6px;
+                gap: 4px;
                 transition: all 0.3s;
-                box-shadow: 0 2px 8px rgba(0, 255, 133, 0.3), 0 0 0 1px rgba(0, 255, 133, 0.2);
+                box-shadow: 0 1px 4px rgba(0, 255, 133, 0.2);
             }
             .btn-upload:hover {
                 transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(0, 255, 133, 0.5), 0 0 0 1px rgba(0, 255, 133, 0.3);
+                box-shadow: 0 2px 6px rgba(0, 255, 133, 0.4);
                 background: #00e677;
             }
             .btn-upload::before {
                 content: '+';
-                font-size: 1.1em;
-                font-weight: 700;
+                font-size: 0.9em;
+                font-weight: 600;
             }
             /* Main Content Area - Must have margin-left to account for fixed sidebar */
             .main-content-with-sidebar {

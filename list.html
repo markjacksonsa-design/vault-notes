@@ -27,16 +27,12 @@
             margin: 0;
             padding: 0;
         }
-        /* App Shell Structure - Fixed Sidebar + Main Content */
+        /* Simple Two-Column Shell */
         body {
             margin: 0;
             padding: 0;
-            display: flex;
-            min-height: 100vh;
-            flex-direction: column;
-            overflow-x: hidden;
         }
-        /* Sidebar - Fixed on left, NOT part of flex flow */
+        /* Left Column - Sidebar */
         .global-sidebar {
             width: 250px;
             height: 100vh;
@@ -45,29 +41,21 @@
             top: 0;
             z-index: 1001;
         }
-        /* Main Body - Starts after 250px sidebar */
+        /* Right Column - Main Content */
         .main-body {
             margin-left: 250px;
-            flex: 1;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
             width: calc(100% - 250px);
+            min-height: 100vh;
+            background: var(--bg);
         }
         .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
             width: 100%;
-            min-height: 0;
+            padding: 40px 32px;
         }
         .container {
             width: 100%;
-            padding: 32px 24px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
+            max-width: 1400px;
+            margin: 0 auto;
         }
         h1 {
             margin-top: 0;
@@ -579,47 +567,6 @@
         .hamburger.active span:nth-child(3) {
             transform: rotate(-45deg) translate(7px, -7px);
         }
-        /* Footer - Inside main-content, at bottom */
-        footer {
-            position: relative !important;
-            clear: both !important;
-            width: 100% !important;
-            display: block !important;
-            border: 2px solid red !important; /* Temporary debug border */
-            background: var(--panel);
-            border-top: 2px solid rgba(0, 255, 133, 0.2);
-            padding: 32px;
-            text-align: center;
-            color: var(--subtitle);
-            flex-shrink: 0;
-            margin-top: auto;
-        }
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 32px;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-        }
-        .footer-links a {
-            color: var(--subtitle);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-        .footer-links a:hover {
-            color: var(--accent);
-        }
-        .footer-copyright {
-            color: var(--subtitle);
-            font-size: 0.9em;
-            margin-top: 16px;
-        }
-        
         /* Remove all floats from main containers */
         .main-body,
         .main-content,
@@ -810,21 +757,7 @@
         </div>
             </div>
         </div>
-        <!-- Footer inside main-content -->
-        <footer>
-            <div class="footer-content">
-                <div class="footer-links">
-                    <a href="/info.html">About</a>
-                    <a href="/info.html#reputation">Reputation System</a>
-                    <a href="/legal">Terms & Conditions</a>
-                    <a href="/legal#privacy">Privacy Policy</a>
-                    <a href="mailto:support@notevaultsa.com">Support</a>
-                </div>
-                <div class="footer-copyright">
-                    &copy; 2024 NoteVault SA. All rights reserved.
-                </div>
             </div>
-        </footer>
         </div>
     </div>
     <button class="fab" id="create-fab" title="Create New Note">+</button>
