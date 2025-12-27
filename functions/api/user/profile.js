@@ -8,10 +8,10 @@ export async function onRequest(context) {
             return new Response('Database not available', { status: 500 });
         }
 
-        // Handle GET request - fetch seller statistics
+        // Handle GET request - fetch user profile
         if (request.method === 'GET') {
-            // Get sellerId from session cookie
-            let sellerId = null;
+            // Get userId from session cookie
+            let userId = null;
             try {
                 const cookieHeader = request.headers.get('Cookie');
                 if (cookieHeader) {
@@ -25,14 +25,14 @@ export async function onRequest(context) {
                     if (sessionCookie) {
                         const decoded = atob(sessionCookie);
                         const sessionData = JSON.parse(decoded);
-                        sellerId = sessionData.userId || null;
+                        userId = sessionData.userId || null;
                     }
                 }
             } catch (e) {
-                console.log('Could not extract sellerId from session:', e);
+                console.log('Could not extract userId from session:', e);
             }
 
-            if (!sellerId) {
+            if (!userId) {
                 return new Response(
                     JSON.stringify({ error: 'Not authenticated' }),
                     {
@@ -42,50 +42,47 @@ export async function onRequest(context) {
                 );
             }
 
-            // Get total earnings from completed sales for this seller
-            // SUM returns NULL when there are no rows, so we handle that explicitly
-            const earningsResult = await db.prepare(
-                "SELECT COALESCE(SUM(amount), 0) as total FROM sales WHERE sellerId = ? AND status = 'completed'"
-            )
-                .bind(sellerId)
-                .first();
-
-            const totalEarnings = earningsResult?.total ?? 0;
-
-            // Get total downloads (count of completed sales)
-            const downloadsResult = await db.prepare(
-                "SELECT COUNT(*) as count FROM sales WHERE sellerId = ? AND status = 'completed'"
-            )
-                .bind(sellerId)
-                .first();
-
-            const totalDownloads = downloadsResult?.count || 0;
-
-            // Get active listings (notes with price > 0 or with completed sales)
-            const activeListingsResult = await db.prepare(`
-                SELECT COUNT(DISTINCT n.id) as count
-                FROM notes n
-                LEFT JOIN sales s ON n.id = s.noteId AND s.sellerId = ? AND s.status = 'completed'
-                WHERE n.seller_id = ? AND (n.price > 0 OR s.id IS NOT NULL)
-            `)
-                .bind(sellerId, sellerId)
-                .first();
-
-            const activeListings = activeListingsResult?.count || 0;
-
-            // Get user's reputation points and tier
+            // Get user profile data
             const userResult = await db.prepare(
-                "SELECT reputation_points, tier FROM users WHERE id = ?"
+                "SELECT id, name, email, created_at, reputation_points, tier FROM users WHERE id = ?"
             )
-                .bind(sellerId)
+                .bind(userId)
                 .first();
+
+            if (!userResult) {
+                return new Response(
+                    JSON.stringify({ error: 'User not found' }),
+                    {
+                        status: 404,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+            }
+
+            // Get total notes uploaded by this user
+            const notesResult = await db.prepare(
+                "SELECT COUNT(*) as count FROM notes WHERE seller_id = ?"
+            )
+                .bind(userId)
+                .first();
+
+            const totalNotes = notesResult?.count || 0;
+
+            // Get total vouches received (sales where is_vouched = 1 for this seller)
+            const vouchesResult = await db.prepare(
+                "SELECT COUNT(*) as count FROM sales WHERE sellerId = ? AND is_vouched = 1"
+            )
+                .bind(userId)
+                .first();
+
+            const totalVouches = vouchesResult?.count || 0;
 
             // Recalculate reputation to ensure it's up-to-date
             let reputationPoints = 0;
             let tier = 'Candidate';
             try {
                 const { calculateUserReputation } = await import('../../utils/reputation.js');
-                const reputationData = await calculateUserReputation(db, sellerId);
+                const reputationData = await calculateUserReputation(db, userId);
                 reputationPoints = reputationData.reputationPoints;
                 tier = reputationData.tier;
             } catch (e) {
@@ -95,15 +92,23 @@ export async function onRequest(context) {
                 tier = userResult?.tier || 'Candidate';
             }
 
-            // Return statistics
+            // Return user profile data
             return new Response(
                 JSON.stringify({
                     success: true,
-                    totalEarnings: totalEarnings,
-                    totalDownloads: totalDownloads,
-                    activeListings: activeListings,
-                    reputationPoints: reputationPoints,
-                    tier: tier
+                    user: {
+                        id: userResult.id,
+                        name: userResult.name,
+                        email: userResult.email,
+                        created_at: userResult.created_at,
+                        reputation_points: reputationPoints,
+                        tier: tier,
+                        verified: false // Placeholder - can be updated when verification system is implemented
+                    },
+                    stats: {
+                        totalNotes: totalNotes,
+                        totalVouches: totalVouches
+                    }
                 }),
                 {
                     status: 200,
@@ -125,7 +130,7 @@ export async function onRequest(context) {
         );
 
     } catch (error) {
-        console.error('Seller stats API error:', error);
+        console.error('User profile API error:', error);
         return new Response(
             JSON.stringify({ 
                 error: 'Internal server error', 

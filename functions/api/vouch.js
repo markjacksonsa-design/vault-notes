@@ -145,36 +145,17 @@ export async function onRequest(context) {
             }
 
             // Import reputation utilities
-            const { updateUserTier } = await import('../utils/reputation.js');
+            const { calculateUserReputation } = await import('../utils/reputation.js');
 
-            // Get seller's current reputation points
-            const seller = await db.prepare("SELECT reputation_points FROM users WHERE id = ?")
-                .bind(sellerId)
-                .first();
-
-            if (!seller) {
-                return new Response(
-                    JSON.stringify({ error: 'Seller not found' }),
-                    {
-                        status: 404,
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            ...corsHeaders
-                        }
-                    }
-                );
-            }
-
-            // Add 10 reputation points to seller
-            const newPoints = (seller.reputation_points || 0) + 10;
-            await updateUserTier(db, sellerId, newPoints);
-
-            // Mark sale as vouched
+            // Mark sale as vouched first
             await db.prepare(
                 "UPDATE sales SET is_vouched = 1 WHERE id = ?"
             )
                 .bind(saleId)
                 .run();
+
+            // Recalculate seller's reputation (includes the new vouch)
+            const reputationData = await calculateUserReputation(db, sellerId);
 
             // Get updated seller info with tier
             const updatedSeller = await db.prepare("SELECT reputation_points, tier FROM users WHERE id = ?")

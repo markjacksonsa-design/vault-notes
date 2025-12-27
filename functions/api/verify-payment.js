@@ -1,5 +1,3 @@
-import { updateUserTier } from '../utils/reputation.js';
-
 export async function onRequest(context) {
     try {
         const { request } = context;
@@ -219,20 +217,12 @@ export async function onRequest(context) {
                     if (insertResult.success) {
                         console.log(`Sale logged successfully: PaystackRef ${reference}, Note ${noteId}, Buyer ${userId}, Seller ${sellerId}, Amount R${amount}`);
                         
-                        // Add 2 reputation points to seller when sale is completed
+                        // Recalculate seller's reputation when sale is completed
                         if (sellerId) {
                             try {
-                                // Get current reputation points
-                                const seller = await db.prepare("SELECT reputation_points FROM users WHERE id = ?")
-                                    .bind(sellerId)
-                                    .first();
-                                
-                                if (seller) {
-                                    const newPoints = (seller.reputation_points || 0) + 2;
-                                    // Update reputation points and tier
-                                    await updateUserTier(db, sellerId, newPoints);
-                                    console.log(`Added 2 reputation points to seller ${sellerId}. New total: ${newPoints}`);
-                                }
+                                const { calculateUserReputation } = await import('../utils/reputation.js');
+                                const reputationData = await calculateUserReputation(db, sellerId);
+                                console.log(`Recalculated reputation for seller ${sellerId}. Total points: ${reputationData.reputationPoints}, Tier: ${reputationData.tier}`);
                             } catch (reputationError) {
                                 // Log error but don't fail the payment verification
                                 console.error('Error updating seller reputation:', reputationError);

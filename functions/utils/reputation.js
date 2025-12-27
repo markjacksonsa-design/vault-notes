@@ -117,3 +117,53 @@ export async function updateUserTier(db, userId, newPoints) {
     return tier;
 }
 
+/**
+ * Calculate user reputation from sales and vouches
+ * This function recalculates reputation points from scratch:
+ * - Each completed sale = 2 points
+ * - Each vouch received = 10 points
+ * @param {Object} db - D1 database instance
+ * @param {number} userId - User ID
+ * @returns {Promise<Object>} Updated reputation and tier information
+ */
+export async function calculateUserReputation(db, userId) {
+    if (!userId) {
+        throw new Error('User ID is required');
+    }
+    
+    // Count completed sales (2 points each)
+    const salesResult = await db.prepare(
+        "SELECT COUNT(*) as count FROM sales WHERE sellerId = ? AND status = 'completed'"
+    )
+        .bind(userId)
+        .first();
+    
+    const salesCount = salesResult?.count || 0;
+    const salesPoints = salesCount * 2;
+    
+    // Count vouches received (10 points each)
+    const vouchesResult = await db.prepare(
+        "SELECT COUNT(*) as count FROM sales WHERE sellerId = ? AND is_vouched = 1"
+    )
+        .bind(userId)
+        .first();
+    
+    const vouchesCount = vouchesResult?.count || 0;
+    const vouchesPoints = vouchesCount * 10;
+    
+    // Calculate total reputation points
+    const totalPoints = salesPoints + vouchesPoints;
+    
+    // Update user's reputation and tier
+    const tier = await updateUserTier(db, userId, totalPoints);
+    
+    return {
+        reputationPoints: totalPoints,
+        tier: tier.name,
+        salesCount: salesCount,
+        vouchesCount: vouchesCount,
+        salesPoints: salesPoints,
+        vouchesPoints: vouchesPoints
+    };
+}
+

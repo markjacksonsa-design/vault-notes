@@ -387,7 +387,7 @@
             const emptyEl = document.getElementById('empty-state');
             
             try {
-                const res = await fetch('/api/my-purchases');
+                const res = await fetch('/api/vault');
                 if (!res.ok) {
                     if (res.status === 401) {
                         window.location.href = '/login.html?redirect=/my-vault.html';
