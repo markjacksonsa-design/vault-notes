@@ -44,7 +44,7 @@ export async function onRequest(context) {
 
             // Get user profile data
             const userResult = await db.prepare(
-                "SELECT id, name, email, created_at, reputation_points, tier FROM users WHERE id = ?"
+                "SELECT id, name, email, created_at, reputation_points, tier, bio FROM users WHERE id = ?"
             )
                 .bind(userId)
                 .first();
@@ -120,6 +120,7 @@ export async function onRequest(context) {
                         created_at: userResult.created_at,
                         reputation_points: reputationPoints,
                         tier: tier,
+                        bio: userResult.bio || '',
                         verified: false // Placeholder - can be updated when verification system is implemented
                     },
                     stats: {

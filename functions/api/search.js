@@ -57,7 +57,7 @@ export async function onRequest(context) {
                 if (note.seller_id) {
                     try {
                         const seller = await db.prepare(
-                            "SELECT tier, reputation_points FROM users WHERE id = ?"
+                            "SELECT tier, reputation_points, name FROM users WHERE id = ?"
                         )
                             .bind(note.seller_id)
                             .first();
@@ -65,9 +65,11 @@ export async function onRequest(context) {
                         if (seller) {
                             note.seller_tier = seller.tier || 'Candidate';
                             note.seller_reputation_points = seller.reputation_points || 0;
+                            note.seller_name = seller.name || 'Unknown Seller';
                         } else {
                             note.seller_tier = 'Candidate';
                             note.seller_reputation_points = 0;
+                            note.seller_name = 'Unknown Seller';
                         }
                     } catch (e) {
                         console.error('Error fetching seller tier:', e);

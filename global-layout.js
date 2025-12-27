@@ -331,7 +331,7 @@ function injectGlobalSidebar() {
                 border-right: 1px solid rgba(255, 255, 255, 0.1);
                 display: flex;
                 flex-direction: column;
-                padding: 24px 0;
+                padding: 20px 0;
                 overflow-y: auto;
                 position: fixed;
                 left: 0;
@@ -341,14 +341,15 @@ function injectGlobalSidebar() {
             }
             .sidebar-nav {
                 flex: 1;
+                padding-bottom: 8px;
             }
             .sidebar-nav a {
                 display: block;
-                padding: 14px 24px;
+                padding: 12px 20px;
                 color: var(--text);
                 text-decoration: none;
                 transition: all 0.2s;
-                font-size: 0.95em;
+                font-size: 0.9em;
                 font-weight: 500;
                 border-left: 3px solid transparent;
             }
@@ -363,7 +364,7 @@ function injectGlobalSidebar() {
                 color: var(--accent);
             }
             .sidebar-upload {
-                padding: 24px;
+                padding: 16px 20px;
                 border-top: 1px solid rgba(255, 255, 255, 0.1);
                 margin-top: auto;
             }
@@ -372,31 +373,35 @@ function injectGlobalSidebar() {
                 background: var(--accent);
                 color: #000000;
                 border: none;
-                padding: 14px 24px;
-                font-size: 1em;
-                font-weight: 700;
-                border-radius: 8px;
+                padding: 10px 16px;
+                font-size: 0.9em;
+                font-weight: 600;
+                border-radius: 6px;
                 cursor: pointer;
                 text-decoration: none;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 8px;
+                gap: 6px;
                 transition: all 0.3s;
-                box-shadow: 0 4px 16px rgba(0, 255, 133, 0.4);
+                box-shadow: 0 2px 8px rgba(0, 255, 133, 0.3), 0 0 0 1px rgba(0, 255, 133, 0.2);
             }
             .btn-upload:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 24px rgba(0, 255, 133, 0.6);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0, 255, 133, 0.5), 0 0 0 1px rgba(0, 255, 133, 0.3);
+                background: #00e677;
             }
             .btn-upload::before {
                 content: '+';
-                font-size: 1.3em;
-                font-weight: 800;
+                font-size: 1.1em;
+                font-weight: 700;
             }
             .main-content-with-sidebar {
                 margin-left: 260px;
                 transition: margin-left 0.3s;
+                min-height: calc(100vh - 72px);
+                display: flex;
+                flex-direction: column;
             }
             @media (max-width: 768px) {
                 .global-sidebar {

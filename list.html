@@ -24,11 +24,21 @@
             min-height: 100vh;
             margin: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 32px 24px 100px 24px;
+            padding: 32px 24px 40px 24px;
+            width: 100%;
+            flex: 1;
         }
         h1 {
             margin-top: 0;
@@ -140,6 +150,17 @@
             margin-top: 8px;
             font-size: 0.9em;
             color: var(--subtitle);
+            flex-wrap: wrap;
+        }
+        .seller-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .seller-link:hover {
+            color: #00CC6A;
+            text-decoration: underline;
         }
         .badge.level {
             background: rgba(255, 255, 255, 0.1);
@@ -195,12 +216,14 @@
             margin-top: 60px;
             font-style: italic;
             font-size: 1.1em;
+            padding-bottom: 20px;
         }
         .loading {
             color: var(--subtitle);
             text-align: center;
             margin-top: 60px;
             font-size: 1.1em;
+            padding-bottom: 20px;
         }
         .filter-section {
             margin-bottom: 24px;
@@ -839,9 +862,19 @@
                 }
                 const badgesHTML = badges.length > 0 ? `<div class="note-badges">${badges.join('')}</div>` : '';
                 
-                // Get seller tier badge
+                // Get seller tier badge and seller info
                 const sellerTier = note.seller_tier || 'Candidate';
+                const sellerId = note.seller_id || note.sellerId;
+                const sellerName = note.seller_name || note.sellerName || 'Unknown Seller';
                 const tierBadgeHTML = sellerTier ? `<span class="tier-badge ${sellerTier.toLowerCase()}">${escapeHTML(sellerTier)}</span>` : '';
+                
+                // Create clickable seller link if sellerId exists
+                let sellerHTML = '<span>Seller:</span>';
+                if (sellerId) {
+                    sellerHTML = `<span>Seller: <a href="/profile/${sellerId}" class="seller-link" onclick="event.stopPropagation();">${escapeHTML(sellerName)}</a></span>`;
+                } else {
+                    sellerHTML = `<span>Seller: ${escapeHTML(sellerName)}</span>`;
+                }
                 
                 card.innerHTML = `
                     <div class="note-card-header-top">
@@ -851,7 +884,7 @@
                     ${badgesHTML}
                     <div class="note-content-snippet">${contentSnippet}</div>
                     <div class="note-seller">
-                        <span>Seller:</span>
+                        ${sellerHTML}
                         ${tierBadgeHTML}
                     </div>
                     <div class="note-date">${date}</div>
