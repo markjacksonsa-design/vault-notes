@@ -43,27 +43,35 @@ export async function onRequest(context) {
             }
 
             // Fetch user's purchases with note details
-            const query = `
-                SELECT 
-                    s.id as sale_id,
-                    s.noteId,
-                    s.paystackRef as reference,
-                    s.amount,
-                    s.status,
-                    s.is_vouched,
-                    s.created_at as purchase_date,
-                    n.title as note_title,
-                    n.subject,
-                    n.curriculum,
-                    n.level,
-                    n.pdf_key
-                FROM sales s
-                LEFT JOIN notes n ON s.noteId = n.id
-                WHERE s.buyerId = ?
-                ORDER BY s.created_at DESC
-            `;
+            let results = [];
+            try {
+                const query = `
+                    SELECT 
+                        s.id as sale_id,
+                        s.noteId,
+                        s.paystackRef as reference,
+                        s.amount,
+                        s.status,
+                        s.is_vouched,
+                        s.created_at as purchase_date,
+                        n.title as note_title,
+                        n.subject,
+                        n.curriculum,
+                        n.level,
+                        n.pdf_key
+                    FROM sales s
+                    LEFT JOIN notes n ON s.noteId = n.id
+                    WHERE s.buyerId = ?
+                    ORDER BY s.created_at DESC
+                `;
 
-            const { results } = await db.prepare(query).bind(userId).all();
+                const queryResult = await db.prepare(query).bind(userId).all();
+                results = queryResult.results || [];
+            } catch (e) {
+                console.error('Error fetching vault purchases:', e);
+                // Return empty array instead of failing
+                results = [];
+            }
 
             return new Response(
                 JSON.stringify({

@@ -96,11 +96,26 @@ export async function onRequest(context) {
             }
 
             // Verify the sale exists and belongs to the buyer
-            const sale = await db.prepare(
-                "SELECT id, sellerId, buyerId, is_vouched FROM sales WHERE id = ? AND buyerId = ?"
-            )
-                .bind(saleId, buyerId)
-                .first();
+            let sale;
+            try {
+                sale = await db.prepare(
+                    "SELECT id, sellerId, buyerId, is_vouched FROM sales WHERE id = ? AND buyerId = ?"
+                )
+                    .bind(saleId, buyerId)
+                    .first();
+            } catch (e) {
+                console.error('Error fetching sale:', e);
+                return new Response(
+                    JSON.stringify({ error: 'Database error while fetching sale' }),
+                    {
+                        status: 500,
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...corsHeaders
+                        }
+                    }
+                );
+            }
 
             if (!sale) {
                 return new Response(
@@ -148,19 +163,46 @@ export async function onRequest(context) {
             const { calculateUserReputation } = await import('../utils/reputation.js');
 
             // Mark sale as vouched first
-            await db.prepare(
-                "UPDATE sales SET is_vouched = 1 WHERE id = ?"
-            )
-                .bind(saleId)
-                .run();
+            try {
+                await db.prepare(
+                    "UPDATE sales SET is_vouched = 1 WHERE id = ?"
+                )
+                    .bind(saleId)
+                    .run();
+            } catch (e) {
+                console.error('Error updating sale:', e);
+                return new Response(
+                    JSON.stringify({ error: 'Failed to update sale' }),
+                    {
+                        status: 500,
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...corsHeaders
+                        }
+                    }
+                );
+            }
 
             // Recalculate seller's reputation (includes the new vouch)
-            const reputationData = await calculateUserReputation(db, sellerId);
+            let reputationData;
+            try {
+                reputationData = await calculateUserReputation(db, sellerId);
+            } catch (e) {
+                console.error('Error calculating reputation:', e);
+                // Continue even if reputation calculation fails
+                reputationData = { reputationPoints: 0, tier: 'Candidate' };
+            }
 
             // Get updated seller info with tier
-            const updatedSeller = await db.prepare("SELECT reputation_points, tier FROM users WHERE id = ?")
-                .bind(sellerId)
-                .first();
+            let updatedSeller;
+            try {
+                updatedSeller = await db.prepare("SELECT reputation_points, tier FROM users WHERE id = ?")
+                    .bind(sellerId)
+                    .first();
+            } catch (e) {
+                console.error('Error fetching updated seller:', e);
+                updatedSeller = { reputation_points: 0, tier: 'Candidate' };
+            }
 
             return new Response(
                 JSON.stringify({

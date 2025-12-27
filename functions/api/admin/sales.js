@@ -11,23 +11,31 @@ export async function onRequest(context) {
         // Handle GET request - fetch all sales
         if (request.method === 'GET') {
             // Join sales with notes table to get note titles
-            const query = `
-                SELECT 
-                    s.id,
-                    s.noteId,
-                    s.buyerId,
-                    s.sellerId,
-                    s.amount,
-                    s.status,
-                    s.paystackRef,
-                    s.created_at,
-                    n.title as note_title
-                FROM sales s
-                LEFT JOIN notes n ON s.noteId = n.id
-                ORDER BY s.created_at DESC
-            `;
+            let results = [];
+            try {
+                const query = `
+                    SELECT 
+                        s.id,
+                        s.noteId,
+                        s.buyerId,
+                        s.sellerId,
+                        s.amount,
+                        s.status,
+                        s.paystackRef,
+                        s.created_at,
+                        n.title as note_title
+                    FROM sales s
+                    LEFT JOIN notes n ON s.noteId = n.id
+                    ORDER BY s.created_at DESC
+                `;
 
-            const { results } = await db.prepare(query).all();
+                const queryResult = await db.prepare(query).all();
+                results = queryResult.results || [];
+            } catch (e) {
+                console.error('Error fetching sales:', e);
+                // Return empty array instead of failing
+                results = [];
+            }
 
             // Return sales data
             return new Response(

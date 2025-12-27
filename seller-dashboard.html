@@ -520,10 +520,15 @@
                     console.warn('Could not calculate average price:', e);
                 }
 
-                document.getElementById('lifetime-earnings').textContent = formatCurrency(totalEarnings);
-                document.getElementById('total-sales').textContent = totalDownloads;
+                // Safely update elements with null checks
+                const lifetimeEarningsEl = document.getElementById('lifetime-earnings');
+                const totalSalesEl = document.getElementById('total-sales');
+                const currentBalanceEl = document.getElementById('current-balance');
+                
+                if (lifetimeEarningsEl) lifetimeEarningsEl.textContent = formatCurrency(totalEarnings || 0);
+                if (totalSalesEl) totalSalesEl.textContent = totalDownloads || 0;
                 // Current Balance is same as Total Earnings for now (can be updated if withdrawal system is added)
-                document.getElementById('current-balance').textContent = formatCurrency(totalEarnings);
+                if (currentBalanceEl) currentBalanceEl.textContent = formatCurrency(totalEarnings || 0);
 
                 // Load reputation data
                 const reputationPoints = statsData.reputationPoints || 0;
@@ -534,23 +539,30 @@
                 document.getElementById('reputation-loading').style.display = 'none';
                 document.getElementById('reputation-display').style.display = 'block';
 
-                // Update tier badge (compact)
+                // Update tier badge (compact) with null checks
                 const tierBadge = document.getElementById('tier-badge');
-                tierBadge.className = `tier-badge-compact ${tier.toLowerCase()}`;
-                document.getElementById('tier-name').textContent = tier;
-                document.getElementById('reputation-points').textContent = reputationPoints;
+                const tierNameEl = document.getElementById('tier-name');
+                const repPointsEl = document.getElementById('reputation-points');
+                const nextTierNameEl = document.getElementById('next-tier-name');
+                const progressTextEl = document.getElementById('progress-text');
+                const progressFillEl = document.getElementById('progress-fill');
+                const pointsToNextEl = document.getElementById('points-to-next');
+                
+                if (tierBadge) tierBadge.className = `tier-badge-compact ${(tier || 'Candidate').toLowerCase()}`;
+                if (tierNameEl) tierNameEl.textContent = tier || 'Candidate';
+                if (repPointsEl) repPointsEl.textContent = reputationPoints || 0;
 
                 // Update progress bar (compact version)
                 if (progress.nextTier) {
-                    document.getElementById('next-tier-name').textContent = progress.nextTier;
-                    document.getElementById('progress-text').textContent = `${Math.round(progress.progress)}%`;
-                    document.getElementById('progress-fill').style.width = `${progress.progress}%`;
-                    document.getElementById('points-to-next').textContent = `${progress.pointsToNext} points to ${progress.nextTier}`;
+                    if (nextTierNameEl) nextTierNameEl.textContent = progress.nextTier;
+                    if (progressTextEl) progressTextEl.textContent = `${Math.round(progress.progress || 0)}%`;
+                    if (progressFillEl) progressFillEl.style.width = `${progress.progress || 0}%`;
+                    if (pointsToNextEl) pointsToNextEl.textContent = `${progress.pointsToNext || 0} points to ${progress.nextTier}`;
                 } else {
-                    document.getElementById('next-tier-name').textContent = 'Max Tier';
-                    document.getElementById('progress-text').textContent = '100%';
-                    document.getElementById('progress-fill').style.width = '100%';
-                    document.getElementById('points-to-next').textContent = 'You\'ve reached the highest tier!';
+                    if (nextTierNameEl) nextTierNameEl.textContent = 'Max Tier';
+                    if (progressTextEl) progressTextEl.textContent = '100%';
+                    if (progressFillEl) progressFillEl.style.width = '100%';
+                    if (pointsToNextEl) pointsToNextEl.textContent = 'You\'ve reached the highest tier!';
                 }
             } catch (err) {
                 console.error('Error loading stats:', err);

@@ -323,6 +323,22 @@
             display: flex;
             gap: 12px;
             align-items: center;
+            flex-wrap: wrap;
+        }
+        @media (max-width: 768px) {
+            .bio-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .bio-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            .btn-share-profile,
+            .btn-save-bio {
+                flex: 1;
+                min-width: 120px;
+            }
         }
         .btn-share-profile {
             background: transparent;
@@ -736,19 +752,30 @@
                     console.error('Error loading reputation:', e);
                     // Show default values instead of error
                     try {
-                        document.getElementById('reputation-loading').style.display = 'none';
-                        document.getElementById('reputation-display').style.display = 'block';
+                        const repLoadingEl = document.getElementById('reputation-loading');
+                        const repDisplayEl = document.getElementById('reputation-display');
+                        if (repLoadingEl) repLoadingEl.style.display = 'none';
+                        if (repDisplayEl) repDisplayEl.style.display = 'block';
+                        
                         const tierBadge = document.getElementById('tier-badge');
-                        tierBadge.className = 'tier-badge-large candidate';
-                        document.getElementById('tier-name').textContent = 'Candidate';
-                        document.getElementById('reputation-points').textContent = '0';
-                        document.getElementById('next-tier-name').textContent = 'Scholar';
-                        document.getElementById('progress-text').textContent = '0%';
-                        document.getElementById('progress-fill').style.width = '0%';
-                        document.getElementById('points-to-next').textContent = '21 points until Scholar status';
+                        const tierNameEl = document.getElementById('tier-name');
+                        const repPointsEl = document.getElementById('reputation-points');
+                        const nextTierNameEl = document.getElementById('next-tier-name');
+                        const progressTextEl = document.getElementById('progress-text');
+                        const progressFillEl = document.getElementById('progress-fill');
+                        const pointsToNextEl = document.getElementById('points-to-next');
+                        
+                        if (tierBadge) tierBadge.className = 'tier-badge-large candidate';
+                        if (tierNameEl) tierNameEl.textContent = 'Candidate';
+                        if (repPointsEl) repPointsEl.textContent = '0';
+                        if (nextTierNameEl) nextTierNameEl.textContent = 'Scholar';
+                        if (progressTextEl) progressTextEl.textContent = '0%';
+                        if (progressFillEl) progressFillEl.style.width = '0%';
+                        if (pointsToNextEl) pointsToNextEl.textContent = '21 points until Scholar status';
                     } catch (displayErr) {
                         console.error('Error setting default reputation display:', displayErr);
-                        document.getElementById('reputation-loading').textContent = 'Reputation: 0 points (Candidate)';
+                        const repLoadingEl = document.getElementById('reputation-loading');
+                        if (repLoadingEl) repLoadingEl.textContent = 'Reputation: 0 points (Candidate)';
                     }
                 }
                 

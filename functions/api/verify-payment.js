@@ -146,9 +146,24 @@ export async function onRequest(context) {
             }
 
             // Fetch note details to get PDF key, title, and seller_id from D1 database
-            const note = await db.prepare("SELECT pdf_key, title, seller_id FROM notes WHERE id = ?")
-                .bind(noteId)
-                .first();
+            let note;
+            try {
+                note = await db.prepare("SELECT pdf_key, title, seller_id FROM notes WHERE id = ?")
+                    .bind(noteId)
+                    .first();
+            } catch (e) {
+                console.error('Error fetching note:', e);
+                return new Response(
+                    JSON.stringify({ error: 'Database error while fetching note' }),
+                    {
+                        status: 500,
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...corsHeaders
+                        }
+                    }
+                );
+            }
 
             if (!note) {
                 return new Response(
@@ -167,9 +182,16 @@ export async function onRequest(context) {
             const sellerId = note.seller_id || null;
 
             // Check if this reference has already been logged (prevent double-logging)
-            const existingSale = await db.prepare("SELECT id FROM sales WHERE paystackRef = ?")
-                .bind(reference)
-                .first();
+            let existingSale;
+            try {
+                existingSale = await db.prepare("SELECT id FROM sales WHERE paystackRef = ?")
+                    .bind(reference)
+                    .first();
+            } catch (e) {
+                console.error('Error checking existing sale:', e);
+                // Continue with new sale creation
+                existingSale = null;
+            }
 
             if (existingSale) {
                 // Reference already logged - update with buyerId, sellerId, noteId if missing

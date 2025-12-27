@@ -454,7 +454,10 @@
                 });
             } catch (err) {
                 console.error('Error loading purchases:', err);
-                loadingEl.textContent = 'Error loading purchases. Please try again later.';
+                // Show friendly empty state instead of error
+                loadingEl.style.display = 'none';
+                gridEl.style.display = 'none';
+                emptyEl.style.display = 'block';
             }
         }
 

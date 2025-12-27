@@ -47,21 +47,29 @@ export async function onRequest(context) {
 
             // Query to get monthly sales totals for the current year
             // SQLite strftime('%m', date) returns month as 01-12
-            const query = `
-                SELECT 
-                    strftime('%m', created_at) as month,
-                    SUM(amount) as total
-                FROM sales
-                WHERE sellerId = ? 
-                    AND status = 'completed'
-                    AND strftime('%Y', created_at) = ?
-                GROUP BY strftime('%m', created_at)
-                ORDER BY month ASC
-            `;
+            let results = [];
+            try {
+                const query = `
+                    SELECT 
+                        strftime('%m', created_at) as month,
+                        SUM(amount) as total
+                    FROM sales
+                    WHERE sellerId = ? 
+                        AND status = 'completed'
+                        AND strftime('%Y', created_at) = ?
+                    GROUP BY strftime('%m', created_at)
+                    ORDER BY month ASC
+                `;
 
-            const { results } = await db.prepare(query)
-                .bind(sellerId, currentYear.toString())
-                .all();
+                const queryResult = await db.prepare(query)
+                    .bind(sellerId, currentYear.toString())
+                    .all();
+                results = queryResult.results || [];
+            } catch (e) {
+                console.error('Error fetching monthly sales:', e);
+                // Return empty array instead of failing
+                results = [];
+            }
 
             return new Response(
                 JSON.stringify({

@@ -21,12 +21,24 @@ export async function onRequest(context) {
                 );
             }
 
-            // Get user profile data (public info only)
-            const userResult = await db.prepare(
-                "SELECT id, name, reputation_points, tier, bio FROM users WHERE id = ?"
-            )
-                .bind(userId)
-                .first();
+            // Get user profile data (public info only - NO sensitive data like email, balance, earnings)
+            let userResult;
+            try {
+                userResult = await db.prepare(
+                    "SELECT id, name, reputation_points, tier, bio FROM users WHERE id = ?"
+                )
+                    .bind(userId)
+                    .first();
+            } catch (e) {
+                console.error('Error fetching user profile:', e);
+                return new Response(
+                    JSON.stringify({ error: 'Database error while fetching profile' }),
+                    {
+                        status: 500,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+            }
 
             if (!userResult) {
                 return new Response(

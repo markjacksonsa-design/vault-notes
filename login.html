@@ -216,8 +216,8 @@
     <!-- Global Navigation Header -->
     <nav class="global-nav">
         <div class="nav-left">
-            <a href="/home.html" class="nav-logo"><span class="logo-text">NoteVault</span> <span class="logo-sa">SA</span></a>
-            <a href="/home.html">Home</a>
+            <a href="/" class="nav-logo"><span class="logo-text">NoteVault</span> <span class="logo-sa">SA</span></a>
+            <a href="/">Home</a>
         </div>
         <div class="nav-links">
             <a href="/list.html">Browse Notes</a>
@@ -301,7 +301,7 @@
                     if (redirectUrl) {
                         window.location.href = decodeURIComponent(redirectUrl);
                     } else {
-                        window.location.href = '/list.html';
+                        window.location.href = '/list.html'; // Browse page
                     }
                 }, 1000);
                 

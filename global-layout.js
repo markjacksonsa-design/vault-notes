@@ -412,6 +412,7 @@ function injectGlobalSidebar() {
                     position: relative;
                     top: 0;
                     height: auto;
+                    z-index: 1000;
                 }
                 .sidebar-nav {
                     display: flex;
@@ -433,7 +434,11 @@ function injectGlobalSidebar() {
                     margin-left: 0;
                 }
                 body {
-                    padding-top: 0;
+                    padding-top: 64px;
+                }
+                .btn-upload {
+                    max-width: 100%;
+                    box-sizing: border-box;
                 }
             }
         `;
