@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Legal | Terms & Conditions | Privacy Policy | NoteVault SA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Terms & Conditions and Privacy Policy for NoteVault SA.">
+    <script src="/auth.js"></script>
+    <script src="/global-layout.js"></script>
+    <style>
+        :root {
+            --bg: #0D0D0D;
+            --panel: #1A1A1A;
+            --input-bg: #1A1A1A;
+            --accent: #00FF85;
+            --text: #FFFFFF;
+            --subtitle: #E0E0E0;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 32px 120px 32px;
+        }
+        
+        /* Page Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .page-header h1 {
+            font-size: 2.5em;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--accent) 0%, #00CC6A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .last-updated {
+            color: var(--subtitle);
+            font-size: 0.95em;
+            font-style: italic;
+            margin-top: 8px;
+        }
+        
+        /* Section Styling */
+        .section {
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 255, 133, 0.1);
+        }
+        .section h2 {
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid rgba(0, 255, 133, 0.2);
+        }
+        .section h3 {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 32px;
+            margin-bottom: 16px;
+        }
+        .section p {
+            color: var(--subtitle);
+            margin-bottom: 16px;
+            font-size: 1.05em;
+            line-height: 1.8;
+        }
+        .section ul, .section ol {
+            color: var(--subtitle);
+            margin-left: 24px;
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+        .section li {
+            margin-bottom: 12px;
+        }
+        
+        /* Terms List */
+        .terms-list {
+            list-style: none;
+            margin-left: 0;
+        }
+        .terms-list li {
+            padding: 20px;
+            background: rgba(0, 255, 133, 0.05);
+            border-left: 3px solid var(--accent);
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .terms-list li strong {
+            color: var(--accent);
+            display: block;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+        
+        /* Privacy Policy List */
+        .privacy-list {
+            list-style: none;
+            margin-left: 0;
+        }
+        .privacy-list li {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .privacy-list li:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .privacy-list li strong {
+            color: var(--accent);
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        /* Back to Home Link */
+        .back-link {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .back-link a {
+            display: inline-block;
+            padding: 12px 32px;
+            background: var(--accent);
+            color: #000000;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .back-link a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 255, 133, 0.4);
+        }
+        
+        /* Footer */
+        .site-footer {
+            background: var(--panel);
+            border-top: 2px solid rgba(0, 255, 133, 0.2);
+            padding: 32px;
+            margin-top: 60px;
+            text-align: center;
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .footer-links a {
+            color: var(--subtitle);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+        .footer-copyright {
+            color: var(--subtitle);
+            font-size: 0.9em;
+            margin-top: 16px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px 16px 100px 16px;
+            }
+            .page-header h1 {
+                font-size: 2em;
+            }
+            .section {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>Legal Information</h1>
+            <div class="last-updated">Last Updated: December 2024</div>
+        </div>
+        
+        <!-- Terms & Conditions -->
+        <section class="section" id="terms">
+            <h2>Terms & Conditions</h2>
+            <p>
+                By using NoteVault SA, you agree to the following terms and conditions. Please read them carefully before uploading or purchasing study materials.
+            </p>
+            
+            <ul class="terms-list">
+                <li>
+                    <strong>Content Ownership</strong>
+                    You must own the rights to all notes you upload to NoteVault SA. Only upload study materials that you have created yourself. Uploading content that belongs to others without permission is strictly prohibited and may result in account suspension.
+                </li>
+                <li>
+                    <strong>Copyright & Exam Papers</strong>
+                    Sharing official exam papers, copyrighted textbooks, or any materials protected by copyright law is not allowed. This includes past exam papers from educational institutions, publisher content, or any material you do not have explicit permission to distribute. Violations may result in immediate account termination and legal action.
+                </li>
+                <li>
+                    <strong>Platform Commission</strong>
+                    NoteVault SA takes a small commission from each sale to maintain and improve the platform. This commission helps us provide secure payment processing, customer support, and continuous platform development. The exact commission rate is displayed before you complete a sale.
+                </li>
+                <li>
+                    <strong>Quality Standards</strong>
+                    We encourage all users to maintain high standards for uploaded content. Notes should be well-organized, accurate, and genuinely helpful to other students. Low-quality or misleading content may be removed at our discretion.
+                </li>
+                <li>
+                    <strong>User Conduct</strong>
+                    All users are expected to treat each other with respect. Harassment, spam, or any form of abusive behavior will not be tolerated and may result in account suspension or termination.
+                </li>
+                <li>
+                    <strong>Refund Policy</strong>
+                    Refunds are handled on a case-by-case basis. If you encounter issues with a purchased note, please contact our support team. We will work to resolve any legitimate concerns.
+                </li>
+                <li>
+                    <strong>Account Termination</strong>
+                    NoteVault SA reserves the right to suspend or terminate accounts that violate these terms, engage in fraudulent activity, or harm the platform's integrity. Decisions regarding account actions are final.
+                </li>
+            </ul>
+            
+            <p style="margin-top: 24px;">
+                NoteVault SA reserves the right to modify these terms at any time. Continued use of the platform after changes constitutes acceptance of the updated terms. We recommend reviewing this page periodically to stay informed of any updates.
+            </p>
+        </section>
+        
+        <!-- Privacy Policy -->
+        <section class="section" id="privacy">
+            <h2>Privacy Policy</h2>
+            <p>
+                At NoteVault SA, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, and safeguard your data.
+            </p>
+            
+            <ul class="privacy-list">
+                <li>
+                    <strong>Information We Collect</strong>
+                    We collect information that you provide directly to us, including your name, email address, and payment information when you register or make a purchase. We also collect data about your usage of the platform, such as notes uploaded, purchases made, and interactions with other users.
+                </li>
+                <li>
+                    <strong>How We Use Your Information</strong>
+                    We use your information to provide and improve our services, process transactions, communicate with you about your account, and ensure platform security. We do not sell your personal information to third parties.
+                </li>
+                <li>
+                    <strong>Payment Information</strong>
+                    Payment processing is handled by secure third-party providers (Paystack). We do not store your full payment card details on our servers. All payment data is encrypted and processed in accordance with industry standards.
+                </li>
+                <li>
+                    <strong>Data Security</strong>
+                    We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the internet is 100% secure.
+                </li>
+                <li>
+                    <strong>Cookies and Tracking</strong>
+                    We use cookies and similar technologies to maintain your session, remember your preferences, and analyze platform usage. You can control cookie settings through your browser preferences.
+                </li>
+                <li>
+                    <strong>Your Rights</strong>
+                    You have the right to access, update, or delete your personal information at any time. You can also request a copy of your data or opt out of certain communications. Contact our support team to exercise these rights.
+                </li>
+                <li>
+                    <strong>Third-Party Services</strong>
+                    Our platform may contain links to third-party websites or services. We are not responsible for the privacy practices of these external sites. We encourage you to review their privacy policies.
+                </li>
+                <li>
+                    <strong>Changes to This Policy</strong>
+                    We may update this Privacy Policy from time to time. We will notify you of any significant changes by posting the new policy on this page and updating the "Last Updated" date.
+                </li>
+            </ul>
+            
+            <p style="margin-top: 24px;">
+                If you have any questions about this Privacy Policy or our data practices, please contact us at <a href="mailto:privacy@notevaultsa.com" style="color: var(--accent);">privacy@notevaultsa.com</a>.
+            </p>
+        </section>
+        
+        <!-- Back to Home Link -->
+        <div class="back-link">
+            <a href="/">← Back to Home</a>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="/info.html">About</a>
+                <a href="/info.html#reputation">Reputation System</a>
+                <a href="/legal">Terms & Conditions</a>
+                <a href="/legal#privacy">Privacy Policy</a>
+                <a href="mailto:support@notevaultsa.com">Support</a>
+            </div>
+            <div class="footer-copyright">
+                &copy; 2024 NoteVault SA. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+

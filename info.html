@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>How It Works | NoteVault SA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Learn about NoteVault SA and how our reputation system works.">
+    <script src="/auth.js"></script>
+    <script src="/global-layout.js"></script>
+    <style>
+        :root {
+            --bg: #0D0D0D;
+            --panel: #1A1A1A;
+            --input-bg: #1A1A1A;
+            --accent: #00FF85;
+            --text: #FFFFFF;
+            --subtitle: #E0E0E0;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 32px 120px 32px;
+        }
+        
+        /* Page Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .page-header h1 {
+            font-size: 3em;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--accent) 0%, #00CC6A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .page-header p {
+            color: var(--subtitle);
+            font-size: 1.2em;
+        }
+        
+        /* Section Styling */
+        .section {
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 255, 133, 0.1);
+        }
+        .section h2 {
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid rgba(0, 255, 133, 0.2);
+        }
+        .section h3 {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 32px;
+            margin-bottom: 16px;
+        }
+        .section p {
+            color: var(--subtitle);
+            margin-bottom: 16px;
+            font-size: 1.05em;
+            line-height: 1.8;
+        }
+        .section ul, .section ol {
+            color: var(--subtitle);
+            margin-left: 24px;
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+        .section li {
+            margin-bottom: 8px;
+        }
+        
+        /* Reputation Tiers Visual */
+        .tiers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            margin: 32px 0;
+        }
+        .tier-card {
+            background: rgba(0, 255, 133, 0.05);
+            border-radius: 12px;
+            padding: 32px 24px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .tier-icon {
+            font-size: 3em;
+            margin-bottom: 16px;
+            display: block;
+        }
+        .tier-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 8px 24px rgba(0, 255, 133, 0.2);
+        }
+        .tier-card.candidate {
+            border-color: #94a3b8;
+        }
+        .tier-card.scholar {
+            border-color: #10b981;
+        }
+        .tier-card.elite {
+            border-color: #3b82f6;
+        }
+        .tier-card.distinction {
+            border-color: #f59e0b;
+        }
+        .tier-name {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .tier-card.candidate .tier-name {
+            color: #94a3b8;
+        }
+        .tier-card.scholar .tier-name {
+            color: #10b981;
+        }
+        .tier-card.elite .tier-name {
+            color: #3b82f6;
+        }
+        .tier-card.distinction .tier-name {
+            color: #f59e0b;
+        }
+        .tier-range {
+            color: var(--subtitle);
+            font-size: 0.95em;
+            margin-bottom: 12px;
+        }
+        .tier-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .tier-card.candidate .tier-badge {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+        }
+        .tier-card.scholar .tier-badge {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        .tier-card.elite .tier-badge {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+        .tier-card.distinction .tier-badge {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        
+        /* Points Math Box */
+        .points-math {
+            background: rgba(0, 255, 133, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 24px;
+            border-radius: 8px;
+            margin: 24px 0;
+        }
+        .points-math h4 {
+            color: var(--accent);
+            font-size: 1.2em;
+            margin-bottom: 12px;
+        }
+        .points-math ul {
+            list-style: none;
+            margin-left: 0;
+        }
+        .points-math li {
+            color: var(--text);
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+        .points-math li strong {
+            color: var(--accent);
+        }
+        
+        /* Terms List */
+        .terms-list {
+            list-style: none;
+            margin-left: 0;
+        }
+        .terms-list li {
+            padding: 16px;
+            background: rgba(0, 255, 133, 0.05);
+            border-left: 3px solid var(--accent);
+            margin-bottom: 16px;
+            border-radius: 4px;
+        }
+        .terms-list li strong {
+            color: var(--accent);
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        /* Footer */
+        .site-footer {
+            background: var(--panel);
+            border-top: 2px solid rgba(0, 255, 133, 0.2);
+            padding: 32px;
+            margin-top: 60px;
+            text-align: center;
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .footer-links a {
+            color: var(--subtitle);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+        .footer-copyright {
+            color: var(--subtitle);
+            font-size: 0.9em;
+            margin-top: 16px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px 16px 100px 16px;
+            }
+            .page-header h1 {
+                font-size: 2em;
+            }
+            .section {
+                padding: 24px;
+            }
+            .tiers-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>How It Works</h1>
+            <p>Your guide to NoteVault SA and the Reputation System</p>
+        </div>
+        
+        <!-- About Us Section -->
+        <section class="section" id="about">
+            <h2>About NoteVault SA</h2>
+            <p>
+                NoteVault SA is a platform designed for students across South Africa to share quality study materials and earn recognition for their hard work. Whether you're studying for CAPS, IEB, or University exams, NoteVault SA connects you with comprehensive, well-organized study notes created by fellow students.
+            </p>
+            <p>
+                Our mission is to create a community-driven marketplace where students can access high-quality study resources while rewarding those who contribute exceptional content. By building a reputation system based on sales and vouches, we ensure that the best study materials rise to the top.
+            </p>
+            <p>
+                Join thousands of South African students who are already using NoteVault SA to enhance their learning and earn from their academic excellence.
+            </p>
+        </section>
+        
+        <!-- Reputation System Guide -->
+        <section class="section" id="reputation">
+            <h2>Reputation & Points System</h2>
+            <p>
+                Your reputation on NoteVault SA reflects the quality and reliability of your study materials. As you build your reputation, you'll unlock new tiers that provide better visibility and recognition in the community.
+            </p>
+            
+            <h3>Understanding Tiers</h3>
+            <div class="tiers-grid">
+                <div class="tier-card candidate">
+                    <span class="tier-icon">📝</span>
+                    <div class="tier-name">Candidate</div>
+                    <div class="tier-range">0 - 20 Points</div>
+                    <div class="tier-badge">Starting Tier</div>
+                </div>
+                <div class="tier-card scholar">
+                    <span class="tier-icon">📚</span>
+                    <div class="tier-name">Scholar</div>
+                    <div class="tier-range">21 - 50 Points</div>
+                    <div class="tier-badge">Emerald Badge</div>
+                </div>
+                <div class="tier-card elite">
+                    <span class="tier-icon">⭐</span>
+                    <div class="tier-name">Elite</div>
+                    <div class="tier-range">51 - 80 Points</div>
+                    <div class="tier-badge">Sapphire Badge</div>
+                </div>
+                <div class="tier-card distinction">
+                    <span class="tier-icon">🏆</span>
+                    <div class="tier-name">Distinction</div>
+                    <div class="tier-range">81+ Points</div>
+                    <div class="tier-badge">Gold Badge</div>
+                </div>
+            </div>
+            
+            <h3>How Points Work</h3>
+            <div class="points-math">
+                <h4>Reputation Points Formula</h4>
+                <ul>
+                    <li><strong>2 points</strong> per completed sale</li>
+                    <li><strong>10 points</strong> per vouch received from a buyer</li>
+                </ul>
+                <p style="margin-top: 16px; color: var(--text);">
+                    Your total reputation points = (Sales × 2) + (Vouches × 10)
+                </p>
+            </div>
+            
+            <h3>Benefits of Higher Tiers</h3>
+            <ul>
+                <li><strong>Better Visibility:</strong> Higher-tier sellers appear more prominently in search results, making it easier for buyers to discover your notes.</li>
+                <li><strong>Trust Badge:</strong> Your tier badge is displayed next to your name on all your notes, building buyer confidence.</li>
+                <li><strong>Community Recognition:</strong> Achieve Elite or Distinction status to stand out as a top contributor to the NoteVault SA community.</li>
+            </ul>
+            
+            <p style="margin-top: 24px;">
+                <strong>Tip:</strong> Focus on creating high-quality, comprehensive notes. Buyers are more likely to vouch for sellers who provide exceptional value, which accelerates your path to higher tiers.
+            </p>
+        </section>
+        
+    </div>
+    
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="/info.html">About</a>
+                <a href="/info.html#reputation">Reputation System</a>
+                <a href="/legal">Terms & Conditions</a>
+                <a href="/legal#privacy">Privacy Policy</a>
+                <a href="mailto:support@notevaultsa.com">Support</a>
+            </div>
+            <div class="footer-copyright">
+                &copy; 2024 NoteVault SA. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+
