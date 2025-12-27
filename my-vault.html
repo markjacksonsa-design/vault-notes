@@ -217,6 +217,37 @@
             cursor: not-allowed;
             transform: none;
         }
+        .btn-vouch {
+            background: #10b981;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-vouch:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
+            background: #059669;
+        }
+        .btn-vouch:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .note-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
         .empty-state {
             text-align: center;
             padding: 80px 20px;
@@ -395,6 +426,9 @@
                     }
                     const badgesHTML = badges.length > 0 ? `<div class="note-badges">${badges.join('')}</div>` : '';
                     
+                    const isVouched = purchase.is_vouched || false;
+                    const saleId = purchase.sale_id || purchase.id;
+                    
                     card.innerHTML = `
                         <div class="note-card-header">
                             <div class="note-title">${escapeHTML(purchase.note_title || 'Untitled Note')}</div>
@@ -408,6 +442,10 @@
                             <button class="btn-download" onclick="downloadNote('${purchase.noteId}', '${purchase.reference}')">
                                 <span>📥</span>
                                 <span>Download PDF</span>
+                            </button>
+                            <button class="btn-vouch" ${isVouched ? 'disabled' : ''} onclick="vouchForSeller(${saleId}, this)" data-sale-id="${saleId}">
+                                <span>${isVouched ? '✓' : '⭐'}</span>
+                                <span>${isVouched ? 'Vouched' : 'Vouch for Seller'}</span>
                             </button>
                         </div>
                     `;
@@ -429,6 +467,50 @@
             
             // Trigger download - the backend will verify the sale exists
             window.location.href = `/api/download?noteId=${noteId}&reference=${reference}`;
+        }
+
+        // Vouch for seller
+        async function vouchForSeller(saleId, buttonEl) {
+            if (!saleId) {
+                alert('Invalid sale information');
+                return;
+            }
+
+            if (buttonEl.disabled) {
+                return;
+            }
+
+            const originalText = buttonEl.innerHTML;
+            buttonEl.disabled = true;
+            buttonEl.innerHTML = '<span>⏳</span><span>Processing...</span>';
+
+            try {
+                const res = await fetch('/api/vouch', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ saleId })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Failed to vouch for seller');
+                }
+
+                // Update button to show vouched state
+                buttonEl.innerHTML = '<span>✓</span><span>Vouched</span>';
+                buttonEl.style.background = '#059669';
+                
+                // Show success message
+                alert(`Successfully vouched for seller! They received 10 reputation points.`);
+            } catch (err) {
+                console.error('Error vouching for seller:', err);
+                alert(err.message || 'Failed to vouch for seller. Please try again.');
+                buttonEl.disabled = false;
+                buttonEl.innerHTML = originalText;
+            }
         }
 
         // Initialize on page load

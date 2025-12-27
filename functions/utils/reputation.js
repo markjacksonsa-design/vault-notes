@@ -1,0 +1,119 @@
+/**
+ * Reputation and Trust System Utilities
+ */
+
+/**
+ * Calculate tier based on reputation points
+ * @param {number} points - User's reputation points
+ * @returns {Object} Tier information with name and color
+ */
+export function calculateTier(points) {
+    const reputationPoints = points || 0;
+    
+    if (reputationPoints >= 81) {
+        return {
+            name: 'Distinction',
+            color: '#f59e0b', // Gold
+            minPoints: 81,
+            maxPoints: Infinity
+        };
+    } else if (reputationPoints >= 51) {
+        return {
+            name: 'Elite',
+            color: '#3b82f6', // Sapphire
+            minPoints: 51,
+            maxPoints: 80
+        };
+    } else if (reputationPoints >= 21) {
+        return {
+            name: 'Scholar',
+            color: '#10b981', // Emerald
+            minPoints: 21,
+            maxPoints: 50
+        };
+    } else {
+        return {
+            name: 'Candidate',
+            color: '#94a3b8', // Slate
+            minPoints: 0,
+            maxPoints: 20
+        };
+    }
+}
+
+/**
+ * Calculate progress to next tier
+ * @param {number} currentPoints - User's current reputation points
+ * @returns {Object} Progress information
+ */
+export function calculateProgress(currentPoints) {
+    const currentTier = calculateTier(currentPoints);
+    const nextTier = getNextTier(currentTier.name);
+    
+    if (!nextTier) {
+        // User is at max tier
+        return {
+            currentTier: currentTier.name,
+            nextTier: null,
+            progress: 100,
+            pointsToNext: 0,
+            currentPoints: currentPoints,
+            nextTierPoints: null
+        };
+    }
+    
+    const pointsInCurrentTier = currentPoints - currentTier.minPoints;
+    const pointsNeededForNext = nextTier.minPoints - currentTier.minPoints;
+    const progress = Math.min(100, Math.max(0, (pointsInCurrentTier / pointsNeededForNext) * 100));
+    const pointsToNext = Math.max(0, nextTier.minPoints - currentPoints);
+    
+    return {
+        currentTier: currentTier.name,
+        nextTier: nextTier.name,
+        progress: Math.round(progress),
+        pointsToNext: pointsToNext,
+        currentPoints: currentPoints,
+        nextTierPoints: nextTier.minPoints
+    };
+}
+
+/**
+ * Get next tier information
+ * @param {string} currentTierName - Current tier name
+ * @returns {Object|null} Next tier information or null if at max
+ */
+function getNextTier(currentTierName) {
+    const tiers = [
+        { name: 'Candidate', minPoints: 0, maxPoints: 20 },
+        { name: 'Scholar', minPoints: 21, maxPoints: 50 },
+        { name: 'Elite', minPoints: 51, maxPoints: 80 },
+        { name: 'Distinction', minPoints: 81, maxPoints: Infinity }
+    ];
+    
+    const currentIndex = tiers.findIndex(t => t.name === currentTierName);
+    if (currentIndex === -1 || currentIndex === tiers.length - 1) {
+        return null; // At max tier or invalid tier
+    }
+    
+    return tiers[currentIndex + 1];
+}
+
+/**
+ * Update user's tier based on reputation points
+ * @param {Object} db - D1 database instance
+ * @param {number} userId - User ID
+ * @param {number} newPoints - New reputation points
+ * @returns {Promise<Object>} Updated tier information
+ */
+export async function updateUserTier(db, userId, newPoints) {
+    const tier = calculateTier(newPoints);
+    
+    await db.prepare(
+        "UPDATE users SET reputation_points = ?, tier = ? WHERE id = ?"
+    )
+        .bind(newPoints, tier.name, userId)
+        .run();
+    
+    return tier;
+}
+

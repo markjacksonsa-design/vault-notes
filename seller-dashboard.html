@@ -320,6 +320,104 @@
             color: #FFC107;
             border: 1px solid rgba(255, 193, 7, 0.4);
         }
+        
+        /* Reputation Progress Styles */
+        .reputation-header {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        .tier-badge-large {
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 1.5em;
+            font-weight: 700;
+            text-align: center;
+            min-width: 200px;
+            border: 2px solid;
+        }
+        .tier-badge-large.candidate {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+            border-color: #94a3b8;
+        }
+        .tier-badge-large.scholar {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border-color: #10b981;
+        }
+        .tier-badge-large.elite {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        .tier-badge-large.distinction {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border-color: #f59e0b;
+        }
+        .reputation-stats {
+            flex: 1;
+        }
+        .reputation-stat {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .stat-label-small {
+            color: var(--subtitle);
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-value-small {
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .progress-section {
+            margin-top: 24px;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .progress-label {
+            color: var(--text);
+            font-weight: 600;
+            font-size: 1em;
+        }
+        .progress-text {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+        .progress-bar-container {
+            background: var(--input-bg);
+            border-radius: 8px;
+            height: 24px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent) 0%, #00CC6A 100%);
+            transition: width 0.5s ease;
+            border-radius: 8px;
+        }
+        .progress-info {
+            color: var(--subtitle);
+            font-size: 0.9em;
+        }
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -445,26 +543,37 @@
                         </div>
                     </div>
 
-                    <!-- Notes Management Table -->
+                    <!-- Reputation Progress Section -->
                     <div class="table-section">
-                        <h2>My Notes</h2>
-                        <div class="table-container">
-                            <div id="notes-loading" class="loading">Loading your notes...</div>
-                            <table id="notes-table" style="display: none;">
-                                <thead>
-                                    <tr>
-                                        <th>Title</th>
-                                        <th>Price</th>
-                                        <th>Status</th>
-                                        <th>Total Sales</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="notes-tbody">
-                                </tbody>
-                            </table>
-                            <div id="notes-empty" class="empty-state" style="display: none;">
-                                <p>You haven't uploaded any notes yet.</p>
-                                <a href="/upload.html" class="btn-upload" style="text-decoration: none;">Upload Your First Note</a>
+                        <h2>Reputation Progress</h2>
+                        <div id="reputation-content">
+                            <div id="reputation-loading" class="loading">Loading reputation data...</div>
+                            <div id="reputation-display" style="display: none;">
+                                <div class="reputation-header">
+                                    <div class="tier-badge-large" id="tier-badge">
+                                        <span class="tier-name" id="tier-name">Candidate</span>
+                                    </div>
+                                    <div class="reputation-stats">
+                                        <div class="reputation-stat">
+                                            <span class="stat-label-small">Reputation Points</span>
+                                            <span class="stat-value-small" id="reputation-points">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="progress-section">
+                                    <div class="progress-header">
+                                        <span class="progress-label">Progress to <span id="next-tier-name">Scholar</span></span>
+                                        <span class="progress-text" id="progress-text">0%</span>
+                                    </div>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar" id="progress-bar">
+                                            <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="progress-info">
+                                        <span id="points-to-next">0 points to next tier</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -519,6 +628,22 @@
             }
         }
 
+        // Calculate progress to next tier
+        function calculateProgress(currentPoints) {
+            if (currentPoints >= 81) {
+                return { currentTier: 'Distinction', nextTier: null, progress: 100, pointsToNext: 0, nextTierPoints: null };
+            } else if (currentPoints >= 51) {
+                const progress = ((currentPoints - 51) / 30) * 100;
+                return { currentTier: 'Elite', nextTier: 'Distinction', progress: Math.min(100, progress), pointsToNext: Math.max(0, 81 - currentPoints), nextTierPoints: 81 };
+            } else if (currentPoints >= 21) {
+                const progress = ((currentPoints - 21) / 30) * 100;
+                return { currentTier: 'Scholar', nextTier: 'Elite', progress: Math.min(100, progress), pointsToNext: Math.max(0, 51 - currentPoints), nextTierPoints: 51 };
+            } else {
+                const progress = (currentPoints / 21) * 100;
+                return { currentTier: 'Candidate', nextTier: 'Scholar', progress: Math.min(100, progress), pointsToNext: Math.max(0, 21 - currentPoints), nextTierPoints: 21 };
+            }
+        }
+
         // Load seller statistics
         async function loadStats() {
             try {
@@ -559,6 +684,34 @@
                 document.getElementById('total-earnings').textContent = formatCurrency(totalEarnings);
                 document.getElementById('total-downloads').textContent = totalDownloads;
                 document.getElementById('avg-price').textContent = formatCurrency(avgPrice);
+
+                // Load reputation data
+                const reputationPoints = statsData.reputationPoints || 0;
+                const tier = statsData.tier || 'Candidate';
+                const progress = calculateProgress(reputationPoints);
+
+                // Update reputation display
+                document.getElementById('reputation-loading').style.display = 'none';
+                document.getElementById('reputation-display').style.display = 'block';
+
+                // Update tier badge
+                const tierBadge = document.getElementById('tier-badge');
+                tierBadge.className = `tier-badge-large ${tier.toLowerCase()}`;
+                document.getElementById('tier-name').textContent = tier;
+                document.getElementById('reputation-points').textContent = reputationPoints;
+
+                // Update progress bar
+                if (progress.nextTier) {
+                    document.getElementById('next-tier-name').textContent = progress.nextTier;
+                    document.getElementById('progress-text').textContent = `${Math.round(progress.progress)}%`;
+                    document.getElementById('progress-fill').style.width = `${progress.progress}%`;
+                    document.getElementById('points-to-next').textContent = `${progress.pointsToNext} points to ${progress.nextTier}`;
+                } else {
+                    document.getElementById('next-tier-name').textContent = 'Max Tier';
+                    document.getElementById('progress-text').textContent = '100%';
+                    document.getElementById('progress-fill').style.width = '100%';
+                    document.getElementById('points-to-next').textContent = 'You\'ve reached the highest tier!';
+                }
             } catch (err) {
                 console.error('Error loading stats:', err);
                 document.getElementById('total-earnings').textContent = 'R 0.00';
@@ -567,7 +720,8 @@
             }
         }
 
-        // Load user's notes with sales data
+        // Removed loadMyNotes - replaced with Reputation Progress section
+        // Legacy function kept for compatibility but not called
         async function loadMyNotes() {
             const loadingEl = document.getElementById('notes-loading');
             const tableEl = document.getElementById('notes-table');
@@ -648,7 +802,6 @@
                 document.getElementById('dashboard-content').style.display = 'block';
                 document.getElementById('access-denied').style.display = 'none';
                 await loadStats();
-                await loadMyNotes();
             } else {
                 document.getElementById('dashboard-content').style.display = 'none';
                 document.getElementById('access-denied').style.display = 'block';

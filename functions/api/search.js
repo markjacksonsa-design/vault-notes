@@ -52,8 +52,37 @@ export async function onRequest(context) {
             }
             const { results } = await stmt.all();
             
+            // Enrich notes with seller tier information
+            const enrichedResults = await Promise.all((results || []).map(async (note) => {
+                if (note.seller_id) {
+                    try {
+                        const seller = await db.prepare(
+                            "SELECT tier, reputation_points FROM users WHERE id = ?"
+                        )
+                            .bind(note.seller_id)
+                            .first();
+                        
+                        if (seller) {
+                            note.seller_tier = seller.tier || 'Candidate';
+                            note.seller_reputation_points = seller.reputation_points || 0;
+                        } else {
+                            note.seller_tier = 'Candidate';
+                            note.seller_reputation_points = 0;
+                        }
+                    } catch (e) {
+                        console.error('Error fetching seller tier:', e);
+                        note.seller_tier = 'Candidate';
+                        note.seller_reputation_points = 0;
+                    }
+                } else {
+                    note.seller_tier = 'Candidate';
+                    note.seller_reputation_points = 0;
+                }
+                return note;
+            }));
+            
             return new Response(
-                JSON.stringify(results || []),
+                JSON.stringify(enrichedResults),
                 {
                     status: 200,
                     headers: { 'Content-Type': 'application/json' }

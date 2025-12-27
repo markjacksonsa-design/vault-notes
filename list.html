@@ -103,6 +103,44 @@
             color: #a855f7;
             border: 1px solid rgba(168, 85, 247, 0.4);
         }
+        .tier-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 8px;
+        }
+        .tier-badge.candidate {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+        }
+        .tier-badge.scholar {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+        .tier-badge.elite {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+        .tier-badge.distinction {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+        .note-seller {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: var(--subtitle);
+        }
         .badge.level {
             background: rgba(255, 255, 255, 0.1);
             color: var(--subtitle);
@@ -801,6 +839,10 @@
                 }
                 const badgesHTML = badges.length > 0 ? `<div class="note-badges">${badges.join('')}</div>` : '';
                 
+                // Get seller tier badge
+                const sellerTier = note.seller_tier || 'Candidate';
+                const tierBadgeHTML = sellerTier ? `<span class="tier-badge ${sellerTier.toLowerCase()}">${escapeHTML(sellerTier)}</span>` : '';
+                
                 card.innerHTML = `
                     <div class="note-card-header-top">
                         <div class="note-title">${title}</div>
@@ -808,6 +850,10 @@
                     </div>
                     ${badgesHTML}
                     <div class="note-content-snippet">${contentSnippet}</div>
+                    <div class="note-seller">
+                        <span>Seller:</span>
+                        ${tierBadgeHTML}
+                    </div>
                     <div class="note-date">${date}</div>
                 `;
                 grid.appendChild(card);

@@ -49,6 +49,7 @@ export async function onRequest(context) {
                     s.paystackRef as reference,
                     s.amount,
                     s.status,
+                    s.is_vouched,
                     s.created_at as purchase_date,
                     n.title as note_title,
                     n.subject,

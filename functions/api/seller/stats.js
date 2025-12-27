@@ -73,13 +73,25 @@ export async function onRequest(context) {
 
             const activeListings = activeListingsResult?.count || 0;
 
+            // Get user's reputation points and tier
+            const userResult = await db.prepare(
+                "SELECT reputation_points, tier FROM users WHERE id = ?"
+            )
+                .bind(sellerId)
+                .first();
+
+            const reputationPoints = userResult?.reputation_points || 0;
+            const tier = userResult?.tier || 'Candidate';
+
             // Return statistics
             return new Response(
                 JSON.stringify({
                     success: true,
                     totalEarnings: totalEarnings,
                     totalDownloads: totalDownloads,
-                    activeListings: activeListings
+                    activeListings: activeListings,
+                    reputationPoints: reputationPoints,
+                    tier: tier
                 }),
                 {
                     status: 200,
