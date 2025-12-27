@@ -574,7 +574,22 @@
                     }
                 } catch (e) {
                     console.error('Error loading reputation:', e);
-                    document.getElementById('reputation-loading').textContent = 'Could not load reputation data.';
+                    // Show default values instead of error
+                    try {
+                        document.getElementById('reputation-loading').style.display = 'none';
+                        document.getElementById('reputation-display').style.display = 'block';
+                        const tierBadge = document.getElementById('tier-badge');
+                        tierBadge.className = 'tier-badge-large candidate';
+                        document.getElementById('tier-name').textContent = 'Candidate';
+                        document.getElementById('reputation-points').textContent = '0';
+                        document.getElementById('next-tier-name').textContent = 'Scholar';
+                        document.getElementById('progress-text').textContent = '0%';
+                        document.getElementById('progress-fill').style.width = '0%';
+                        document.getElementById('points-to-next').textContent = '21 points until Scholar status';
+                    } catch (displayErr) {
+                        console.error('Error setting default reputation display:', displayErr);
+                        document.getElementById('reputation-loading').textContent = 'Reputation: 0 points (Candidate)';
+                    }
                 }
                 
                 // Load stats (notes count, vouches, member since) from profile API

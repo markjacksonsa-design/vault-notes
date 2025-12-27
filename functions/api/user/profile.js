@@ -60,36 +60,53 @@ export async function onRequest(context) {
             }
 
             // Get total notes uploaded by this user
-            const notesResult = await db.prepare(
-                "SELECT COUNT(*) as count FROM notes WHERE seller_id = ?"
-            )
-                .bind(userId)
-                .first();
-
-            const totalNotes = notesResult?.count || 0;
+            let totalNotes = 0;
+            try {
+                const notesResult = await db.prepare(
+                    "SELECT COUNT(*) as count FROM notes WHERE seller_id = ?"
+                )
+                    .bind(userId)
+                    .first();
+                totalNotes = notesResult?.count || 0;
+            } catch (e) {
+                console.error('Error fetching total notes:', e);
+                totalNotes = 0;
+            }
 
             // Get total vouches received (sales where is_vouched = 1 for this seller)
-            const vouchesResult = await db.prepare(
-                "SELECT COUNT(*) as count FROM sales WHERE sellerId = ? AND is_vouched = 1"
-            )
-                .bind(userId)
-                .first();
-
-            const totalVouches = vouchesResult?.count || 0;
+            let totalVouches = 0;
+            try {
+                const vouchesResult = await db.prepare(
+                    "SELECT COUNT(*) as count FROM sales WHERE sellerId = ? AND is_vouched = 1"
+                )
+                    .bind(userId)
+                    .first();
+                totalVouches = vouchesResult?.count || 0;
+            } catch (e) {
+                console.error('Error fetching total vouches:', e);
+                totalVouches = 0;
+            }
 
             // Recalculate reputation to ensure it's up-to-date
+            // Formula: (Sales * 2) + (Vouches * 10)
             let reputationPoints = 0;
             let tier = 'Candidate';
             try {
                 const { calculateUserReputation } = await import('../../utils/reputation.js');
                 const reputationData = await calculateUserReputation(db, userId);
-                reputationPoints = reputationData.reputationPoints;
-                tier = reputationData.tier;
+                reputationPoints = reputationData.reputationPoints || 0;
+                tier = reputationData.tier || 'Candidate';
             } catch (e) {
                 console.error('Error recalculating reputation:', e);
-                // Fallback to database values
-                reputationPoints = userResult?.reputation_points || 0;
-                tier = userResult?.tier || 'Candidate';
+                // Fallback: try to get from database
+                try {
+                    reputationPoints = userResult?.reputation_points || 0;
+                    tier = userResult?.tier || 'Candidate';
+                } catch (dbError) {
+                    console.error('Error fetching reputation from database:', dbError);
+                    reputationPoints = 0;
+                    tier = 'Candidate';
+                }
             }
 
             // Return user profile data

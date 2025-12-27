@@ -131,31 +131,51 @@ export async function calculateUserReputation(db, userId) {
         throw new Error('User ID is required');
     }
     
-    // Count completed sales (2 points each)
-    const salesResult = await db.prepare(
-        "SELECT COUNT(*) as count FROM sales WHERE sellerId = ? AND status = 'completed'"
-    )
-        .bind(userId)
-        .first();
+    let salesCount = 0;
+    let vouchesCount = 0;
     
-    const salesCount = salesResult?.count || 0;
+    try {
+        // Count completed sales (2 points each)
+        const salesResult = await db.prepare(
+            "SELECT COUNT(*) as count FROM sales WHERE sellerId = ? AND status = 'completed'"
+        )
+            .bind(userId)
+            .first();
+        
+        salesCount = salesResult?.count || 0;
+    } catch (e) {
+        console.error('Error counting sales:', e);
+        salesCount = 0;
+    }
+    
+    try {
+        // Count vouches received (10 points each)
+        const vouchesResult = await db.prepare(
+            "SELECT COUNT(*) as count FROM sales WHERE sellerId = ? AND is_vouched = 1"
+        )
+            .bind(userId)
+            .first();
+        
+        vouchesCount = vouchesResult?.count || 0;
+    } catch (e) {
+        console.error('Error counting vouches:', e);
+        vouchesCount = 0;
+    }
+    
+    // Calculate total reputation points: (Sales * 2) + (Vouches * 10)
     const salesPoints = salesCount * 2;
-    
-    // Count vouches received (10 points each)
-    const vouchesResult = await db.prepare(
-        "SELECT COUNT(*) as count FROM sales WHERE sellerId = ? AND is_vouched = 1"
-    )
-        .bind(userId)
-        .first();
-    
-    const vouchesCount = vouchesResult?.count || 0;
     const vouchesPoints = vouchesCount * 10;
-    
-    // Calculate total reputation points
     const totalPoints = salesPoints + vouchesPoints;
     
     // Update user's reputation and tier
-    const tier = await updateUserTier(db, userId, totalPoints);
+    let tier;
+    try {
+        tier = await updateUserTier(db, userId, totalPoints);
+    } catch (e) {
+        console.error('Error updating user tier:', e);
+        // Fallback to calculating tier without updating database
+        tier = calculateTier(totalPoints);
+    }
     
     return {
         reputationPoints: totalPoints,

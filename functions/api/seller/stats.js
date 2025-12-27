@@ -44,55 +44,75 @@ export async function onRequest(context) {
 
             // Get total earnings from completed sales for this seller
             // SUM returns NULL when there are no rows, so we handle that explicitly
-            const earningsResult = await db.prepare(
-                "SELECT COALESCE(SUM(amount), 0) as total FROM sales WHERE sellerId = ? AND status = 'completed'"
-            )
-                .bind(sellerId)
-                .first();
-
-            const totalEarnings = earningsResult?.total ?? 0;
+            let totalEarnings = 0;
+            try {
+                const earningsResult = await db.prepare(
+                    "SELECT COALESCE(SUM(amount), 0) as total FROM sales WHERE sellerId = ? AND status = 'completed'"
+                )
+                    .bind(sellerId)
+                    .first();
+                totalEarnings = earningsResult?.total ?? 0;
+            } catch (e) {
+                console.error('Error fetching total earnings:', e);
+                totalEarnings = 0;
+            }
 
             // Get total downloads (count of completed sales)
-            const downloadsResult = await db.prepare(
-                "SELECT COUNT(*) as count FROM sales WHERE sellerId = ? AND status = 'completed'"
-            )
-                .bind(sellerId)
-                .first();
-
-            const totalDownloads = downloadsResult?.count || 0;
+            let totalDownloads = 0;
+            try {
+                const downloadsResult = await db.prepare(
+                    "SELECT COUNT(*) as count FROM sales WHERE sellerId = ? AND status = 'completed'"
+                )
+                    .bind(sellerId)
+                    .first();
+                totalDownloads = downloadsResult?.count || 0;
+            } catch (e) {
+                console.error('Error fetching total downloads:', e);
+                totalDownloads = 0;
+            }
 
             // Get active listings (notes with price > 0 or with completed sales)
-            const activeListingsResult = await db.prepare(`
-                SELECT COUNT(DISTINCT n.id) as count
-                FROM notes n
-                LEFT JOIN sales s ON n.id = s.noteId AND s.sellerId = ? AND s.status = 'completed'
-                WHERE n.seller_id = ? AND (n.price > 0 OR s.id IS NOT NULL)
-            `)
-                .bind(sellerId, sellerId)
-                .first();
-
-            const activeListings = activeListingsResult?.count || 0;
-
-            // Get user's reputation points and tier
-            const userResult = await db.prepare(
-                "SELECT reputation_points, tier FROM users WHERE id = ?"
-            )
-                .bind(sellerId)
-                .first();
+            let activeListings = 0;
+            try {
+                const activeListingsResult = await db.prepare(`
+                    SELECT COUNT(DISTINCT n.id) as count
+                    FROM notes n
+                    LEFT JOIN sales s ON n.id = s.noteId AND s.sellerId = ? AND s.status = 'completed'
+                    WHERE n.seller_id = ? AND (n.price > 0 OR s.id IS NOT NULL)
+                `)
+                    .bind(sellerId, sellerId)
+                    .first();
+                activeListings = activeListingsResult?.count || 0;
+            } catch (e) {
+                console.error('Error fetching active listings:', e);
+                activeListings = 0;
+            }
 
             // Recalculate reputation to ensure it's up-to-date
+            // Formula: (Sales * 2) + (Vouches * 10)
             let reputationPoints = 0;
             let tier = 'Candidate';
             try {
                 const { calculateUserReputation } = await import('../../utils/reputation.js');
                 const reputationData = await calculateUserReputation(db, sellerId);
-                reputationPoints = reputationData.reputationPoints;
-                tier = reputationData.tier;
+                reputationPoints = reputationData.reputationPoints || 0;
+                tier = reputationData.tier || 'Candidate';
             } catch (e) {
                 console.error('Error recalculating reputation:', e);
-                // Fallback to database values
-                reputationPoints = userResult?.reputation_points || 0;
-                tier = userResult?.tier || 'Candidate';
+                // Fallback: try to get from database
+                try {
+                    const userResult = await db.prepare(
+                        "SELECT reputation_points, tier FROM users WHERE id = ?"
+                    )
+                        .bind(sellerId)
+                        .first();
+                    reputationPoints = userResult?.reputation_points || 0;
+                    tier = userResult?.tier || 'Candidate';
+                } catch (dbError) {
+                    console.error('Error fetching reputation from database:', dbError);
+                    reputationPoints = 0;
+                    tier = 'Candidate';
+                }
             }
 
             // Return statistics

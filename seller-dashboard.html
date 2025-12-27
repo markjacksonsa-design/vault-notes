@@ -554,9 +554,26 @@
                 }
             } catch (err) {
                 console.error('Error loading stats:', err);
+                // Show '0' values instead of error messages
                 document.getElementById('lifetime-earnings').textContent = 'R 0.00';
                 document.getElementById('total-sales').textContent = '0';
                 document.getElementById('current-balance').textContent = 'R 0.00';
+                
+                // Show default reputation values
+                try {
+                    document.getElementById('reputation-loading').style.display = 'none';
+                    document.getElementById('reputation-display').style.display = 'block';
+                    const tierBadge = document.getElementById('tier-badge');
+                    tierBadge.className = 'tier-badge-compact candidate';
+                    document.getElementById('tier-name').textContent = 'Candidate';
+                    document.getElementById('reputation-points').textContent = '0';
+                    document.getElementById('next-tier-name').textContent = 'Scholar';
+                    document.getElementById('progress-text').textContent = '0%';
+                    document.getElementById('progress-fill').style.width = '0%';
+                    document.getElementById('points-to-next').textContent = '21 points to Scholar';
+                } catch (reputationErr) {
+                    console.error('Error setting default reputation:', reputationErr);
+                }
             }
         }
 
@@ -675,7 +692,10 @@
                 });
             } catch (err) {
                 console.error('Error loading sales graph:', err);
-                loadingEl.textContent = 'Failed to load sales graph. Please try again later.';
+                // Show empty state instead of error
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+                chartCanvas.style.display = 'none';
             }
         }
 
@@ -734,7 +754,10 @@
                 });
             } catch (err) {
                 console.error('Error loading sales history:', err);
-                loadingEl.textContent = 'Failed to load sales history. Please try again later.';
+                // Show empty state instead of error
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+                tableContainer.style.display = 'none';
             }
         }
 
