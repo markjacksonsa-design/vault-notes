@@ -325,6 +325,13 @@ function injectGlobalSidebar() {
                 --text: #FFFFFF;
                 --subtitle: #E0E0E0;
             }
+            /* App Shell Structure */
+            body {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                min-height: 100vh;
+            }
             .global-sidebar {
                 width: 250px;
                 height: 100vh;
@@ -334,7 +341,8 @@ function injectGlobalSidebar() {
                 flex-direction: column;
                 padding: 20px 0;
                 overflow-y: auto;
-                position: sticky;
+                position: fixed;
+                left: 0;
                 top: 0;
                 z-index: 1001;
                 flex-shrink: 0;
@@ -396,13 +404,22 @@ function injectGlobalSidebar() {
                 font-size: 1.1em;
                 font-weight: 700;
             }
+            /* Main Content Area - Must have margin-left to account for fixed sidebar */
             .main-content-with-sidebar {
-                margin-left: 0;
+                margin-left: 250px;
                 transition: margin-left 0.3s;
                 min-height: 100vh;
                 display: flex;
                 flex-direction: column;
                 flex: 1;
+                width: calc(100% - 250px);
+            }
+            /* Ensure all main content areas respect sidebar */
+            body:has(.global-sidebar) > main,
+            body:has(.global-sidebar) > .main-content,
+            body:has(.global-sidebar) > .container,
+            body:has(.global-sidebar) > #app-container > .main-body {
+                margin-left: 250px;
             }
             @media (max-width: 768px) {
                 .global-sidebar {

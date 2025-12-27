@@ -27,28 +27,31 @@
             margin: 0;
             padding: 0;
         }
-        /* Main App Container - Flexbox Layout */
-        #app-container {
+        /* App Shell Structure - Fixed Sidebar + Main Content */
+        body {
+            margin: 0;
+            padding: 0;
             display: flex;
             min-height: 100vh;
-            width: 100%;
         }
-        /* Sidebar - Fixed width, sticky */
+        /* Sidebar - Fixed on left */
         .global-sidebar {
             width: 250px;
             height: 100vh;
-            position: sticky;
+            position: fixed;
+            left: 0;
             top: 0;
             flex-shrink: 0;
             z-index: 1001;
         }
-        /* Main Body - Flex column container */
+        /* Main Body - Must have margin-left to account for fixed sidebar */
         .main-body {
+            margin-left: 250px;
             flex: 1;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            margin-left: 0;
+            width: calc(100% - 250px);
         }
         .main-content {
             flex: 1;
@@ -59,7 +62,7 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 32px 24px 40px 24px;
+            padding: 32px 24px 100px 24px; /* Extra bottom padding for footer */
             width: 100%;
             flex: 1;
             display: flex;
@@ -81,9 +84,9 @@
             text-align: center;
         }
         .notes-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
             flex: 1;
         }
         /* Remove any floats - ensure grid layout */

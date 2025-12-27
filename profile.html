@@ -27,10 +27,20 @@
             color: var(--text);
             font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
             line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* App Shell - Account for fixed sidebar */
+        body:has(.global-sidebar) > main,
+        body:has(.global-sidebar) .main-content {
+            margin-left: 250px;
+            width: calc(100% - 250px);
         }
         
         .main-content {
             padding: 40px 32px;
+            min-height: 100vh;
         }
         .container {
             max-width: 1200px;
@@ -543,6 +553,13 @@
             <div id="profile-content" style="display: none;">
                 <div class="page-header">
                     <h1>My Profile</h1>
+                    <div class="profile-header-actions">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="public-preview-toggle">
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Preview Public Profile</span>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- Reputation Progress Section -->
@@ -577,8 +594,8 @@
                     </div>
                 </div>
 
-                <!-- Stats Overview -->
-                <div class="stats-overview">
+                <!-- Stats Overview - Private Section -->
+                <div class="stats-overview private-section">
                     <div class="stat-card">
                         <div class="stat-card-label">Total Notes Uploaded</div>
                         <div class="stat-card-value" id="total-notes">0</div>
@@ -610,7 +627,7 @@
                         </div>
                     </div>
                     
-                    <div class="profile-info">
+                    <div class="profile-info private-section">
                         <div class="info-row">
                             <div class="info-label">Email</div>
                             <div class="info-value" id="profile-email-detail">-</div>
@@ -995,12 +1012,42 @@
             }, 3000);
         }
         
+        // Public Preview Toggle
+        function initPublicPreviewToggle() {
+            const toggle = document.getElementById('public-preview-toggle');
+            if (!toggle) return;
+            
+            // Check if URL contains an ID (public view)
+            const path = window.location.pathname;
+            const hasId = /\/profile\/\d+|\/user\/\d+/.test(path);
+            
+            // Auto-enable if viewing public profile
+            if (hasId) {
+                toggle.checked = true;
+                document.body.classList.add('public-preview');
+            }
+            
+            // Toggle handler
+            toggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('public-preview');
+                } else {
+                    document.body.classList.remove('public-preview');
+                }
+            });
+        }
+        
         // Initialize on page load
         loadProfile();
         
         // Add event handlers
         document.getElementById('btn-save-bio').addEventListener('click', saveBio);
         document.getElementById('btn-share-profile').addEventListener('click', shareProfile);
+        
+        // Initialize public preview toggle after DOM is ready
+        setTimeout(() => {
+            initPublicPreviewToggle();
+        }, 100);
     </script>
     
     <!-- Footer -->
