@@ -66,6 +66,9 @@ function injectGlobalHeader() {
         </header>
     ` : `
         <header class="global-header">
+            <a href="/" class="header-logo">
+                <span class="logo-text">NoteVault</span> <span class="logo-sa">SA</span>
+            </a>
             <div class="header-search">
                 <input type="text" placeholder="Search notes..." id="header-search-input" class="header-search-input">
             </div>
@@ -255,8 +258,12 @@ function injectGlobalHeader() {
                 body {
                     padding-top: 64px;
                 }
+                .header-logo {
+                    font-size: 1.2em;
+                }
                 .header-search {
                     max-width: none;
+                    flex: 1;
                 }
                 .profile-icon {
                     min-width: 80px;
