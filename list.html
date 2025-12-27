@@ -33,6 +33,7 @@
             padding: 0;
             display: flex;
             min-height: 100vh;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
         }
         /* Sidebar - Fixed on left */
         .global-sidebar {
@@ -47,23 +48,28 @@
         /* Main Body - Must have margin-left to account for fixed sidebar */
         .main-body {
             margin-left: 250px;
+            margin-right: 0; /* Ensure no right margin */
             flex: 1;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
             width: calc(100% - 250px);
+            max-width: none; /* Remove any max-width constraints */
         }
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             min-height: 0;
+            width: 100%; /* Full width */
+            margin-right: 0; /* Ensure no right margin */
         }
         .container {
-            max-width: 800px;
+            max-width: none; /* Remove max-width constraint */
             margin: 0 auto;
+            margin-right: 0; /* Ensure no right margin */
             padding: 32px 24px 100px 24px; /* Extra bottom padding for footer */
-            width: 100%;
+            width: 100%; /* Full width */
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -74,6 +80,7 @@
             display: flex;
             flex-direction: column;
             min-height: 0;
+            width: 100%; /* Full width */
         }
         h1 {
             margin-top: 0;
@@ -85,9 +92,10 @@
         }
         .notes-grid {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
             flex: 1;
+            width: 100%; /* Full width */
         }
         /* Remove any floats - ensure grid layout */
         .note-card {
