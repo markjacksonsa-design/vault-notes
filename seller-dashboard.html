@@ -20,23 +20,65 @@
             padding: 0;
             box-sizing: border-box;
         }
-        html, body {
-            height: 100%;
-        }
+        /* App Shell Structure - Fixed Sidebar + Main Content */
         body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
             background: var(--bg);
             color: var(--text);
             font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
             line-height: 1.6;
         }
         
-        /* Main Content - will be adjusted by global-layout.js for sidebar */
-        .main-content {
+        /* Sidebar - Fixed on left */
+        .global-sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            flex-shrink: 0;
+            z-index: 1001;
+        }
+        
+        /* Main Body - Starts after 250px sidebar */
+        .main-body {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Main Content - Contains all sales content */
+        main {
+            display: block;
+            width: 100%;
+            min-height: 80vh;
+            flex: 1;
             padding: 40px 32px;
         }
+        
         .container {
+            width: 100%;
             max-width: 1200px;
             margin: 0 auto;
+        }
+        
+        /* Footer - At bottom of main content */
+        footer {
+            width: 100%;
+            clear: both;
+            background: var(--panel);
+            border-top: 2px solid rgba(0, 255, 133, 0.2);
+            padding: 32px;
+            text-align: center;
+            color: var(--subtitle);
+            margin-top: auto;
+            flex-shrink: 0;
         }
         
         /* Dashboard Header */
@@ -283,7 +325,21 @@
         
         /* Mobile Responsive */
         @media (max-width: 768px) {
-            .main-content {
+            .global-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                max-height: 200px;
+                position: relative;
+                top: 0;
+                height: auto;
+                z-index: 1000;
+            }
+            .main-body {
+                margin-left: 0;
+                width: 100%;
+            }
+            main {
                 padding: 24px 20px;
             }
             .dashboard-header h1 {
@@ -300,8 +356,9 @@
     </style>
 </head>
 <body>
+    <div class="main-body">
         <!-- Main Content -->
-        <main class="main-content">
+        <main>
             <div class="container">
                 <!-- Access Control Check -->
                 <div id="access-denied" class="access-denied" style="display: none;">
@@ -404,6 +461,23 @@
                 </div>
             </div>
         </main>
+        
+        <!-- Footer -->
+        <footer>
+            <div style="max-width: 1200px; margin: 0 auto;">
+                <div style="display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; margin-bottom: 16px;">
+                    <a href="/info.html" style="color: var(--subtitle); text-decoration: none; font-weight: 500; transition: color 0.2s;">About</a>
+                    <a href="/info.html#reputation" style="color: var(--subtitle); text-decoration: none; font-weight: 500; transition: color 0.2s;">Reputation System</a>
+                    <a href="/legal" style="color: var(--subtitle); text-decoration: none; font-weight: 500; transition: color 0.2s;">Terms & Conditions</a>
+                    <a href="/legal#privacy" style="color: var(--subtitle); text-decoration: none; font-weight: 500; transition: color 0.2s;">Privacy Policy</a>
+                    <a href="mailto:support@notevaultsa.com" style="color: var(--subtitle); text-decoration: none; font-weight: 500; transition: color 0.2s;">Support</a>
+                </div>
+                <div style="color: var(--subtitle); font-size: 0.9em; margin-top: 16px;">
+                    &copy; 2024 NoteVault SA. All rights reserved.
+                </div>
+            </div>
+        </footer>
+    </div>
 
     <script>
         // Helper for XSS-safe text
@@ -867,21 +941,5 @@
         // Run on page load
         init();
     </script>
-    
-    <!-- Footer -->
-    <footer style="background: var(--panel); border-top: 2px solid rgba(0, 255, 133, 0.2); padding: 32px; text-align: center; color: var(--subtitle); margin-top: 60px;">
-        <div style="max-width: 1200px; margin: 0 auto;">
-            <div style="display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; margin-bottom: 16px;">
-                <a href="/info.html" style="color: var(--subtitle); text-decoration: none; font-weight: 500; transition: color 0.2s;">About</a>
-                <a href="/info.html#reputation" style="color: var(--subtitle); text-decoration: none; font-weight: 500; transition: color 0.2s;">Reputation System</a>
-                <a href="/legal" style="color: var(--subtitle); text-decoration: none; font-weight: 500; transition: color 0.2s;">Terms & Conditions</a>
-                <a href="/legal#privacy" style="color: var(--subtitle); text-decoration: none; font-weight: 500; transition: color 0.2s;">Privacy Policy</a>
-                <a href="mailto:support@notevaultsa.com" style="color: var(--subtitle); text-decoration: none; font-weight: 500; transition: color 0.2s;">Support</a>
-            </div>
-            <div style="color: var(--subtitle); font-size: 0.9em; margin-top: 16px;">
-                &copy; 2024 NoteVault SA. All rights reserved.
-            </div>
-        </div>
-    </footer>
 </body>
 </html>
