@@ -272,10 +272,13 @@
             const userId = urlParams.get('userId');
             if (userId) return userId;
             
-            // Try path parameter
+            // Try path parameter - support both /user/:id and /profile/:id
             const path = window.location.pathname;
-            const match = path.match(/\/profile\/(\d+)/);
-            return match ? match[1] : null;
+            const userMatch = path.match(/\/user\/(\d+)/);
+            if (userMatch) return userMatch[1];
+            const profileMatch = path.match(/\/profile\/(\d+)/);
+            if (profileMatch) return profileMatch[1];
+            return null;
         }
 
         // Load public profile

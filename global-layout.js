@@ -6,7 +6,7 @@
 function shouldShowSidebar() {
     const path = window.location.pathname;
     // Show sidebar on app pages, hide on home page
-    const appPages = ['/list.html', '/browse.html', '/my-vault.html', '/vault.html', '/seller-dashboard.html', '/earnings.html', '/profile.html', '/upload.html'];
+    const appPages = ['/list.html', '/browse.html', '/my-vault.html', '/vault.html', '/seller-dashboard.html', '/earnings.html', '/profile.html', '/profile', '/upload.html'];
     const homePages = ['/', '/index.html', '/home.html'];
     
     // Don't show sidebar on home pages
@@ -79,7 +79,7 @@ function injectGlobalHeader() {
                     <span class="dropdown-arrow">▼</span>
                 </button>
                 <div class="profile-dropdown" id="profile-dropdown">
-                    <a href="/profile.html" id="profile-link">My Profile</a>
+                    <a href="/profile" id="profile-link">My Profile</a>
                     <a href="#" id="settings-link">Settings</a>
                     <a href="#" id="logout-link">Logout</a>
                 </div>
@@ -296,7 +296,7 @@ function injectGlobalSidebar() {
                 <a href="/list.html" class="sidebar-link" data-page="browse">Browse</a>
                 <a href="/my-vault.html" class="sidebar-link" data-page="vault">My Vault</a>
                 <a href="/seller-dashboard.html" class="sidebar-link" data-page="earnings">Sales</a>
-                <a href="/profile.html" class="sidebar-link" data-page="profile">My Profile</a>
+                <a href="/profile" class="sidebar-link" data-page="profile">My Profile</a>
             </nav>
             <div class="sidebar-upload">
                 <a href="/upload.html" class="btn-upload">Upload Note</a>
@@ -326,18 +326,18 @@ function injectGlobalSidebar() {
                 --subtitle: #E0E0E0;
             }
             .global-sidebar {
-                width: 260px;
+                width: 250px;
+                height: 100vh;
                 background: var(--panel);
                 border-right: 1px solid rgba(255, 255, 255, 0.1);
                 display: flex;
                 flex-direction: column;
                 padding: 20px 0;
                 overflow-y: auto;
-                position: fixed;
-                left: 0;
-                top: 72px;
-                height: calc(100vh - 72px);
+                position: sticky;
+                top: 0;
                 z-index: 1001;
+                flex-shrink: 0;
             }
             .sidebar-nav {
                 flex: 1;
@@ -397,11 +397,12 @@ function injectGlobalSidebar() {
                 font-weight: 700;
             }
             .main-content-with-sidebar {
-                margin-left: 260px;
+                margin-left: 0;
                 transition: margin-left 0.3s;
-                min-height: calc(100vh - 72px);
+                min-height: 100vh;
                 display: flex;
                 flex-direction: column;
+                flex: 1;
             }
             @media (max-width: 768px) {
                 .global-sidebar {

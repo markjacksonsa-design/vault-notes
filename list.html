@@ -16,6 +16,8 @@
         }
         html, body {
             height: 100%;
+            margin: 0;
+            padding: 0;
         }
         body {
             background: var(--bg);
@@ -24,8 +26,29 @@
             min-height: 100vh;
             margin: 0;
             padding: 0;
+        }
+        /* Main App Container - Flexbox Layout */
+        #app-container {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+        /* Sidebar - Fixed width, sticky */
+        .global-sidebar {
+            width: 250px;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            flex-shrink: 0;
+            z-index: 1001;
+        }
+        /* Main Body - Flex column container */
+        .main-body {
+            flex: 1;
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
+            margin-left: 0;
         }
         .main-content {
             flex: 1;
@@ -39,6 +62,15 @@
             padding: 32px 24px 40px 24px;
             width: 100%;
             flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        /* Content Area - Wraps note cards, pushes footer down */
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
         h1 {
             margin-top: 0;
@@ -52,8 +84,12 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+            flex: 1;
         }
+        /* Remove any floats - ensure grid layout */
         .note-card {
+            display: block;
+            float: none;
             background: var(--panel);
             padding: 20px;
             border-radius: 12px;
@@ -725,9 +761,27 @@
             </div>
         </div>
         
-        <div class="notes-grid" id="notes-grid">
-            <div class="loading">Loading notes...</div>
-        </div>
+                        <div class="notes-grid" id="notes-grid">
+                            <div class="loading">Loading notes...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Footer inside main-body -->
+            <footer>
+                <div class="footer-content">
+                    <div class="footer-links">
+                        <a href="/info.html">About</a>
+                        <a href="/info.html#reputation">Reputation System</a>
+                        <a href="/legal">Terms & Conditions</a>
+                        <a href="/legal#privacy">Privacy Policy</a>
+                        <a href="mailto:support@notevaultsa.com">Support</a>
+                    </div>
+                    <div class="footer-copyright">
+                        &copy; 2024 NoteVault SA. All rights reserved.
+                    </div>
+                </div>
+            </footer>
         </div>
     </div>
     <button class="fab" id="create-fab" title="Create New Note">+</button>
@@ -871,7 +925,7 @@
                 // Create clickable seller link if sellerId exists
                 let sellerHTML = '<span>Seller:</span>';
                 if (sellerId) {
-                    sellerHTML = `<span>Seller: <a href="/profile/${sellerId}" class="seller-link" onclick="event.stopPropagation();">${escapeHTML(sellerName)}</a></span>`;
+                    sellerHTML = `<span>Seller: <a href="/user/${sellerId}" class="seller-link" onclick="event.stopPropagation();">${escapeHTML(sellerName)}</a></span>`;
                 } else {
                     sellerHTML = `<span>Seller: ${escapeHTML(sellerName)}</span>`;
                 }
@@ -1163,22 +1217,6 @@
         loadAllSubjects(); // Load all subjects first
         refreshResults();
     </script>
-    
-    <!-- Footer -->
-    <footer>
-        <div class="footer-content">
-            <div class="footer-links">
-                <a href="/info.html">About</a>
-                <a href="/info.html#reputation">Reputation System</a>
-                <a href="/legal">Terms & Conditions</a>
-                <a href="/legal#privacy">Privacy Policy</a>
-                <a href="mailto:support@notevaultsa.com">Support</a>
-            </div>
-            <div class="footer-copyright">
-                &copy; 2024 NoteVault SA. All rights reserved.
-            </div>
-        </div>
-    </footer>
 </body>
 </html>
 
