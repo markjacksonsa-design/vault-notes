@@ -48,24 +48,30 @@
         .main-body {
             margin-left: 250px;
             width: calc(100% - 250px);
+            max-width: calc(100% - 250px);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
         
         /* Main Content - Contains all sales content */
         main {
             display: block;
             width: 100%;
+            max-width: 100%;
             min-height: 80vh;
             flex: 1;
             padding: 40px 32px;
+            overflow-x: hidden;
         }
         
         .container {
             width: 100%;
             max-width: 1200px;
             margin: 0 auto;
+            padding: 0;
+            overflow-x: hidden;
         }
         
         

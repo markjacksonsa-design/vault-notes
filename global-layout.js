@@ -293,10 +293,22 @@ function injectGlobalSidebar() {
     const sidebarHTML = `
         <aside class="global-sidebar">
             <nav class="sidebar-nav">
-                <a href="/list.html" class="sidebar-link" data-page="browse">Browse</a>
-                <a href="/my-vault.html" class="sidebar-link" data-page="vault">My Vault</a>
-                <a href="/seller-dashboard.html" class="sidebar-link" data-page="earnings">Sales</a>
-                <a href="/profile" class="sidebar-link" data-page="profile">My Profile</a>
+                <a href="/list.html" class="sidebar-link" data-page="browse">
+                    <span class="sidebar-icon">📚</span>
+                    <span class="sidebar-label">Browse</span>
+                </a>
+                <a href="/my-vault.html" class="sidebar-link" data-page="vault">
+                    <span class="sidebar-icon">🔒</span>
+                    <span class="sidebar-label">My Vault</span>
+                </a>
+                <a href="/seller-dashboard.html" class="sidebar-link" data-page="earnings">
+                    <span class="sidebar-icon">💰</span>
+                    <span class="sidebar-label">Sales</span>
+                </a>
+                <a href="/profile" class="sidebar-link" data-page="profile">
+                    <span class="sidebar-icon">👤</span>
+                    <span class="sidebar-label">Profile</span>
+                </a>
             </nav>
             <div class="sidebar-upload">
                 <a href="/upload.html" class="btn-upload">Upload Note</a>
@@ -325,6 +337,16 @@ function injectGlobalSidebar() {
                 --text: #FFFFFF;
                 --subtitle: #E0E0E0;
             }
+            /* Fix Box Sizing - All elements use border-box */
+            *, *::before, *::after {
+                box-sizing: border-box;
+            }
+            /* Hide Horizontal Overflow - Safety Net */
+            html, body {
+                overflow-x: hidden;
+                width: 100%;
+                max-width: 100%;
+            }
             /* App Shell Structure */
             body {
                 margin: 0;
@@ -336,7 +358,8 @@ function injectGlobalSidebar() {
                 width: 250px;
                 height: 100vh;
                 background: var(--panel);
-                border-right: 1px solid rgba(255, 255, 255, 0.1);
+                border-right: 2px solid rgba(0, 255, 133, 0.15);
+                box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
                 display: flex;
                 flex-direction: column;
                 padding: 20px 0;
@@ -349,40 +372,61 @@ function injectGlobalSidebar() {
             }
             .sidebar-nav {
                 flex: 1;
-                padding-bottom: 8px;
+                padding: 8px 0;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
             }
             .sidebar-nav a {
-                display: block;
-                padding: 12px 20px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 14px 20px;
                 color: var(--text);
                 text-decoration: none;
                 transition: all 0.2s;
-                font-size: 0.9em;
+                font-size: 0.95em;
                 font-weight: 500;
                 border-left: 3px solid transparent;
+                margin: 0 8px;
+                border-radius: 6px;
+            }
+            .sidebar-icon {
+                font-size: 1.2em;
+                width: 24px;
+                text-align: center;
+                display: inline-block;
+            }
+            .sidebar-label {
+                flex: 1;
             }
             .sidebar-nav a:hover {
                 background: var(--input-bg);
                 border-left-color: var(--accent);
                 color: var(--accent);
+                transform: translateX(2px);
             }
             .sidebar-nav a.active {
                 background: var(--input-bg);
                 border-left-color: var(--accent);
                 color: var(--accent);
+                font-weight: 600;
+                box-shadow: 0 2px 8px rgba(0, 255, 133, 0.15);
             }
             .sidebar-upload {
-                padding: 12px 16px;
+                padding: 16px 16px 20px 16px;
                 border-top: 1px solid rgba(255, 255, 255, 0.1);
                 margin-top: auto;
+                display: flex;
+                justify-content: center;
             }
             .btn-upload {
-                width: 100%;
+                max-width: 90%;
                 background: var(--accent);
                 color: #000000;
                 border: none;
-                padding: 6px 12px;
-                font-size: 0.8em;
+                padding: 8px 12px;
+                font-size: 0.75em;
                 font-weight: 500;
                 border-radius: 4px;
                 cursor: pointer;
@@ -401,7 +445,7 @@ function injectGlobalSidebar() {
             }
             .btn-upload::before {
                 content: '+';
-                font-size: 0.9em;
+                font-size: 0.85em;
                 font-weight: 600;
             }
             /* Main Content Area - Must have margin-left to account for fixed sidebar */
@@ -425,7 +469,8 @@ function injectGlobalSidebar() {
                 .global-sidebar {
                     width: 100%;
                     border-right: none;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                    border-bottom: 2px solid rgba(0, 255, 133, 0.15);
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
                     max-height: 200px;
                     position: relative;
                     top: 0;
@@ -434,16 +479,23 @@ function injectGlobalSidebar() {
                 }
                 .sidebar-nav {
                     display: flex;
+                    flex-direction: row;
                     overflow-x: auto;
+                    gap: 0;
                 }
                 .sidebar-nav a {
                     white-space: nowrap;
                     border-left: none;
                     border-bottom: 3px solid transparent;
+                    margin: 0 4px;
+                    padding: 12px 16px;
                 }
                 .sidebar-nav a.active {
                     border-left: none;
                     border-bottom-color: var(--accent);
+                }
+                .sidebar-icon {
+                    font-size: 1em;
                 }
                 .sidebar-upload {
                     display: none;
