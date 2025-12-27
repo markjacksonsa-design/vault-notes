@@ -295,7 +295,7 @@ function injectGlobalSidebar() {
             <nav class="sidebar-nav">
                 <a href="/list.html" class="sidebar-link" data-page="browse">Browse</a>
                 <a href="/my-vault.html" class="sidebar-link" data-page="vault">My Vault</a>
-                <a href="/seller-dashboard.html" class="sidebar-link" data-page="earnings">Earnings</a>
+                <a href="/seller-dashboard.html" class="sidebar-link" data-page="earnings">Sales</a>
                 <a href="/profile.html" class="sidebar-link" data-page="profile">My Profile</a>
             </nav>
             <div class="sidebar-upload">

@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Earnings | NoteVault SA</title>
+    <title>Sales | NoteVault SA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="/auth.js"></script>
     <script src="/global-layout.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         :root {
             --bg: #0D0D0D;
@@ -313,56 +314,90 @@
                 <div id="dashboard-content" style="display: none;">
                     <!-- Dashboard Header -->
                     <div class="dashboard-header">
-                        <h1>Earnings</h1>
+                        <h1>Sales</h1>
                     </div>
 
-                    <!-- Statistics Section -->
+                    <!-- Lifetime Stat Cards (Top) -->
                     <div class="stats-grid">
                         <div class="stat-card">
-                            <div class="stat-label">Total Earnings (ZAR)</div>
-                            <div class="stat-value currency" id="total-earnings">R 0.00</div>
+                            <div class="stat-label">Lifetime Earnings</div>
+                            <div class="stat-value currency" id="lifetime-earnings">R 0.00</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-label">Total Sales</div>
-                            <div class="stat-value" id="total-downloads">0</div>
+                            <div class="stat-value" id="total-sales">0</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">Average Note Price</div>
-                            <div class="stat-value currency" id="avg-price">R 0.00</div>
+                            <div class="stat-label">Current Balance</div>
+                            <div class="stat-value currency" id="current-balance">R 0.00</div>
                         </div>
                     </div>
 
-                    <!-- Reputation Progress Section -->
+                    <!-- Yearly Sales Graph -->
                     <div class="table-section">
-                        <h2>Reputation Progress</h2>
+                        <h2>Sales over the Year</h2>
+                        <div id="graph-content">
+                            <div id="graph-loading" class="loading">Loading sales data...</div>
+                            <canvas id="sales-chart" style="display: none;"></canvas>
+                            <div id="graph-empty" class="empty-state" style="display: none;">
+                                <p>No sales data available yet.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reputation Progress (Subtle) -->
+                    <div class="table-section reputation-section">
+                        <h3 style="font-size: 1.2em; margin-bottom: 16px; color: var(--subtitle);">Reputation Progress</h3>
                         <div id="reputation-content">
-                            <div id="reputation-loading" class="loading">Loading reputation data...</div>
+                            <div id="reputation-loading" class="loading" style="padding: 20px;">Loading reputation data...</div>
                             <div id="reputation-display" style="display: none;">
-                                <div class="reputation-header">
-                                    <div class="tier-badge-large" id="tier-badge">
+                                <div class="reputation-header-compact">
+                                    <div class="tier-badge-compact" id="tier-badge">
                                         <span class="tier-name" id="tier-name">Candidate</span>
                                     </div>
-                                    <div class="reputation-stats">
-                                        <div class="reputation-stat">
-                                            <span class="stat-label-small">Reputation Points</span>
-                                            <span class="stat-value-small" id="reputation-points">0</span>
-                                        </div>
+                                    <div class="reputation-stats-compact">
+                                        <span class="stat-label-small">Reputation Points: </span>
+                                        <span class="stat-value-small" id="reputation-points">0</span>
                                     </div>
                                 </div>
-                                <div class="progress-section">
-                                    <div class="progress-header">
-                                        <span class="progress-label">Progress to <span id="next-tier-name">Scholar</span></span>
-                                        <span class="progress-text" id="progress-text">0%</span>
+                                <div class="progress-section-compact">
+                                    <div class="progress-header-compact">
+                                        <span class="progress-label-compact">Progress to <span id="next-tier-name">Scholar</span></span>
+                                        <span class="progress-text-compact" id="progress-text">0%</span>
                                     </div>
-                                    <div class="progress-bar-container">
-                                        <div class="progress-bar" id="progress-bar">
-                                            <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+                                    <div class="progress-bar-container-compact">
+                                        <div class="progress-bar-compact" id="progress-bar">
+                                            <div class="progress-fill-compact" id="progress-fill" style="width: 0%;"></div>
                                         </div>
                                     </div>
-                                    <div class="progress-info">
+                                    <div class="progress-info-compact">
                                         <span id="points-to-next">0 points to next tier</span>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Sales Table -->
+                    <div class="table-section">
+                        <h2>Recent Sales</h2>
+                        <div id="sales-content">
+                            <div id="sales-loading" class="loading">Loading sales history...</div>
+                            <div class="table-container" id="sales-table-container" style="display: none;">
+                                <table id="sales-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Note Name</th>
+                                            <th>Price</th>
+                                            <th>Buyer</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sales-tbody"></tbody>
+                                </table>
+                            </div>
+                            <div id="sales-empty" class="empty-state" style="display: none;">
+                                <p>Your sales will appear here once someone purchases your notes.</p>
                             </div>
                         </div>
                     </div>
@@ -485,8 +520,8 @@
                     console.warn('Could not calculate average price:', e);
                 }
 
-                document.getElementById('total-earnings').textContent = formatCurrency(totalEarnings);
-                document.getElementById('total-downloads').textContent = totalDownloads;
+                document.getElementById('lifetime-earnings').textContent = formatCurrency(totalEarnings);
+                document.getElementById('total-sales').textContent = totalDownloads;
                 // Current Balance is same as Total Earnings for now (can be updated if withdrawal system is added)
                 document.getElementById('current-balance').textContent = formatCurrency(totalEarnings);
 
@@ -495,17 +530,17 @@
                 const tier = statsData.tier || 'Candidate';
                 const progress = calculateProgress(reputationPoints);
 
-                // Update reputation display
+                // Update reputation display (compact version)
                 document.getElementById('reputation-loading').style.display = 'none';
                 document.getElementById('reputation-display').style.display = 'block';
 
-                // Update tier badge
+                // Update tier badge (compact)
                 const tierBadge = document.getElementById('tier-badge');
-                tierBadge.className = `tier-badge-large ${tier.toLowerCase()}`;
+                tierBadge.className = `tier-badge-compact ${tier.toLowerCase()}`;
                 document.getElementById('tier-name').textContent = tier;
                 document.getElementById('reputation-points').textContent = reputationPoints;
 
-                // Update progress bar
+                // Update progress bar (compact version)
                 if (progress.nextTier) {
                     document.getElementById('next-tier-name').textContent = progress.nextTier;
                     document.getElementById('progress-text').textContent = `${Math.round(progress.progress)}%`;
@@ -519,9 +554,128 @@
                 }
             } catch (err) {
                 console.error('Error loading stats:', err);
-                document.getElementById('total-earnings').textContent = 'R 0.00';
-                document.getElementById('total-downloads').textContent = '0';
-                document.getElementById('avg-price').textContent = 'R 0.00';
+                document.getElementById('lifetime-earnings').textContent = 'R 0.00';
+                document.getElementById('total-sales').textContent = '0';
+                document.getElementById('current-balance').textContent = 'R 0.00';
+            }
+        }
+
+        // Load yearly sales graph
+        async function loadSalesGraph() {
+            const loadingEl = document.getElementById('graph-loading');
+            const chartCanvas = document.getElementById('sales-chart');
+            const emptyEl = document.getElementById('graph-empty');
+            
+            try {
+                const user = await checkAuth();
+                if (!user || !user.id) {
+                    console.error('User not authenticated');
+                    return;
+                }
+                const sellerId = user.id;
+
+                // Fetch monthly sales data
+                const salesRes = await fetch('/api/seller/monthly-sales');
+                if (!salesRes.ok) throw new Error('Failed to load sales data');
+                const data = await salesRes.json();
+                
+                loadingEl.style.display = 'none';
+                
+                if (!data.success || !data.monthlyData || data.monthlyData.length === 0) {
+                    emptyEl.style.display = 'block';
+                    chartCanvas.style.display = 'none';
+                    return;
+                }
+                
+                emptyEl.style.display = 'none';
+                chartCanvas.style.display = 'block';
+                
+                // Prepare data for Chart.js
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const monthlyTotals = new Array(12).fill(0);
+                
+                data.monthlyData.forEach(item => {
+                    const monthIndex = parseInt(item.month) - 1; // SQLite month is 1-12
+                    if (monthIndex >= 0 && monthIndex < 12) {
+                        monthlyTotals[monthIndex] = parseFloat(item.total || 0);
+                    }
+                });
+                
+                // Destroy existing chart if it exists
+                if (window.salesChart) {
+                    window.salesChart.destroy();
+                }
+                
+                // Create new chart
+                const ctx = chartCanvas.getContext('2d');
+                window.salesChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: months,
+                        datasets: [{
+                            label: 'Sales (ZAR)',
+                            data: monthlyTotals,
+                            borderColor: '#00FF85',
+                            backgroundColor: 'rgba(0, 255, 133, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#00FF85',
+                            pointBorderColor: '#00FF85',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                labels: {
+                                    color: '#FFFFFF',
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(26, 26, 26, 0.95)',
+                                titleColor: '#FFFFFF',
+                                bodyColor: '#00FF85',
+                                borderColor: '#00FF85',
+                                borderWidth: 1,
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'R ' + context.parsed.y.toFixed(2);
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: '#E0E0E0'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: '#E0E0E0',
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error('Error loading sales graph:', err);
+                loadingEl.textContent = 'Failed to load sales graph. Please try again later.';
             }
         }
 
@@ -574,7 +728,7 @@
                         <td>${escapeHTML(date)}</td>
                         <td>${escapeHTML(noteTitle)}</td>
                         <td style="color: var(--accent); font-weight: 600;">${amount}</td>
-                        <td><span class="status-badge live">Completed</span></td>
+                        <td style="color: var(--subtitle);">Verified Student</td>
                     `;
                     tbodyEl.appendChild(row);
                 });
@@ -667,8 +821,8 @@
                 document.getElementById('dashboard-content').style.display = 'block';
                 document.getElementById('access-denied').style.display = 'none';
                 await loadStats();
+                await loadSalesGraph();
                 await loadSalesHistory();
-                await loadMyNotes();
             } else {
                 document.getElementById('dashboard-content').style.display = 'none';
                 document.getElementById('access-denied').style.display = 'block';
