@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Seller Dashboard | NoteVault SA</title>
+    <title>Earnings | NoteVault SA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="/auth.js"></script>
     <script src="/global-layout.js"></script>
@@ -49,15 +49,13 @@
             margin-bottom: 8px;
         }
         
-        /* Statistics Cards */
+        /* Statistics Cards - Centered below Reputation */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 24px;
-            margin-bottom: 50px;
+            margin: 40px auto 50px;
             max-width: 1000px;
-            margin-left: auto;
-            margin-right: auto;
         }
         .stat-card {
             background: var(--panel);
@@ -94,6 +92,7 @@
             padding: 32px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
             margin-top: 40px;
+            width: 100%;
         }
         .table-section h2 {
             font-size: 1.8em;
@@ -103,10 +102,12 @@
         }
         .table-container {
             overflow-x: auto;
+            width: 100%;
         }
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 600px;
         }
         thead {
             background: var(--input-bg);
@@ -391,6 +392,21 @@
             });
         }
 
+        // Format date helper
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-ZA', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            } catch (e) {
+                return dateString;
+            }
+        }
+
 
         // Check user role and access
         async function checkSellerAccess() {
@@ -471,7 +487,8 @@
 
                 document.getElementById('total-earnings').textContent = formatCurrency(totalEarnings);
                 document.getElementById('total-downloads').textContent = totalDownloads;
-                document.getElementById('avg-price').textContent = formatCurrency(avgPrice);
+                // Current Balance is same as Total Earnings for now (can be updated if withdrawal system is added)
+                document.getElementById('current-balance').textContent = formatCurrency(totalEarnings);
 
                 // Load reputation data
                 const reputationPoints = statsData.reputationPoints || 0;
@@ -508,8 +525,66 @@
             }
         }
 
-        // Removed loadMyNotes - replaced with Reputation Progress section
-        // Legacy function kept for compatibility but not called
+        // Load sales history
+        async function loadSalesHistory() {
+            const loadingEl = document.getElementById('sales-loading');
+            const tableContainer = document.getElementById('sales-table-container');
+            const emptyEl = document.getElementById('sales-empty');
+            const tbodyEl = document.getElementById('sales-tbody');
+            
+            try {
+                const user = await checkAuth();
+                if (!user || !user.id) {
+                    console.error('User not authenticated');
+                    return;
+                }
+                const sellerId = user.id;
+
+                const salesRes = await fetch('/api/admin/sales');
+                if (!salesRes.ok) throw new Error('Failed to load sales');
+                const salesData = await salesRes.json();
+                
+                if (!salesData.success || !salesData.sales) {
+                    throw new Error('Invalid sales data');
+                }
+
+                const mySales = salesData.sales.filter(sale => 
+                    sale.sellerId === sellerId && sale.status === 'completed'
+                ).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                loadingEl.style.display = 'none';
+                
+                if (mySales.length === 0) {
+                    emptyEl.style.display = 'block';
+                    tableContainer.style.display = 'none';
+                    return;
+                }
+                
+                tableContainer.style.display = 'block';
+                emptyEl.style.display = 'none';
+                
+                tbodyEl.innerHTML = '';
+                mySales.forEach((sale) => {
+                    const date = formatDate(sale.created_at);
+                    const amount = formatCurrency(sale.amount || 0);
+                    const noteTitle = sale.note_title || 'Unknown Note';
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${escapeHTML(date)}</td>
+                        <td>${escapeHTML(noteTitle)}</td>
+                        <td style="color: var(--accent); font-weight: 600;">${amount}</td>
+                        <td><span class="status-badge live">Completed</span></td>
+                    `;
+                    tbodyEl.appendChild(row);
+                });
+            } catch (err) {
+                console.error('Error loading sales history:', err);
+                loadingEl.textContent = 'Failed to load sales history. Please try again later.';
+            }
+        }
+
+        // Load user's notes
         async function loadMyNotes() {
             const loadingEl = document.getElementById('notes-loading');
             const tableEl = document.getElementById('notes-table');
@@ -543,17 +618,19 @@
                     console.warn('Could not load sales data:', e);
                 }
 
+                const tableContainer = document.getElementById('notes-table-container');
                 loadingEl.style.display = 'none';
                 
                 if (notes.length === 0) {
-                    emptyEl.style.display = 'block';
-                    tableEl.style.display = 'none';
+                    document.getElementById('notes-empty').style.display = 'block';
+                    tableContainer.style.display = 'none';
                     return;
                 }
                 
-                tableEl.style.display = 'table';
-                emptyEl.style.display = 'none';
+                tableContainer.style.display = 'block';
+                document.getElementById('notes-empty').style.display = 'none';
                 
+                const tbodyEl = document.getElementById('notes-tbody');
                 tbodyEl.innerHTML = '';
                 notes.forEach((note) => {
                     const price = note.price ? parseFloat(note.price) : 0;
@@ -578,7 +655,7 @@
                 });
             } catch (err) {
                 console.error('Error loading notes:', err);
-                loadingEl.textContent = 'Failed to load notes. Please try again later.';
+                document.getElementById('notes-loading').textContent = 'Failed to load notes. Please try again later.';
             }
         }
 
@@ -590,6 +667,8 @@
                 document.getElementById('dashboard-content').style.display = 'block';
                 document.getElementById('access-denied').style.display = 'none';
                 await loadStats();
+                await loadSalesHistory();
+                await loadMyNotes();
             } else {
                 document.getElementById('dashboard-content').style.display = 'none';
                 document.getElementById('access-denied').style.display = 'block';
