@@ -294,19 +294,15 @@ function injectGlobalSidebar() {
         <aside class="global-sidebar">
             <nav class="sidebar-nav">
                 <a href="/list.html" class="sidebar-link" data-page="browse">
-                    <span class="sidebar-icon">📚</span>
                     <span class="sidebar-label">Browse</span>
                 </a>
                 <a href="/my-vault.html" class="sidebar-link" data-page="vault">
-                    <span class="sidebar-icon">🔒</span>
                     <span class="sidebar-label">My Vault</span>
                 </a>
                 <a href="/seller-dashboard.html" class="sidebar-link" data-page="earnings">
-                    <span class="sidebar-icon">💰</span>
                     <span class="sidebar-label">Sales</span>
                 </a>
                 <a href="/profile" class="sidebar-link" data-page="profile">
-                    <span class="sidebar-icon">👤</span>
                     <span class="sidebar-label">Profile</span>
                 </a>
             </nav>
@@ -380,8 +376,7 @@ function injectGlobalSidebar() {
             .sidebar-nav a {
                 display: flex;
                 align-items: center;
-                gap: 12px;
-                padding: 14px 20px;
+                padding: 14px 0 14px 20px;
                 color: var(--text);
                 text-decoration: none;
                 transition: all 0.2s;
@@ -391,12 +386,6 @@ function injectGlobalSidebar() {
                 margin: 0 8px;
                 border-radius: 6px;
             }
-            .sidebar-icon {
-                font-size: 1.2em;
-                width: 24px;
-                text-align: center;
-                display: inline-block;
-            }
             .sidebar-label {
                 flex: 1;
             }
@@ -404,7 +393,6 @@ function injectGlobalSidebar() {
                 background: var(--input-bg);
                 border-left-color: var(--accent);
                 color: var(--accent);
-                transform: translateX(2px);
             }
             .sidebar-nav a.active {
                 background: var(--input-bg);
@@ -493,9 +481,6 @@ function injectGlobalSidebar() {
                 .sidebar-nav a.active {
                     border-left: none;
                     border-bottom-color: var(--accent);
-                }
-                .sidebar-icon {
-                    font-size: 1em;
                 }
                 .sidebar-upload {
                     display: none;
