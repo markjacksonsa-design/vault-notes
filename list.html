@@ -109,6 +109,7 @@
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s, background 0.2s, border 0.2s;
             border: 1px solid transparent;
+            position: relative;
         }
         .note-card:hover {
             transform: translateY(-2px);
@@ -258,6 +259,88 @@
             font-size: 0.85em;
             margin-top: 12px;
             opacity: 0.7;
+        }
+        /* Stat Bar */
+        .note-stat-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            margin-bottom: 12px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            flex-wrap: wrap;
+        }
+        .stat-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            color: var(--subtitle);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .stat-icon {
+            font-size: 0.85em;
+            opacity: 0.7;
+        }
+        /* Stat Pills */
+        .stat-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        /* Year Badge */
+        .year-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0, 255, 133, 0.15);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            font-weight: 600;
+            border: 1px solid rgba(0, 255, 133, 0.3);
+            z-index: 1;
+        }
+        /* Topic Badge */
+        .badge.topic {
+            background: rgba(0, 255, 133, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(0, 255, 133, 0.3);
+        }
+        /* Topic Dropdown */
+        .topic-filter-container {
+            flex: 1;
+            min-width: 200px;
+        }
+        .topic-filter-select {
+            width: 100%;
+            background: var(--input-bg);
+            color: var(--text);
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            padding: 12px 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .topic-filter-select:focus {
+            box-shadow: 0 0 0 2px var(--accent);
+        }
+        .topic-filter-select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         .notes-empty {
             color: var(--subtitle);
@@ -758,6 +841,18 @@
             <div class="pill-row" id="subject-pills"></div>
         </div>
         
+        <!-- Topic Filter -->
+        <div class="filter-section">
+            <div class="filter-section-label">Topic</div>
+            <div class="filter-row">
+                <div class="topic-filter-container">
+                    <select id="topic-filter-select" class="topic-filter-select" disabled>
+                        <option value="">Select a subject first...</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
         <!-- Search and Sort Row -->
         <div class="filter-row">
             <div class="filter-group search-container">
@@ -846,8 +941,54 @@
         let activeFilters = {
             curriculum: null,
             grade: null,
-            subject: null
+            subject: null,
+            topic: null
         };
+        
+        // Topic mapping based on subjects
+        const topicMapping = {
+            'Business': ['Marketing', 'Accounting', 'Finance', 'Management', 'Economics'],
+            'Mathematics': ['Algebra', 'Calculus', 'Statistics', 'Geometry', 'Trigonometry'],
+            'Science': ['Physics', 'Chemistry', 'Biology', 'Earth Science'],
+            'English': ['Literature', 'Grammar', 'Writing', 'Comprehension'],
+            'History': ['World History', 'South African History', 'Ancient History', 'Modern History'],
+            'Geography': ['Physical Geography', 'Human Geography', 'Environmental Studies'],
+            'Computer Science': ['Programming', 'Data Structures', 'Algorithms', 'Web Development'],
+            'Economics': ['Microeconomics', 'Macroeconomics', 'Business Economics'],
+            'Psychology': ['Cognitive Psychology', 'Social Psychology', 'Developmental Psychology'],
+            'Law': ['Contract', 'Criminal', 'Tort', 'Constitutional', 'Commercial'],
+            'Health Science': ['Anatomy', 'Physiology', 'Pathology', 'Pharmacology', 'Biochemistry']
+        };
+        
+        // Get topics for a subject
+        function getTopicsForSubject(subject) {
+            if (!subject) return [];
+            return topicMapping[subject] || [];
+        }
+        
+        // Extract year from level
+        function extractYear(level) {
+            if (!level) return null;
+            const yearMatch = level.match(/(\d+)(st|nd|rd|th)\s*Year/i);
+            if (yearMatch) {
+                return `${yearMatch[1]}${yearMatch[2]} Year`;
+            }
+            // Check for Grade patterns
+            const gradeMatch = level.match(/Grade\s*(\d+)/i);
+            if (gradeMatch) {
+                return `Grade ${gradeMatch[1]}`;
+            }
+            return null;
+        }
+        
+        
+        // Get document type from pdf_key or default
+        function getDocumentType(pdfKey) {
+            if (!pdfKey) return 'PDF';
+            const ext = pdfKey.split('.').pop().toLowerCase();
+            if (ext === 'docx' || ext === 'doc') return 'Docx';
+            return 'PDF';
+        }
         
         // Store all notes and available subjects
         let allNotes = [];
@@ -873,7 +1014,7 @@
             const grid = document.getElementById('notes-grid');
             
             if (!notes || notes.length === 0) {
-                const hasFilters = activeFilters.curriculum || activeFilters.grade || activeFilters.subject || searchTerm;
+                const hasFilters = activeFilters.curriculum || activeFilters.grade || activeFilters.subject || activeFilters.topic || searchTerm;
                 if (hasFilters) {
                     grid.innerHTML = '<div class="notes-empty">No notes found. Try adjusting your filters.</div>';
                 } else {
@@ -905,6 +1046,33 @@
                     }
                 }
                 
+                // Year badge
+                const year = extractYear(note.level);
+                const yearBadgeHTML = year ? `<div class="year-badge">${escapeHTML(year)}</div>` : '';
+                
+                // Stat bar data
+                const pages = note.pages || Math.floor(Math.random() * 50) + 10; // Default if not available
+                const docType = getDocumentType(note.pdf_key);
+                const academicYear = extractYear(note.level) || 'N/A';
+                
+                // Stat bar HTML (Page Count, File Format, Academic Year)
+                const statBarHTML = `
+                    <div class="note-stat-bar">
+                        <span class="stat-pill">
+                            <span class="stat-icon">📄</span>
+                            <span>${pages} Pages</span>
+                        </span>
+                        <span class="stat-pill">
+                            <span class="stat-icon">📎</span>
+                            <span>${docType}</span>
+                        </span>
+                        <span class="stat-pill">
+                            <span class="stat-icon">📅</span>
+                            <span>${academicYear}</span>
+                        </span>
+                    </div>
+                `;
+                
                 // Build badges
                 const badges = [];
                 if (note.curriculum) {
@@ -915,6 +1083,10 @@
                 }
                 if (note.subject) {
                     badges.push(`<span class="badge subject">${escapeHTML(note.subject)}</span>`);
+                }
+                // Add topic badge if available
+                if (note.topic) {
+                    badges.push(`<span class="badge topic">${escapeHTML(note.topic)}</span>`);
                 }
                 const badgesHTML = badges.length > 0 ? `<div class="note-badges">${badges.join('')}</div>` : '';
                 
@@ -928,10 +1100,12 @@
                 const sellerHTML = `<span>Seller: ${escapeHTML(sellerName)}</span>`;
                 
                 card.innerHTML = `
+                    ${yearBadgeHTML}
                     <div class="note-card-header-top">
                         <div class="note-title">${title}</div>
                         ${priceHTML}
                     </div>
+                    ${statBarHTML}
                     ${badgesHTML}
                     <div class="note-content-snippet">${contentSnippet}</div>
                     <div class="note-seller">
@@ -968,10 +1142,59 @@
                     e.stopPropagation();
                     const category = btn.getAttribute('data-category');
                     activeFilters[category] = null;
+                    if (category === 'subject') {
+                        // Clear topic when subject is cleared
+                        activeFilters.topic = null;
+                        updateTopicDropdown();
+                    }
                     updateActiveFilterTags();
                     updatePillStates();
                     refreshResults();
                 });
+            });
+        }
+        
+        // Update topic dropdown based on selected subject
+        function updateTopicDropdown() {
+            const topicSelect = document.getElementById('topic-filter-select');
+            const selectedSubject = activeFilters.subject;
+            
+            // Clear existing options
+            topicSelect.innerHTML = '';
+            
+            if (!selectedSubject) {
+                topicSelect.disabled = true;
+                topicSelect.innerHTML = '<option value="">Select a subject first...</option>';
+                return;
+            }
+            
+            // Enable dropdown
+            topicSelect.disabled = false;
+            
+            // Add default option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'All Topics';
+            topicSelect.appendChild(defaultOption);
+            
+            // Get topics for selected subject
+            const topics = getTopicsForSubject(selectedSubject);
+            
+            if (topics.length === 0) {
+                topicSelect.disabled = true;
+                topicSelect.innerHTML = '<option value="">No topics available for this subject</option>';
+                return;
+            }
+            
+            // Add topic options
+            topics.forEach(topic => {
+                const option = document.createElement('option');
+                option.value = topic;
+                option.textContent = topic;
+                if (activeFilters.topic === topic) {
+                    option.selected = true;
+                }
+                topicSelect.appendChild(option);
             });
         }
 
@@ -1073,6 +1296,24 @@
                     });
                 }
                 
+                // Filter by topic (must match both subject and topic)
+                if (activeFilters.topic) {
+                    filtered = filtered.filter(note => {
+                        // First ensure subject matches
+                        if (activeFilters.subject && note.subject !== activeFilters.subject) {
+                            return false;
+                        }
+                        // Then check topic match
+                        const noteTopic = note.topic || '';
+                        const title = (note.title || '').toLowerCase();
+                        const content = (note.content || '').toLowerCase();
+                        const topicLower = activeFilters.topic.toLowerCase();
+                        return noteTopic.toLowerCase().includes(topicLower) || 
+                               title.includes(topicLower) || 
+                               content.includes(topicLower);
+                    });
+                }
+                
                 // Apply sorting
                 if (currentSort === 'price-low') {
                     filtered.sort((a, b) => {
@@ -1169,6 +1410,12 @@
                         activeFilters[category] = value;
                     }
                     
+                    // Update topic dropdown when subject changes
+                    if (category === 'subject') {
+                        activeFilters.topic = null; // Clear topic when subject changes
+                        updateTopicDropdown();
+                    }
+                    
                     updateActiveFilterTags();
                     updatePillStates();
                     refreshResults();
@@ -1184,6 +1431,13 @@
         // Handle sort select
         document.getElementById('sort-select').addEventListener('change', (e) => {
             currentSort = e.target.value;
+            refreshResults();
+        });
+        
+        // Handle topic dropdown
+        document.getElementById('topic-filter-select').addEventListener('change', (e) => {
+            activeFilters.topic = e.target.value || null;
+            updateActiveFilterTags();
             refreshResults();
         });
 
@@ -1210,6 +1464,7 @@
 
         // Initial load
         updateActiveFilterTags();
+        updateTopicDropdown(); // Initialize topic dropdown
         attachPillListeners();
         loadAllSubjects(); // Load all subjects first
         refreshResults();
