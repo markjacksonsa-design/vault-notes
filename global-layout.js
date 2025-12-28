@@ -376,7 +376,7 @@ function injectGlobalSidebar() {
             .sidebar-nav a {
                 display: flex;
                 align-items: center;
-                padding: 14px 0 14px 20px;
+                padding: 12px 20px;
                 color: var(--text);
                 text-decoration: none;
                 transition: all 0.2s;
@@ -637,8 +637,21 @@ function setupSidebarListeners() {
     const currentPath = window.location.pathname;
     document.querySelectorAll('.sidebar-link').forEach(link => {
         const href = link.getAttribute('href');
+        const dataPage = link.getAttribute('data-page');
         link.classList.remove('active');
-        if (currentPath === href || 
+        
+        // Check for Browse page (list.html, browse.html, or /browse)
+        if (dataPage === 'browse') {
+            if (currentPath === href || 
+                currentPath === '/list.html' || 
+                currentPath === '/browse.html' || 
+                currentPath === '/browse' ||
+                (currentPath === '/' && href === '/list.html')) {
+                link.classList.add('active');
+            }
+        }
+        // Check for other pages
+        else if (currentPath === href || 
             (currentPath === '/' && href === '/list.html') ||
             (currentPath.includes('seller-dashboard') && href.includes('seller-dashboard')) ||
             (currentPath.includes('my-vault') && href.includes('my-vault')) ||
