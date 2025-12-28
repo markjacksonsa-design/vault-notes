@@ -333,6 +333,19 @@ function injectGlobalSidebar() {
                 --text: #FFFFFF;
                 --subtitle: #E0E0E0;
             }
+            /* Utility Classes for Common Inline Styles */
+            .hidden {
+                display: none !important;
+            }
+            .text-accent {
+                color: var(--accent);
+            }
+            .text-subtitle {
+                color: var(--subtitle);
+            }
+            .font-weight-600 {
+                font-weight: 600;
+            }
             /* Fix Box Sizing - All elements use border-box */
             *, *::before, *::after {
                 box-sizing: border-box;
@@ -350,6 +363,13 @@ function injectGlobalSidebar() {
                 display: flex;
                 min-height: 100vh;
             }
+            /* Standardized App Container */
+            .app-container {
+                display: flex;
+                width: 100%;
+                min-height: 100vh;
+            }
+            /* Standardized Sidebar - Always 250px, Fixed */
             .global-sidebar {
                 width: 250px;
                 height: 100vh;
@@ -436,15 +456,17 @@ function injectGlobalSidebar() {
                 font-size: 0.85em;
                 font-weight: 600;
             }
-            /* Main Content Area - Must have margin-left to account for fixed sidebar */
-            .main-content-with-sidebar {
+            /* Standardized Main Content - Always margin-left: 250px, width: calc(100% - 250px) */
+            .main-content-with-sidebar,
+            .app-main-content,
+            .main-body,
+            .main-content {
                 margin-left: 250px;
-                transition: margin-left 0.3s;
+                width: calc(100% - 250px);
                 min-height: 100vh;
                 display: flex;
                 flex-direction: column;
                 flex: 1;
-                width: calc(100% - 250px);
             }
             /* Ensure all main content areas respect sidebar */
             body:has(.global-sidebar) > main,
@@ -452,6 +474,7 @@ function injectGlobalSidebar() {
             body:has(.global-sidebar) > .container,
             body:has(.global-sidebar) > #app-container > .main-body {
                 margin-left: 250px;
+                width: calc(100% - 250px);
             }
             @media (max-width: 768px) {
                 .global-sidebar {

@@ -33,27 +33,7 @@
             line-height: 1.6;
         }
         
-        /* Sidebar - Fixed on left */
-        .global-sidebar {
-            width: 250px;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            flex-shrink: 0;
-            z-index: 1001;
-        }
-        
-        /* Main Body - Starts after 250px sidebar */
-        .main-body {
-            margin-left: 250px;
-            width: calc(100% - 250px);
-            max-width: calc(100% - 250px);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
+        /* Sidebar and main body styles handled by global-layout.js */
         
         /* Main Content - Contains all sales content */
         main {
