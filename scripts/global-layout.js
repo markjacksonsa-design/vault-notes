@@ -704,8 +704,8 @@ function setupSidebarListeners() {
         }
     });
     
-    // Handle protected links (My Vault, Earnings, Profile)
-    document.querySelectorAll('.sidebar-link[data-page="vault"], .sidebar-link[data-page="earnings"], .sidebar-link[data-page="profile"]').forEach(link => {
+    // Handle protected links (My Vault, Sales, Profile) - Browse is always accessible
+    document.querySelectorAll('.sidebar-link[data-page="vault"], .sidebar-link[data-page="sales"], .sidebar-link[data-page="profile"]').forEach(link => {
         link.addEventListener('click', async (e) => {
             const user = await checkAuth();
             if (!user) {
@@ -714,14 +714,26 @@ function setupSidebarListeners() {
             }
         });
     });
+    
+    // Browse link is always accessible to everyone (logged in or not)
+    document.querySelectorAll('.sidebar-link[data-page="browse"]').forEach(link => {
+        // No authentication check needed - Browse is public
+    });
 }
 
 /**
  * Update sidebar based on auth status
+ * All sidebar links are always visible - Browse is public, others redirect to login if not authenticated
+ * Only two user states: logged in or not logged in (no user types)
  */
 async function updateSidebarAuth() {
-    // Links are always visible, but will redirect to login if not authenticated
-    // (handled in setupSidebarListeners)
+    // Ensure all sidebar links are visible
+    // Browse: Always visible (public)
+    // My Vault, Sales, Profile: Visible but redirect to login if not authenticated
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    sidebarLinks.forEach(link => {
+        link.style.display = ''; // Ensure all links are visible
+    });
 }
 
 /**
