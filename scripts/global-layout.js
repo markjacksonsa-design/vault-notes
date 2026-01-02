@@ -6,7 +6,7 @@
 function shouldShowSidebar() {
     const path = window.location.pathname;
     // Show sidebar on app pages, hide on home page
-    const appPages = ['/list.html', '/browse.html', '/my-vault.html', '/vault.html', '/seller-dashboard.html', '/earnings.html', '/profile.html', '/profile', '/upload.html'];
+    const appPages = ['/list.html', '/browse.html', '/my-vault.html', '/vault.html', '/sales.html', '/profile.html', '/profile', '/upload.html'];
     const homePages = ['/', '/index.html', '/home.html'];
     
     // Don't show sidebar on home pages
@@ -293,16 +293,16 @@ function injectGlobalSidebar() {
     const sidebarHTML = `
         <aside class="global-sidebar">
             <nav class="sidebar-nav">
-                <a href="/list.html" class="sidebar-link" data-page="browse">
+                <a href="/browse.html" class="sidebar-link" data-page="browse">
                     <span class="sidebar-label">Browse</span>
                 </a>
-                <a href="/my-vault.html" class="sidebar-link" data-page="vault">
+                <a href="/vault.html" class="sidebar-link" data-page="vault">
                     <span class="sidebar-label">My Vault</span>
                 </a>
-                <a href="/seller-dashboard.html" class="sidebar-link" data-page="earnings">
+                <a href="/sales.html" class="sidebar-link" data-page="sales">
                     <span class="sidebar-label">Sales</span>
                 </a>
-                <a href="/profile" class="sidebar-link" data-page="profile">
+                <a href="/profile.html" class="sidebar-link" data-page="profile">
                     <span class="sidebar-label">Profile</span>
                 </a>
             </nav>
@@ -456,25 +456,27 @@ function injectGlobalSidebar() {
                 font-size: 0.85em;
                 font-weight: 600;
             }
-            /* Standardized Main Content - Always margin-left: 250px, width: calc(100% - 250px) */
+            /* Standardized Main Content - Always margin-left: 270px (250px sidebar + 20px breathing room), width: calc(100% - 270px) */
             .main-content-with-sidebar,
             .app-main-content,
             .main-body,
             .main-content {
-                margin-left: 250px;
-                width: calc(100% - 250px);
+                margin-left: 270px;
+                width: calc(100% - 270px);
                 min-height: 100vh;
                 display: flex;
                 flex-direction: column;
                 flex: 1;
+                padding-top: 20px;
             }
             /* Ensure all main content areas respect sidebar */
             body:has(.global-sidebar) > main,
             body:has(.global-sidebar) > .main-content,
             body:has(.global-sidebar) > .container,
             body:has(.global-sidebar) > #app-container > .main-body {
-                margin-left: 250px;
-                width: calc(100% - 250px);
+                margin-left: 270px;
+                width: calc(100% - 270px);
+                padding-top: 20px;
             }
             @media (max-width: 768px) {
                 .global-sidebar {
@@ -663,22 +665,41 @@ function setupSidebarListeners() {
         const dataPage = link.getAttribute('data-page');
         link.classList.remove('active');
         
-        // Check for Browse page (list.html, browse.html, or /browse)
+        // Check for Browse page (browse.html)
         if (dataPage === 'browse') {
             if (currentPath === href || 
-                currentPath === '/list.html' || 
                 currentPath === '/browse.html' || 
                 currentPath === '/browse' ||
-                (currentPath === '/' && href === '/list.html')) {
+                currentPath === '/list.html') {
+                link.classList.add('active');
+            }
+        }
+        // Check for vault page (vault.html or my-vault.html)
+        else if (dataPage === 'vault') {
+            if (currentPath === href || 
+                currentPath === '/vault.html' ||
+                currentPath === '/my-vault.html') {
+                link.classList.add('active');
+            }
+        }
+        // Check for sales page (sales.html)
+        else if (dataPage === 'sales') {
+            if (currentPath === href || 
+                currentPath === '/sales.html' ||
+                currentPath === '/seller-dashboard.html') {
+                link.classList.add('active');
+            }
+        }
+        // Check for profile page
+        else if (dataPage === 'profile') {
+            if (currentPath === href || 
+                currentPath === '/profile.html' ||
+                currentPath === '/profile') {
                 link.classList.add('active');
             }
         }
         // Check for other pages
-        else if (currentPath === href || 
-            (currentPath === '/' && href === '/list.html') ||
-            (currentPath.includes('seller-dashboard') && href.includes('seller-dashboard')) ||
-            (currentPath.includes('my-vault') && href.includes('my-vault')) ||
-            (currentPath.includes('profile') && href.includes('profile'))) {
+        else if (currentPath === href) {
             link.classList.add('active');
         }
     });
