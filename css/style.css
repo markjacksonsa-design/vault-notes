@@ -42,6 +42,12 @@ body {
     overflow-x: hidden;
 }
 
+/* Remove sidebar margin on home pages (when sidebar is not present) */
+body:not(:has(.global-sidebar)) #content-area {
+    margin-left: 0;
+    width: 100%;
+}
+
 /* Main content wrapper */
 .main-content {
     padding: 40px 32px;

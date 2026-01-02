@@ -26,14 +26,24 @@ async function initGlobalLayout() {
         injectGlobalHeader();
     }
     
-    // Inject sidebar only on app pages
+    // Check if sidebar should be shown
     const showSidebar = shouldShowSidebar();
-    if (showSidebar && !document.querySelector('.global-sidebar')) {
+    
+    // Remove sidebar if we're on a home page
+    const existingSidebar = document.querySelector('.global-sidebar');
+    if (!showSidebar && existingSidebar) {
+        existingSidebar.remove();
+    }
+    
+    // Inject sidebar only on app pages (not home pages)
+    if (showSidebar && !existingSidebar) {
         injectGlobalSidebar();
     }
     
-    // Update sidebar based on auth status
-    await updateSidebarAuth();
+    // Update sidebar based on auth status (only if sidebar exists)
+    if (showSidebar) {
+        await updateSidebarAuth();
+    }
     
     // Update header profile icon
     await updateHeaderProfile();
@@ -41,6 +51,13 @@ async function initGlobalLayout() {
     // Adjust main content for sidebar
     if (showSidebar) {
         adjustMainContentForSidebar();
+    } else {
+        // Remove sidebar margin on home pages
+        const contentArea = document.getElementById('content-area');
+        if (contentArea) {
+            contentArea.style.marginLeft = '0';
+            contentArea.style.width = '100%';
+        }
     }
 }
 
