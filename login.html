@@ -298,10 +298,11 @@
                     // Check for redirect parameter
                     const urlParams = new URLSearchParams(window.location.search);
                     const redirectUrl = urlParams.get('redirect');
-                    if (redirectUrl) {
+                    if (redirectUrl && redirectUrl !== '/login.html' && redirectUrl !== '/register.html') {
+                        // Only redirect if it's not a login/register page to prevent loops
                         window.location.href = decodeURIComponent(redirectUrl);
                     } else {
-                        window.location.href = '/list.html'; // Browse page
+                        window.location.href = '/browse.html'; // Browse page (home of the app)
                     }
                 }, 1000);
                 

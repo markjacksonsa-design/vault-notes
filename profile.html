@@ -726,7 +726,7 @@
                 if (!user) {
                     // Redirect to login if not authenticated
                     loadingEl.style.display = 'none';
-                    window.location.href = '/login.html?redirect=' + encodeURIComponent('/profile');
+                    window.location.href = '/login.html?redirect=' + encodeURIComponent('/profile.html');
                     return Promise.resolve();
                 }
                 
@@ -919,7 +919,7 @@
                 loadingEl.style.display = 'none';
                 // If error is due to authentication, redirect to login
                 if (err.message && err.message.includes('Not authenticated')) {
-                    window.location.href = '/login.html?redirect=' + encodeURIComponent('/profile');
+                    window.location.href = '/login.html?redirect=' + encodeURIComponent('/profile.html');
                 } else {
                     // Show error message
                     const errorMsg = document.createElement('div');

@@ -96,7 +96,7 @@ function injectGlobalHeader() {
                     <span class="dropdown-arrow">▼</span>
                 </button>
                 <div class="profile-dropdown" id="profile-dropdown">
-                    <a href="/profile" id="profile-link">My Profile</a>
+                    <a href="/profile.html" id="profile-link">My Profile</a>
                     <a href="#" id="settings-link">Settings</a>
                     <a href="#" id="logout-link">Logout</a>
                 </div>
@@ -745,7 +745,11 @@ function setupSidebarListeners() {
             const user = await checkAuth();
             if (!user) {
                 e.preventDefault();
-                window.location.href = '/login.html';
+                const currentPath = window.location.pathname;
+                // Only redirect if not already on login page to prevent loops
+                if (currentPath !== '/login.html' && currentPath !== '/register.html') {
+                    window.location.href = '/login.html?redirect=' + encodeURIComponent(currentPath);
+                }
             }
         });
     });

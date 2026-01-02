@@ -69,10 +69,11 @@ async function getUserProfile() {
 
 /**
  * Logout user by clearing session cookie
+ * Redirects to browse.html (home of the app) after logout
  */
 function logout() {
     document.cookie = 'session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    window.location.href = '/';
+    window.location.href = '/browse.html';
 }
 
 /**
