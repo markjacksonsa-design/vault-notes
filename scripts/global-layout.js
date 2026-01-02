@@ -265,7 +265,8 @@ function injectGlobalHeader() {
                 border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             }
             body {
-                padding-top: 72px;
+                padding-top: 0;
+                margin-top: 0;
             }
             @media (max-width: 768px) {
                 .global-header {
@@ -273,7 +274,8 @@ function injectGlobalHeader() {
                     height: 64px;
                 }
                 body {
-                    padding-top: 64px;
+                    padding-top: 0;
+                    margin-top: 0;
                 }
                 .header-logo {
                     font-size: 1.2em;
@@ -474,17 +476,19 @@ function injectGlobalSidebar() {
                 font-weight: 600;
             }
             /* Standardized Main Content - Always margin-left: 270px (250px sidebar + 20px breathing room), width: calc(100% - 270px) */
+            /* Header is fixed at 72px, so content starts below it */
             .main-content-with-sidebar,
             .app-main-content,
             .main-body,
             .main-content {
                 margin-left: 270px;
                 width: calc(100% - 270px);
-                min-height: 100vh;
+                min-height: calc(100vh - 72px);
                 display: flex;
                 flex-direction: column;
                 flex: 1;
-                padding-top: 20px;
+                padding-top: 72px;
+                margin-top: 0;
             }
             /* Ensure all main content areas respect sidebar */
             body:has(.global-sidebar) > main,
@@ -493,7 +497,8 @@ function injectGlobalSidebar() {
             body:has(.global-sidebar) > #app-container > .main-body {
                 margin-left: 270px;
                 width: calc(100% - 270px);
-                padding-top: 20px;
+                padding-top: 72px;
+                margin-top: 0;
             }
             @media (max-width: 768px) {
                 .global-sidebar {
@@ -531,7 +536,8 @@ function injectGlobalSidebar() {
                     margin-left: 0;
                 }
                 body {
-                    padding-top: 64px;
+                    padding-top: 0;
+                    margin-top: 0;
                 }
                 .btn-upload {
                     max-width: 100%;
@@ -568,6 +574,15 @@ function adjustMainContentForSidebar() {
             }
         }
         if (mainContent) break;
+    }
+    
+    // Ensure content area has proper spacing for fixed header
+    const contentArea = document.getElementById('content-area');
+    if (contentArea) {
+        const header = document.querySelector('.global-header');
+        const headerHeight = header ? (window.innerWidth <= 768 ? 64 : 72) : 0;
+        contentArea.style.paddingTop = `${headerHeight}px`;
+        contentArea.style.marginTop = '0';
     }
     
     // If no suitable container found, wrap body content

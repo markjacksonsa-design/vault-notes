@@ -33,11 +33,13 @@ body {
 }
 
 /* Content Area - Standardized layout with sidebar */
+/* Header is fixed at 72px height, so content starts below it */
 #content-area {
     margin-left: 270px;
     width: calc(100% - 270px);
-    min-height: 100vh;
-    padding-top: 20px;
+    min-height: calc(100vh - 72px);
+    padding-top: 72px;
+    margin-top: 0;
     background: var(--bg);
     overflow-x: hidden;
 }
@@ -50,7 +52,8 @@ body:not(:has(.global-sidebar)) #content-area {
 
 /* Main content wrapper */
 .main-content {
-    padding: 40px 32px;
+    padding: 0;
+    margin: 0;
     width: 100%;
     max-width: 100%;
 }
@@ -65,7 +68,8 @@ body:not(:has(.global-sidebar)) #content-area {
     #content-area {
         margin-left: 0;
         width: 100%;
-        padding-top: 0;
+        padding-top: 64px; /* Header is 64px on mobile */
+        min-height: calc(100vh - 64px);
     }
     
     .main-content {
