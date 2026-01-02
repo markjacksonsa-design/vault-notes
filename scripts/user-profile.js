@@ -75,5 +75,75 @@ function logout() {
     window.location.href = '/';
 }
 
+/**
+ * Calculate user's reputation based on sales and vouches
+ * Fetches reputation data from the API
+ * @returns {Promise<Object|null>} Reputation data with points and tier, or null on error
+ */
+async function calculateUserReputation() {
+    try {
+        const user = await checkAuth();
+        if (!user) return null;
+        
+        // Fetch reputation from seller stats API
+        const res = await fetch('/api/seller/stats');
+        if (!res.ok) return null;
+        
+        const data = await res.json();
+        if (data.success) {
+            return {
+                reputationPoints: data.reputationPoints || 0,
+                tier: data.tier || 'Candidate',
+                salesCount: data.totalDownloads || 0
+            };
+        }
+        return null;
+    } catch (error) {
+        console.error('Error calculating reputation:', error);
+        return null;
+    }
+}
+
+/**
+ * Update reputation bar UI with reputation data
+ * @param {Object} reputationData - Reputation data object
+ */
+function updateReputationBar(reputationData) {
+    const reputationBar = document.getElementById('reputation-bar');
+    if (!reputationBar) return;
+    
+    const progressFill = reputationBar.querySelector('.reputation-bar-fill');
+    if (!progressFill) return;
+    
+    if (!reputationData || reputationData.reputationPoints === undefined) {
+        progressFill.style.width = '0%';
+        return;
+    }
+    
+    // Calculate progress percentage (0-100)
+    // Based on tier thresholds: Candidate (0-20), Scholar (21-50), Elite (51-80), Distinction (81+)
+    const points = reputationData.reputationPoints || 0;
+    let progress = 0;
+    
+    if (points >= 81) {
+        progress = 100; // Max tier
+    } else if (points >= 51) {
+        // Elite tier: 51-80 points
+        progress = ((points - 51) / 30) * 100;
+    } else if (points >= 21) {
+        // Scholar tier: 21-50 points
+        progress = ((points - 21) / 30) * 100;
+    } else {
+        // Candidate tier: 0-20 points
+        progress = (points / 21) * 100;
+    }
+    
+    // Ensure progress is between 0 and 100
+    progress = Math.min(100, Math.max(0, progress));
+    
+    // Set the width of the progress fill
+    progressFill.style.width = `${progress}%`;
+}
+
 // Sidebar is handled by global-layout.js - no need to duplicate here
 

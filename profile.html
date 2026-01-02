@@ -588,7 +588,10 @@
                                 <span class="progress-label">Progress to <span id="next-tier-name">Scholar</span></span>
                                 <span class="progress-text" id="progress-text">0%</span>
                             </div>
-                            <div class="progress-bar-container">
+                            <div id="reputation-bar" class="reputation-bar-container">
+                                <div class="reputation-bar-fill"></div>
+                            </div>
+                            <div class="progress-bar-container" style="display: none;">
                                 <div class="progress-bar" id="progress-bar">
                                     <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
                                 </div>
@@ -724,7 +727,7 @@
                     // Redirect to login if not authenticated
                     loadingEl.style.display = 'none';
                     window.location.href = '/login.html?redirect=' + encodeURIComponent('/profile');
-                    return;
+                    return Promise.resolve();
                 }
                 
                 // Display user info
@@ -769,6 +772,14 @@
                                 document.getElementById('progress-fill').style.width = '100%';
                                 document.getElementById('points-to-next').textContent = 'You\'ve reached the highest tier!';
                             }
+                            
+                            // Update reputation bar using user-profile.js function
+                            if (typeof updateReputationBar === 'function') {
+                                updateReputationBar({
+                                    reputationPoints: reputationPoints,
+                                    tier: tier
+                                });
+                            }
                         }
                     }
                 } catch (e) {
@@ -795,6 +806,14 @@
                         if (progressTextEl) progressTextEl.textContent = '0%';
                         if (progressFillEl) progressFillEl.style.width = '0%';
                         if (pointsToNextEl) pointsToNextEl.textContent = '21 points until Scholar status';
+                        
+                        // Update reputation bar with default values
+                        if (typeof updateReputationBar === 'function') {
+                            updateReputationBar({
+                                reputationPoints: 0,
+                                tier: 'Candidate'
+                            });
+                        }
                     } catch (displayErr) {
                         console.error('Error setting default reputation display:', displayErr);
                         const repLoadingEl = document.getElementById('reputation-loading');
@@ -894,6 +913,7 @@
                 
                 loadingEl.style.display = 'none';
                 contentEl.style.display = 'block';
+                return Promise.resolve();
             } catch (err) {
                 console.error('Error loading profile:', err);
                 loadingEl.style.display = 'none';
@@ -908,6 +928,7 @@
                     contentEl.parentNode.insertBefore(errorMsg, contentEl);
                     errorMsg.style.display = 'block';
                 }
+                return Promise.resolve();
             }
         }
 
@@ -1019,7 +1040,14 @@
         }
         
         // Initialize on page load
-        loadProfile();
+        loadProfile().then(() => {
+            // After profile loads, update reputation bar
+            calculateUserReputation().then(reputationData => {
+                if (reputationData && typeof updateReputationBar === 'function') {
+                    updateReputationBar(reputationData);
+                }
+            });
+        });
         
         // Add event handlers
         document.getElementById('btn-save-bio').addEventListener('click', saveBio);
