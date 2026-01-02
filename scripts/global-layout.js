@@ -6,7 +6,7 @@
 function shouldShowSidebar() {
     const path = window.location.pathname;
     // Show sidebar on app pages, hide on home page
-    const appPages = ['/list.html', '/browse.html', '/my-vault.html', '/vault.html', '/sales.html', '/profile.html', '/profile', '/upload.html'];
+    const appPages = ['/list.html', '/browse.html', '/my-vault.html', '/vault.html', '/sales.html', '/profile.html', '/upload.html'];
     const homePages = ['/', '/index.html', '/home.html'];
     
     // Don't show sidebar on home pages
@@ -727,6 +727,7 @@ function setupSidebarListeners() {
         }
         // Check for profile page
         else if (dataPage === 'profile') {
+            // Accept both /profile.html and /profile (without .html) to prevent redirect loops
             if (currentPath === href || 
                 currentPath === '/profile.html' ||
                 currentPath === '/profile') {
@@ -746,9 +747,11 @@ function setupSidebarListeners() {
             if (!user) {
                 e.preventDefault();
                 const currentPath = window.location.pathname;
-                // Only redirect if not already on login page to prevent loops
+                // Only redirect if not already on login/register pages to prevent loops
                 if (currentPath !== '/login.html' && currentPath !== '/register.html') {
-                    window.location.href = '/login.html?redirect=' + encodeURIComponent(currentPath);
+                    // Always use /profile.html for consistency to prevent redirect loops
+                    const redirectPath = (currentPath === '/profile' || currentPath === '/profile/') ? '/profile.html' : currentPath;
+                    window.location.href = '/login.html?redirect=' + encodeURIComponent(redirectPath);
                 }
             }
         });

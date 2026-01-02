@@ -674,6 +674,18 @@
     </main>
 
     <script>
+        // Normalize profile URL to prevent redirect loops
+        // If user visits /profile (without .html), redirect to /profile.html once
+        (function() {
+            const currentPath = window.location.pathname;
+            // Only redirect if we're exactly on /profile (not /profile.html or /profile/)
+            if (currentPath === '/profile' || currentPath === '/profile/') {
+                // Use replace instead of href to avoid adding to history and prevent loops
+                window.location.replace('/profile.html');
+                return; // Stop execution - page will reload at /profile.html
+            }
+        })();
+        
         // Helper for XSS-safe text
         function escapeHTML(str) {
             return String(str || '')
