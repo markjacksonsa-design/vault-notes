@@ -389,28 +389,30 @@ function injectGlobalSidebar() {
                 min-height: 100vh;
             }
             /* Standardized Sidebar - Always 250px, Fixed */
+            /* Sidebar starts below header (72px) */
             .global-sidebar {
                 width: 250px;
-                height: 100vh;
+                height: calc(100vh - 72px);
                 background: var(--panel);
                 border-right: 2px solid rgba(0, 255, 133, 0.15);
                 box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
                 display: flex;
                 flex-direction: column;
-                padding: 20px 0;
+                padding: 0;
                 overflow-y: auto;
                 position: fixed;
                 left: 0;
-                top: 0;
+                top: 72px;
                 z-index: 1001;
                 flex-shrink: 0;
             }
             .sidebar-nav {
                 flex: 1;
-                padding: 8px 0;
+                padding: 24px 0 8px 0;
                 display: flex;
                 flex-direction: column;
                 gap: 4px;
+                margin-top: 0;
             }
             .sidebar-nav a {
                 display: flex;
@@ -517,6 +519,7 @@ function injectGlobalSidebar() {
                     flex-direction: row;
                     overflow-x: auto;
                     gap: 0;
+                    padding: 16px 0 8px 0;
                 }
                 .sidebar-nav a {
                     white-space: nowrap;
