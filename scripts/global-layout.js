@@ -96,7 +96,7 @@ function injectGlobalHeader() {
                     <span class="dropdown-arrow">▼</span>
                 </button>
                 <div class="profile-dropdown" id="profile-dropdown">
-                    <a href="/profile.html" id="profile-link">My Profile</a>
+                    <a href="./profile.html" id="profile-link">My Profile</a>
                     <a href="#" id="settings-link">Settings</a>
                     <a href="#" id="logout-link">Logout</a>
                 </div>
@@ -321,7 +321,7 @@ function injectGlobalSidebar() {
                 <a href="/sales.html" class="sidebar-link" data-page="sales">
                     <span class="sidebar-label">Sales</span>
                 </a>
-                <a href="/profile.html" class="sidebar-link" data-page="profile">
+                <a href="./profile.html" class="sidebar-link" data-page="profile">
                     <span class="sidebar-label">Profile</span>
                 </a>
             </nav>

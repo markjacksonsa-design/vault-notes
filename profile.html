@@ -674,17 +674,8 @@
     </main>
 
     <script>
-        // Normalize profile URL to prevent redirect loops
-        // If user visits /profile (without .html), redirect to /profile.html once
-        (function() {
-            const currentPath = window.location.pathname;
-            // Only redirect if we're exactly on /profile (not /profile.html or /profile/)
-            if (currentPath === '/profile' || currentPath === '/profile/') {
-                // Use replace instead of href to avoid adding to history and prevent loops
-                window.location.replace('/profile.html');
-                return; // Stop execution - page will reload at /profile.html
-            }
-        })();
+        // REMOVED: URL normalization that was causing redirect loops
+        // No automatic redirects based on URL pathname
         
         // Helper for XSS-safe text
         function escapeHTML(str) {
@@ -736,10 +727,13 @@
                 const user = await checkAuth();
                 
                 if (!user) {
-                    // Redirect to login if not authenticated
+                    // TEMPORARILY DISABLED: Allow guest users to see the page
+                    // Show access denied message instead of redirecting
                     loadingEl.style.display = 'none';
-                    window.location.href = '/login.html?redirect=' + encodeURIComponent('/profile.html');
+                    document.getElementById('access-denied').style.display = 'block';
+                    document.getElementById('profile-content').style.display = 'none';
                     return Promise.resolve();
+                    // OLD CODE (disabled): window.location.href = '/login.html?redirect=' + encodeURIComponent('/profile.html');
                 }
                 
                 // Display user info
@@ -785,12 +779,15 @@
                                 document.getElementById('points-to-next').textContent = 'You\'ve reached the highest tier!';
                             }
                             
-                            // Update reputation bar using user-profile.js function
-                            if (typeof updateReputationBar === 'function') {
-                                updateReputationBar({
+                            // Update reputation bar using user-profile.js function (with data protection)
+                            if (typeof updateReputationBar === 'function' && reputationPoints !== undefined) {
+                                const repData = {
                                     reputationPoints: reputationPoints,
                                     tier: tier
-                                });
+                                };
+                                if (repData) {
+                                    updateReputationBar(repData);
+                                }
                             }
                         }
                     }
@@ -819,12 +816,15 @@
                         if (progressFillEl) progressFillEl.style.width = '0%';
                         if (pointsToNextEl) pointsToNextEl.textContent = '21 points until Scholar status';
                         
-                        // Update reputation bar with default values
+                        // Update reputation bar with default values (with data protection)
                         if (typeof updateReputationBar === 'function') {
-                            updateReputationBar({
+                            const defaultData = {
                                 reputationPoints: 0,
                                 tier: 'Candidate'
-                            });
+                            };
+                            if (defaultData) {
+                                updateReputationBar(defaultData);
+                            }
                         }
                     } catch (displayErr) {
                         console.error('Error setting default reputation display:', displayErr);
@@ -929,9 +929,14 @@
             } catch (err) {
                 console.error('Error loading profile:', err);
                 loadingEl.style.display = 'none';
-                // If error is due to authentication, redirect to login
+                // TEMPORARILY DISABLED: Don't redirect on auth errors
                 if (err.message && err.message.includes('Not authenticated')) {
-                    window.location.href = '/login.html?redirect=' + encodeURIComponent('/profile.html');
+                    // Show error message instead of redirecting
+                    loadingEl.style.display = 'none';
+                    document.getElementById('access-denied').style.display = 'block';
+                    document.getElementById('profile-content').style.display = 'none';
+                    return Promise.resolve();
+                    // OLD CODE (disabled): window.location.href = '/login.html?redirect=' + encodeURIComponent('/profile.html');
                 } else {
                     // Show error message
                     const errorMsg = document.createElement('div');
@@ -1053,11 +1058,17 @@
         
         // Initialize on page load
         loadProfile().then(() => {
-            // After profile loads, update reputation bar
+            // After profile loads, update reputation bar (with data protection)
             calculateUserReputation().then(reputationData => {
+                // Protect reputation bar update with data check
                 if (reputationData && typeof updateReputationBar === 'function') {
-                    updateReputationBar(reputationData);
+                    if (reputationData) {
+                        updateReputationBar(reputationData);
+                    }
                 }
+            }).catch(err => {
+                // Silently fail if reputation data can't be loaded - don't trigger refresh
+                console.warn('Could not load reputation data:', err);
             });
         });
         
