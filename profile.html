@@ -456,6 +456,33 @@
                             </div>
                         </div>
 
+                        <div class="form-section">
+                            <h2 class="form-section-title">Payout Settings</h2>
+                            <p style="color: var(--subtitle); font-size: 0.9em; margin-bottom: 20px;">
+                                Set up your bank details to receive payments when your notes are purchased. This information is secure and encrypted.
+                            </p>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="bank-name">Bank Name</label>
+                                <input type="text" id="bank-name" class="form-input" name="bankName" placeholder="e.g., Standard Bank, FNB, ABSA">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="account-number">Account Number</label>
+                                <input type="text" id="account-number" class="form-input" name="accountNumber" placeholder="Enter your bank account number">
+                            </div>
+
+                            <div id="payout-status" style="margin-top: 16px; padding: 12px; border-radius: 8px; background: rgba(0, 255, 133, 0.1); border: 1px solid rgba(0, 255, 133, 0.3); display: none;">
+                                <p style="color: var(--accent); font-size: 0.9em; margin: 0;">
+                                    <span style="font-weight: 600;">✓ Payouts configured:</span> You'll receive 80% of each sale directly to your bank account.
+                                </p>
+                            </div>
+
+                            <button type="button" id="save-payout-btn" class="btn-save" style="margin-top: 16px;">
+                                Save Payout Settings
+                            </button>
+                        </div>
+
                         <button type="submit" class="btn-save" id="save-btn">Save Changes</button>
                     </form>
                 </div>
@@ -581,6 +608,24 @@
                                 const newInitial = (userData.firstName || 'U').charAt(0).toUpperCase();
                                 document.getElementById('profile-initial').textContent = newInitial;
                             }
+
+                            // Load payout settings
+                            if (userData.bankName) {
+                                document.getElementById('bank-name').value = userData.bankName;
+                            }
+                            if (userData.accountNumber) {
+                                // Mask account number for display (show last 4 digits only)
+                                const accountNumber = userData.accountNumber;
+                                if (accountNumber.length > 4) {
+                                    document.getElementById('account-number').value = '****' + accountNumber.slice(-4);
+                                } else {
+                                    document.getElementById('account-number').value = accountNumber;
+                                }
+                            }
+                            if (userData.subaccount_code) {
+                                // Show payout status if subaccount is configured
+                                document.getElementById('payout-status').style.display = 'block';
+                            }
                         }
                     }
                 } catch (e) {
@@ -688,6 +733,61 @@
             } catch (err) {
                 console.error('Error saving profile:', err);
                 showToast('Failed to save profile. Please try again.', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = originalText;
+            }
+        });
+
+        // Handle payout settings save
+        document.getElementById('save-payout-btn').addEventListener('click', async () => {
+            const saveBtn = document.getElementById('save-payout-btn');
+            const originalText = saveBtn.textContent;
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+            
+            try {
+                const bankName = document.getElementById('bank-name').value.trim();
+                const accountNumber = document.getElementById('account-number').value.trim();
+                
+                if (!bankName || !accountNumber) {
+                    showToast('Please fill in both Bank Name and Account Number', 'error');
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = originalText;
+                    return;
+                }
+                
+                // Remove masking if present (starts with ****)
+                const cleanAccountNumber = accountNumber.startsWith('****') 
+                    ? accountNumber.replace('****', '') 
+                    : accountNumber;
+                
+                const res = await fetch('/api/user/payout-settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        bankName: bankName,
+                        accountNumber: cleanAccountNumber
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok && data.success) {
+                    showToast('Payout settings saved successfully!');
+                    document.getElementById('payout-status').style.display = 'block';
+                    // Mask account number for display
+                    if (cleanAccountNumber.length > 4) {
+                        document.getElementById('account-number').value = '****' + cleanAccountNumber.slice(-4);
+                    }
+                } else {
+                    throw new Error(data.error || 'Failed to save payout settings');
+                }
+            } catch (err) {
+                console.error('Error saving payout settings:', err);
+                showToast('Failed to save payout settings. Please try again.', 'error');
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.textContent = originalText;

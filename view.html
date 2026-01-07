@@ -662,7 +662,7 @@
         }
 
         // Paystack payment function
-        async function payWithPaystack(noteId, amount, noteTitle) {
+        async function payWithPaystack(noteId, amount, noteTitle, subaccountCode = null) {
             // Validate inputs
             if (!noteId) {
                 alert('Error: Note ID is missing');
@@ -704,7 +704,7 @@
                 const reference = 'note_' + noteId + '_' + Date.now();
 
                 // Initialize Paystack payment
-                const handler = PaystackPop.setup({
+                const paystackConfig = {
                     key: 'pk_test_918f2bc75973d584115dd168b8f302f3b5bc64de', // Public Key
                     email: getCurrentUser()?.email || 'customer@notevaultsa.com',
                     amount: Math.round(amount * 100), // Convert to kobo (cents)
@@ -725,6 +725,23 @@
                             }
                         ]
                     },
+                };
+
+                // Add split payment if subaccount code is provided
+                if (subaccountCode) {
+                    paystackConfig.split = {
+                        type: 'percentage',
+                        bearer_type: 'subaccount',
+                        subaccounts: [
+                            {
+                                subaccount: subaccountCode,
+                                share: 80 // Seller gets 80%, platform gets 20%
+                            }
+                        ]
+                    };
+                }
+
+                const handler = PaystackPop.setup(paystackConfig);
                     callback: async function(response) {
                         // Payment successful - verify with backend
                         spinnerOverlay.classList.add('active');
@@ -917,6 +934,9 @@
                 const buyBtnText = document.getElementById('buy-btn-text');
                 const downloadBtn = document.getElementById('download-btn');
                 
+                // Check if seller has subaccount_code set up
+                const sellerSubaccountCode = note.seller_subaccount_code || null;
+                
                 if (priceValue === 0) {
                     // For free notes, hide buy button and show download button
                     buyBtn.classList.add('hidden');
@@ -924,15 +944,33 @@
                     downloadBtn.dataset.reference = 'free';
                     downloadBtn.dataset.noteId = noteId;
                 } else {
-                    // For paid notes, show buy button and hide download button
-                    buyBtn.classList.remove('hidden');
-                    downloadBtn.classList.remove('show');
-                    buyBtnText.textContent = `Buy Note - ${priceDisplay}`;
-                    buyBtn.disabled = false;
+                    // For paid notes, check if seller has payout set up
+                    if (!sellerSubaccountCode) {
+                        // Seller hasn't set up payouts - disable buy button and show message
+                        buyBtn.classList.remove('hidden');
+                        downloadBtn.classList.remove('show');
+                        buyBtn.disabled = true;
+                        buyBtnText.textContent = 'Seller is currently setting up payouts';
+                        buyBtn.style.opacity = '0.6';
+                        buyBtn.style.cursor = 'not-allowed';
+                    } else {
+                        // Seller has payout set up - enable buy button
+                        buyBtn.classList.remove('hidden');
+                        downloadBtn.classList.remove('show');
+                        buyBtnText.textContent = `Buy Note - ${priceDisplay}`;
+                        buyBtn.disabled = false;
+                        buyBtn.style.opacity = '1';
+                        buyBtn.style.cursor = 'pointer';
+                        
+                        // Store subaccount_code for payment
+                        buyBtn.dataset.subaccountCode = sellerSubaccountCode;
+                    }
                 }
                 
                 buyBtn.onclick = () => {
-                    payWithPaystack(noteId, priceValue, note.title || 'Untitled');
+                    if (!buyBtn.disabled) {
+                        payWithPaystack(noteId, priceValue, note.title || 'Untitled', sellerSubaccountCode);
+                    }
                 };
                 
                 // Setup Download PDF button

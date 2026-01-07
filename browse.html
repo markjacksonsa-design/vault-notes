@@ -36,10 +36,16 @@
                 <button class="pill-btn" data-category="grade" data-value="Postgraduate">Postgraduate</button>
             </div>
             <div class="pill-row" id="subject-pills"></div>
+            <div class="topic-filter-row">
+                <input 
+                    type="text" 
+                    id="topic-search-input" 
+                    class="filter-input topic-search-input" 
+                    placeholder="Search by topic..."
+                    autocomplete="off"
+                >
+            </div>
             <div class="filter-controls">
-                <select id="topic-filter-select" class="filter-select topic-filter-select" disabled>
-                    <option value="">Topic</option>
-                </select>
                 <input 
                     type="text" 
                     id="search-input" 
@@ -388,7 +394,11 @@
                 if (activeFilters[category]) {
                     const tag = document.createElement('div');
                     tag.className = 'active-filter-tag';
-                    const label = category === 'grade' ? activeFilters[category] : activeFilters[category];
+                    let label = activeFilters[category];
+                    // Add category prefix for topic
+                    if (category === 'topic') {
+                        label = `Topic: ${label}`;
+                    }
                     tag.innerHTML = `
                         <span>${escapeHTML(label)}</span>
                         <button class="clear-btn" data-category="${category}" aria-label="Clear ${category} filter">×</button>
@@ -406,7 +416,11 @@
                     if (category === 'subject') {
                         // Clear topic when subject is cleared
                         activeFilters.topic = null;
-                        updateTopicDropdown();
+                        document.getElementById('topic-search-input').value = '';
+                    }
+                    if (category === 'topic') {
+                        // Clear topic search input when topic filter is cleared
+                        document.getElementById('topic-search-input').value = '';
                     }
                     updateActiveFilterTags();
                     updatePillStates();
@@ -415,49 +429,7 @@
             });
         }
         
-        // Update topic dropdown based on selected subject
-        function updateTopicDropdown() {
-            const topicSelect = document.getElementById('topic-filter-select');
-            const selectedSubject = activeFilters.subject;
-            
-            // Clear existing options
-            topicSelect.innerHTML = '';
-            
-            if (!selectedSubject) {
-                topicSelect.disabled = true;
-                topicSelect.innerHTML = '<option value="">Topic</option>';
-                return;
-            }
-            
-            // Enable dropdown
-            topicSelect.disabled = false;
-            
-            // Add default option
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = 'Topic';
-            topicSelect.appendChild(defaultOption);
-            
-            // Get topics for selected subject
-            const topics = getTopicsForSubject(selectedSubject);
-            
-            if (topics.length === 0) {
-                topicSelect.disabled = true;
-                topicSelect.innerHTML = '<option value="">Topic</option>';
-                return;
-            }
-            
-            // Add topic options
-            topics.forEach(topic => {
-                const option = document.createElement('option');
-                option.value = topic;
-                option.textContent = topic;
-                if (activeFilters.topic === topic) {
-                    option.selected = true;
-                }
-                topicSelect.appendChild(option);
-            });
-        }
+        // Topic search is now handled via input field, no dropdown needed
 
         // Update pill button states (active/disabled)
         function updatePillStates() {
@@ -671,10 +643,10 @@
                         activeFilters[category] = value;
                     }
                     
-                    // Update topic dropdown when subject changes
+                    // Clear topic search when subject changes
                     if (category === 'subject') {
-                        activeFilters.topic = null; // Clear topic when subject changes
-                        updateTopicDropdown();
+                        activeFilters.topic = null;
+                        document.getElementById('topic-search-input').value = '';
                     }
                     
                     updateActiveFilterTags();
@@ -695,9 +667,10 @@
             refreshResults();
         });
         
-        // Handle topic dropdown
-        document.getElementById('topic-filter-select').addEventListener('change', (e) => {
-            activeFilters.topic = e.target.value || null;
+        // Handle topic search input
+        document.getElementById('topic-search-input').addEventListener('input', (e) => {
+            const topicSearchTerm = e.target.value.trim();
+            activeFilters.topic = topicSearchTerm || null;
             updateActiveFilterTags();
             refreshResults();
         });
@@ -725,7 +698,6 @@
 
         // Initial load
         updateActiveFilterTags();
-        updateTopicDropdown(); // Initialize topic dropdown
         attachPillListeners();
         loadAllSubjects(); // Load all subjects first
         refreshResults();

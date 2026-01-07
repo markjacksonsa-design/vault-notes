@@ -461,6 +461,18 @@ body:not(:has(.global-sidebar)) #content-area {
     align-items: center;
 }
 
+.topic-filter-row {
+    display: flex;
+    width: 100%;
+    margin-top: 12px;
+    margin-bottom: 8px;
+}
+
+.topic-search-input {
+    width: 100%;
+    max-width: 400px;
+}
+
 .pill-btn {
     height: 32px;
     padding: 0 12px;

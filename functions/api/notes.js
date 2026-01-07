@@ -13,8 +13,15 @@ export async function onRequest(context) {
             const noteId = url.searchParams.get('id');
             
             if (noteId) {
-                // Fetch a single note by ID
-                const note = await db.prepare("SELECT * FROM notes WHERE id = ?").bind(noteId).first();
+                // Fetch a single note by ID with seller subaccount_code
+                const note = await db.prepare(`
+                    SELECT n.*, 
+                           u.name as seller_name, 
+                           u.subaccount_code as seller_subaccount_code
+                    FROM notes n
+                    LEFT JOIN users u ON n.seller_id = u.id
+                    WHERE n.id = ?
+                `).bind(noteId).first();
                 
                 if (!note) {
                     return new Response(
