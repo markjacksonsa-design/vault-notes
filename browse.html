@@ -16,19 +16,13 @@
         <!-- Active Filters Tags -->
         <div class="active-filters" id="active-filters"></div>
         
-        <!-- Curriculum Filter -->
-        <div class="filter-section">
-            <div class="filter-section-label">Curriculum</div>
+        <!-- Compact Filter Bar -->
+        <div class="filter-bar">
             <div class="pill-row" id="curriculum-pills">
                 <button class="pill-btn" data-category="curriculum" data-value="CAPS">CAPS</button>
                 <button class="pill-btn" data-category="curriculum" data-value="IEB">IEB</button>
                 <button class="pill-btn" data-category="curriculum" data-value="University">University</button>
             </div>
-        </div>
-        
-        <!-- Grade Filter -->
-        <div class="filter-section">
-            <div class="filter-section-label">Grade</div>
             <div class="pill-row" id="grade-pills">
                 <button class="pill-btn" data-category="grade" data-value="Grade 8">Grade 8</button>
                 <button class="pill-btn" data-category="grade" data-value="Grade 9">Grade 9</button>
@@ -41,40 +35,20 @@
                 <button class="pill-btn" data-category="grade" data-value="4th Year Uni">4th Year Uni</button>
                 <button class="pill-btn" data-category="grade" data-value="Postgraduate">Postgraduate</button>
             </div>
-        </div>
-        
-        <!-- Subject Filter -->
-        <div class="filter-section">
-            <div class="filter-section-label">Subject</div>
             <div class="pill-row" id="subject-pills"></div>
-        </div>
-        
-        <!-- Topic Filter -->
-        <div class="filter-section">
-            <div class="filter-section-label">Topic</div>
-            <div class="filter-row">
-                <div class="topic-filter-container">
-                    <select id="topic-filter-select" class="topic-filter-select" disabled>
-                        <option value="">Select a subject first...</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Search and Sort Row -->
-        <div class="filter-row">
-            <div class="filter-group search-container">
+            <div class="filter-controls">
+                <select id="topic-filter-select" class="filter-select topic-filter-select" disabled>
+                    <option value="">Topic</option>
+                </select>
                 <input 
                     type="text" 
                     id="search-input" 
-                    class="search-input" 
-                    placeholder="Search notes by title or content..."
+                    class="filter-input search-input" 
+                    placeholder="Search..."
                     autocomplete="off"
                 >
-            </div>
-            <div class="sort-container">
-                <select id="sort-select" class="sort-select">
-                    <option value="none">Sort by...</option>
+                <select id="sort-select" class="filter-select sort-select">
+                    <option value="none">Sort</option>
                     <option value="price-low">Price: Low to High</option>
                     <option value="price-high">Price: High to Low</option>
                 </select>
@@ -433,7 +407,7 @@
             
             if (!selectedSubject) {
                 topicSelect.disabled = true;
-                topicSelect.innerHTML = '<option value="">Select a subject first...</option>';
+                topicSelect.innerHTML = '<option value="">Topic</option>';
                 return;
             }
             
@@ -443,7 +417,7 @@
             // Add default option
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
-            defaultOption.textContent = 'All Topics';
+            defaultOption.textContent = 'Topic';
             topicSelect.appendChild(defaultOption);
             
             // Get topics for selected subject
@@ -451,7 +425,7 @@
             
             if (topics.length === 0) {
                 topicSelect.disabled = true;
-                topicSelect.innerHTML = '<option value="">No topics available for this subject</option>';
+                topicSelect.innerHTML = '<option value="">Topic</option>';
                 return;
             }
             
