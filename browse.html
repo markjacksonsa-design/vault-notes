@@ -352,6 +352,15 @@
                             <div class="note-content-snippet">${contentSnippet}</div>
                             <div class="note-category-badge">${primaryCategoryBadge}</div>
                         </div>
+                        <div class="note-card-author-row">
+                            <div class="note-author-info">
+                                <span class="author-label">Author:</span>
+                                <span class="author-name">${escapeHTML(sellerName)}</span>
+                            </div>
+                            <div class="note-reputation-badge">
+                                ${tierBadgeHTML}
+                            </div>
+                        </div>
                         <div class="note-card-bottom-row">
                             <button class="note-view-details-btn" onclick="event.stopPropagation(); window.location.href='/view.html?id=${note.id}'">View Details</button>
                         </div>

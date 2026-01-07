@@ -192,6 +192,40 @@
         .info-value {
             color: var(--text);
             flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tier-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid var(--accent);
+        }
+        .tier-badge.candidate {
+            background: rgba(0, 255, 133, 0.15);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+        .tier-badge.scholar {
+            background: rgba(0, 255, 133, 0.2);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+        .tier-badge.elite {
+            background: rgba(0, 255, 133, 0.25);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+        .tier-badge.distinction {
+            background: rgba(0, 255, 133, 0.3);
+            color: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 8px rgba(0, 255, 133, 0.4);
         }
         .product-content {
             margin-top: 32px;
@@ -518,6 +552,14 @@
                             <div class="info-label">Curriculum:</div>
                             <div class="info-value" id="note-curriculum">-</div>
                         </div>
+                        <div class="info-row">
+                            <div class="info-label">Author:</div>
+                            <div class="info-value" id="note-author">-</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Reputation:</div>
+                            <div class="info-value" id="note-reputation">-</div>
+                        </div>
                     </div>
                     
                     <div class="product-content">
@@ -825,6 +867,15 @@
                 document.getElementById('note-level').textContent = note.level || '-';
                 document.getElementById('note-curriculum').textContent = note.curriculum || '-';
                 document.getElementById('note-content').textContent = note.content || 'No description available.';
+                
+                // Populate author and reputation
+                const sellerName = note.seller_name || note.sellerName || 'Unknown Seller';
+                const sellerTier = note.seller_tier || 'Candidate';
+                document.getElementById('note-author').textContent = sellerName;
+                
+                // Create reputation badge HTML
+                const tierBadgeHTML = sellerTier ? `<span class="tier-badge ${sellerTier.toLowerCase()}">${escapeHTML(sellerTier)}</span>` : '<span class="tier-badge candidate">Candidate</span>';
+                document.getElementById('note-reputation').innerHTML = tierBadgeHTML;
                 
                 // Build badges
                 const badges = [];
