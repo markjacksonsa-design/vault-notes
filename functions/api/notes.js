@@ -166,7 +166,22 @@ export async function onRequest(context) {
             }
 
             const body = await request.json();
-            const { title, content, curriculum, level, subject, price, pdf_key } = body;
+            const { title, content, curriculum, level, subject, price, pdf_key, thumbnail_url } = body;
+            
+            // Ensure thumbnail_url is only a filename, not a full URL
+            // Extract filename if a full URL is provided
+            let thumbnailFilename = thumbnail_url || null;
+            if (thumbnailFilename) {
+                // If it's a full URL, extract just the filename
+                try {
+                    const urlObj = new URL(thumbnailFilename);
+                    thumbnailFilename = urlObj.pathname.split('/').pop();
+                } catch (e) {
+                    // Not a valid URL, assume it's already a filename
+                    // Remove any leading slashes
+                    thumbnailFilename = thumbnailFilename.replace(/^\/+/, '');
+                }
+            }
 
             // Validate required fields
             if (!title || !content) {
@@ -180,9 +195,10 @@ export async function onRequest(context) {
             }
 
             // Insert the note into the database with seller_id
+            // Only store filename in thumbnail_url, not full URL
             const result = await db.prepare(
-                "INSERT INTO notes (title, content, curriculum, level, subject, price, pdf_key, seller_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-            ).bind(title, content, curriculum || null, level || null, subject || null, price || null, pdf_key || null, userId).run();
+                "INSERT INTO notes (title, content, curriculum, level, subject, price, pdf_key, thumbnail_url, seller_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            ).bind(title, content, curriculum || null, level || null, subject || null, price || null, pdf_key || null, thumbnailFilename, userId).run();
 
             if (result.success) {
                 return new Response(
@@ -217,7 +233,22 @@ export async function onRequest(context) {
             }
 
             const body = await request.json();
-            const { title, content, curriculum, level, subject, price, pdf_key } = body;
+            const { title, content, curriculum, level, subject, price, pdf_key, thumbnail_url } = body;
+            
+            // Ensure thumbnail_url is only a filename, not a full URL
+            // Extract filename if a full URL is provided
+            let thumbnailFilename = thumbnail_url || null;
+            if (thumbnailFilename) {
+                // If it's a full URL, extract just the filename
+                try {
+                    const urlObj = new URL(thumbnailFilename);
+                    thumbnailFilename = urlObj.pathname.split('/').pop();
+                } catch (e) {
+                    // Not a valid URL, assume it's already a filename
+                    // Remove any leading slashes
+                    thumbnailFilename = thumbnailFilename.replace(/^\/+/, '');
+                }
+            }
 
             // Validate required fields
             if (!title || !content) {
@@ -243,9 +274,10 @@ export async function onRequest(context) {
             }
 
             // Update the note in the database
+            // Only store filename in thumbnail_url, not full URL
             const result = await db.prepare(
-                "UPDATE notes SET title = ?, content = ?, curriculum = ?, level = ?, subject = ?, price = ?, pdf_key = ? WHERE id = ?"
-            ).bind(title, content, curriculum || null, level || null, subject || null, price || null, pdf_key || null, noteId).run();
+                "UPDATE notes SET title = ?, content = ?, curriculum = ?, level = ?, subject = ?, price = ?, pdf_key = ?, thumbnail_url = ? WHERE id = ?"
+            ).bind(title, content, curriculum || null, level || null, subject || null, price || null, pdf_key || null, thumbnailFilename, noteId).run();
 
             if (result.success) {
                 return new Response(

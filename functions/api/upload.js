@@ -7,10 +7,11 @@ export async function onRequest(context) {
         if (!bucket) {
             return new Response('Storage bucket not available', { status: 500 });
         }
-        // Handle POST request - upload PDF file
+        // Handle POST request - upload PDF or image file
         if (request.method === 'POST') {
             const formData = await request.formData();
             const file = formData.get('file');
+            const fileType = formData.get('type') || 'pdf'; // 'pdf' or 'thumbnail'
 
             // Validate file exists
             if (!file) {
@@ -23,10 +24,13 @@ export async function onRequest(context) {
                 );
             }
 
-            // Validate file type is PDF
-            if (file.type !== 'application/pdf') {
+            // Determine file type and validate
+            const isImage = file.type.startsWith('image/');
+            const isPDF = file.type === 'application/pdf';
+            
+            if (!isPDF && !isImage) {
                 return new Response(
-                    JSON.stringify({ error: 'Only PDF files are allowed' }),
+                    JSON.stringify({ error: 'Only PDF and image files are allowed' }),
                     {
                         status: 400,
                         headers: { 'Content-Type': 'application/json' }
@@ -37,9 +41,12 @@ export async function onRequest(context) {
             // Generate unique filename using timestamp and random string
             const timestamp = Date.now();
             const randomStr = Math.random().toString(36).substring(2, 15);
-            const originalName = file.name || 'document.pdf';
-            const fileExtension = originalName.split('.').pop() || 'pdf';
-            const uniqueKey = `notes/${timestamp}-${randomStr}.${fileExtension}`;
+            const originalName = file.name || (isImage ? 'image.jpg' : 'document.pdf');
+            const fileExtension = originalName.split('.').pop() || (isImage ? 'jpg' : 'pdf');
+            
+            // Determine folder based on file type
+            const folder = (fileType === 'thumbnail' || isImage) ? 'thumbnails' : 'notes';
+            const uniqueKey = `${folder}/${timestamp}-${randomStr}.${fileExtension}`;
 
             // Convert file to array buffer
             const arrayBuffer = await file.arrayBuffer();
@@ -47,15 +54,16 @@ export async function onRequest(context) {
             // Upload to R2 bucket
             await bucket.put(uniqueKey, arrayBuffer, {
                 httpMetadata: {
-                    contentType: 'application/pdf',
+                    contentType: file.type || (isImage ? 'image/jpeg' : 'application/pdf'),
                 },
                 customMetadata: {
                     originalName: originalName,
                     uploadedAt: new Date().toISOString(),
+                    fileType: isImage ? 'thumbnail' : 'pdf',
                 },
             });
 
-            // Return the key/filename
+            // Return the key/filename (only filename, not full URL)
             return new Response(
                 JSON.stringify({
                     success: true,

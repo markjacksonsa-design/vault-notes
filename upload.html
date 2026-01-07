@@ -578,6 +578,10 @@
                 <input type="file" id="note-pdf" name="pdf" accept=".pdf,application/pdf">
                 <div class="file-info" id="file-info">No file selected</div>
                 
+                <label for="note-thumbnail">Thumbnail Image (Optional)</label>
+                <input type="file" id="note-thumbnail" name="thumbnail" accept="image/*">
+                <div class="file-info" id="thumbnail-info">No image selected</div>
+                
                 <label for="note-content">Note Content</label>
                 <textarea id="note-content" name="content" required maxlength="1000" placeholder="Type your note..."></textarea>
                 <div class="button-group">
@@ -722,7 +726,20 @@
             }
         });
 
-        // Handle file input change
+        // Cloudflare R2 Configuration
+        const R2_BUCKET_NAME = 'student-notes-bucket';
+        
+        // Generate R2 path for uploaded file
+        function generateR2Path(file, fileType = 'thumbnail') {
+            const timestamp = Date.now();
+            const randomStr = Math.random().toString(36).substring(2, 15);
+            const originalName = file.name || `file.${fileType === 'thumbnail' ? 'jpg' : 'pdf'}`;
+            const fileExtension = originalName.split('.').pop() || (fileType === 'thumbnail' ? 'jpg' : 'pdf');
+            const folder = fileType === 'thumbnail' ? 'thumbnails' : 'notes';
+            return `${folder}/${timestamp}-${randomStr}.${fileExtension}`;
+        }
+        
+        // Handle PDF file input change
         document.getElementById('note-pdf').addEventListener('change', function(e) {
             const fileInfo = document.getElementById('file-info');
             const file = e.target.files[0];
@@ -732,6 +749,25 @@
             } else {
                 fileInfo.textContent = 'No file selected';
                 fileInfo.classList.remove('has-file');
+            }
+        });
+        
+        // Handle thumbnail image input change
+        document.getElementById('note-thumbnail').addEventListener('change', function(e) {
+            const thumbnailInfo = document.getElementById('thumbnail-info');
+            const file = e.target.files[0];
+            if (file) {
+                const r2Path = generateR2Path(file, 'thumbnail');
+                thumbnailInfo.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                thumbnailInfo.classList.add('has-file');
+                
+                // Console log the proposed R2 path as requested
+                console.log('Proposed R2 Path:', r2Path);
+                console.log('Bucket:', R2_BUCKET_NAME);
+                console.log('Full R2 URL would be: https://[YOUR_R2_PUBLIC_DOMAIN]/' + r2Path);
+            } else {
+                thumbnailInfo.textContent = 'No image selected';
+                thumbnailInfo.classList.remove('has-file');
             }
         });
 

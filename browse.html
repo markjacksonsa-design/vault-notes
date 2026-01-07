@@ -81,7 +81,7 @@
             </div>
         </div>
         
-        <div class="notes-grid" id="notes-grid">
+        <div class="notes-row-container" id="notes-grid">
             <div class="loading">Loading notes...</div>
         </div>
             </div>
@@ -89,6 +89,10 @@
     </div>
     <button class="fab" id="create-fab" title="Create New Note">+</button>
     <script>
+        // Cloudflare R2 Configuration
+        const R2_BASE_URL = 'https://pub-79bda9095c294af5976bf1473db1cd28.r2.dev';
+        const R2_DEFAULT_PLACEHOLDER = 'default-placeholder.png';
+        
         // Helper for XSS-safe text
         function escapeHTML(str) {
             return String(str || '')
@@ -97,6 +101,41 @@
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
+        }
+        
+        // Construct R2 URL from filename
+        function getR2ImageUrl(filename) {
+            // If no filename provided, use default placeholder
+            if (!filename || filename.trim() === '') {
+                return `${R2_BASE_URL}/${R2_DEFAULT_PLACEHOLDER}`;
+            }
+            
+            // If filename already contains a full URL, extract just the filename
+            if (filename.startsWith('http://') || filename.startsWith('https://')) {
+                try {
+                    const urlObj = new URL(filename);
+                    filename = urlObj.pathname.split('/').pop();
+                } catch (e) {
+                    // If URL parsing fails, try to extract filename manually
+                    filename = filename.split('/').pop();
+                }
+            }
+            
+            // Remove any leading slashes from filename
+            filename = filename.replace(/^\/+/, '');
+            
+            // Construct R2 URL with proper forward slash
+            return `${R2_BASE_URL}/${filename}`;
+        }
+        
+        // Handle broken image - replace with placeholder
+        function handleImageError(img) {
+            img.onerror = null; // Prevent infinite loop
+            img.style.display = 'none';
+            const placeholder = document.createElement('div');
+            placeholder.className = 'note-card-image-placeholder';
+            placeholder.textContent = '📄';
+            img.parentNode.appendChild(placeholder);
         }
 
         // Format date to readable string
@@ -305,20 +344,41 @@
                 // Seller name (no link)
                 const sellerHTML = `<span>Seller: ${escapeHTML(sellerName)}</span>`;
                 
+                // Get thumbnail filename from database (thumbnail_url column stores filename only)
+                // getR2ImageUrl handles empty filenames by returning default placeholder
+                const thumbnailFilename = note.thumbnail_url || '';
+                const imageUrl = getR2ImageUrl(thumbnailFilename);
+                
+                // Build image HTML with error handling for broken images
+                // Use onerror to replace broken image with placeholder div
+                const imageHTML = `<img src="${escapeHTML(imageUrl)}" alt="${escapeHTML(note.title || 'Note preview')}" class="note-card-image" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\\'note-card-image-placeholder\\'>📄</div>'" />`;
+                
+                // Get primary category badge (prefer subject, then curriculum, then level)
+                const primaryCategoryBadge = note.subject 
+                    ? `<span class="badge subject">${escapeHTML(note.subject)}</span>`
+                    : note.curriculum 
+                        ? getCurriculumBadge(note.curriculum)
+                        : note.level 
+                            ? `<span class="badge level">${escapeHTML(note.level)}</span>`
+                            : '';
+                
                 card.innerHTML = `
-                    ${yearBadgeHTML}
-                    <div class="note-card-header-top">
-                        <div class="note-title">${title}</div>
-                        ${priceHTML}
+                    <div class="note-card-image-container">
+                        ${imageHTML}
                     </div>
-                    ${statBarHTML}
-                    ${badgesHTML}
-                    <div class="note-content-snippet">${contentSnippet}</div>
-                    <div class="note-seller">
-                        ${sellerHTML}
-                        ${tierBadgeHTML}
+                    <div class="note-card-content">
+                        <div class="note-card-header-row">
+                            <div class="note-title">${title}</div>
+                            <div class="note-price-container">${priceHTML}</div>
+                        </div>
+                        <div class="note-card-middle-row">
+                            <div class="note-content-snippet">${contentSnippet}</div>
+                            <div class="note-category-badge">${primaryCategoryBadge}</div>
+                        </div>
+                        <div class="note-card-bottom-row">
+                            <button class="note-view-details-btn" onclick="event.stopPropagation(); window.location.href='/view.html?id=${note.id}'">View Details</button>
+                        </div>
                     </div>
-                    <div class="note-date">${date}</div>
                 `;
                 grid.appendChild(card);
             });

@@ -95,3 +95,273 @@ body:not(:has(.global-sidebar)) #content-area {
     width: 0%;
 }
 
+/* Browse Page - Horizontal Row Cards */
+.notes-row-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 20px;
+}
+
+.note-card {
+    display: flex;
+    flex-direction: row;
+    background: var(--panel);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.note-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 255, 133, 0.15);
+}
+
+/* Image Container - Left Side (25%) */
+.note-card-image-container {
+    width: 25%;
+    min-width: 150px;
+    height: 180px;
+    flex-shrink: 0;
+    background: var(--input-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.note-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px 0 0 8px;
+}
+
+.note-card-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    background: var(--input-bg);
+    color: var(--subtitle);
+    border-radius: 8px 0 0 8px;
+}
+
+/* Content Container - Right Side (75%) */
+.note-card-content {
+    width: 75%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* Header Row - Title and Price */
+.note-card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.note-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.4;
+}
+
+.note-price-container {
+    flex-shrink: 0;
+}
+
+.note-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.note-price-container .badge.free {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+/* Middle Row - Description and Category */
+.note-card-middle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex: 1;
+}
+
+.note-content-snippet {
+    flex: 1;
+    color: var(--subtitle);
+    font-size: 14px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.note-category-badge {
+    flex-shrink: 0;
+}
+
+/* Bottom Row - View Details Button */
+.note-card-bottom-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: auto;
+}
+
+.note-view-details-btn {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 10px 24px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+    font-family: inherit;
+}
+
+.note-view-details-btn:hover {
+    background: #00e677;
+    transform: scale(1.05);
+}
+
+.note-view-details-btn:active {
+    transform: scale(0.98);
+}
+
+/* Badge Styles */
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge.subject {
+    background: rgba(0, 255, 133, 0.2);
+    color: var(--accent);
+    border: 1px solid rgba(0, 255, 133, 0.3);
+}
+
+.badge.caps {
+    background: rgba(33, 150, 243, 0.2);
+    color: #2196F3;
+    border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.badge.ieb {
+    background: rgba(156, 39, 176, 0.2);
+    color: #9C27B0;
+    border: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+.badge.university {
+    background: rgba(255, 152, 0, 0.2);
+    color: #FF9800;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.badge.level {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.badge.free {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+/* Loading and Empty States */
+.notes-row-container .loading,
+.notes-row-container .notes-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--subtitle);
+    font-size: 16px;
+}
+
+/* Responsive Design - Mobile */
+@media (max-width: 768px) {
+    .notes-row-container {
+        padding: 16px;
+    }
+    
+    .note-card {
+        flex-direction: column;
+        margin-bottom: 16px;
+    }
+    
+    .note-card-image-container {
+        width: 100%;
+        min-width: unset;
+        height: 200px;
+    }
+    
+    .note-card-image {
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .note-card-image-placeholder {
+        border-radius: 8px 8px 0 0;
+        min-height: 200px;
+    }
+    
+    .note-card-content {
+        width: 100%;
+        padding: 16px;
+    }
+    
+    .note-card-header-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .note-card-middle-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .note-title {
+        font-size: 18px;
+    }
+    
+    .note-content-snippet {
+        -webkit-line-clamp: 3;
+    }
+    
+    .note-card-bottom-row {
+        justify-content: center;
+        margin-top: 12px;
+    }
+    
+    .note-view-details-btn {
+        width: 100%;
+        max-width: 200px;
+    }
+}
+
