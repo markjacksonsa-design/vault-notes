@@ -567,7 +567,9 @@
                 </select>
                 
                 <label for="note-subject">Subject</label>
-                <input type="text" id="note-subject" name="subject" maxlength="100" autocomplete="off" placeholder="e.g., Mathematics, Life Sciences, Economics...">
+                <select id="note-subject" name="subject">
+                    <option value="">Select curriculum first...</option>
+                </select>
                 
                 <label for="note-price">Price (ZAR)</label>
                 <div class="price-input-wrapper">
@@ -583,8 +585,8 @@
                 <div class="file-info" id="thumbnail-info">No image selected</div>
                 
                 <label for="note-content">Note Content</label>
-                <textarea id="note-content" name="content" required maxlength="1000" placeholder="Type your note..."></textarea>
-                <div class="char-counter" id="char-counter" style="text-align: right; color: var(--subtitle); font-size: 0.85em; margin-top: -10px; margin-bottom: 10px;">0 / 1000 characters</div>
+                <textarea id="note-content" name="content" required maxlength="100" placeholder="Type your note..."></textarea>
+                <div class="char-counter" id="char-counter" style="text-align: right; color: var(--subtitle); font-size: 0.85em; margin-top: -10px; margin-bottom: 10px;">0 / 100 characters</div>
                 <div class="button-group">
                     <button type="button" id="cancel-btn" class="btn-secondary">Cancel</button>
                     <button type="submit" id="save-btn">Save Note</button>
@@ -693,6 +695,11 @@
                 document.getElementById('note-title').value = currentNote.title || '';
                 document.getElementById('note-content').value = currentNote.content || '';
                 document.getElementById('note-curriculum').value = currentNote.curriculum || '';
+                
+                // Update subject options based on curriculum, then set subject value
+                if (typeof updateSubjectOptions === 'function') {
+                    updateSubjectOptions();
+                }
                 document.getElementById('note-level').value = currentNote.level || '';
                 document.getElementById('note-subject').value = currentNote.subject || '';
                 document.getElementById('note-price').value = currentNote.price || '';
@@ -702,7 +709,7 @@
                 const noteContentEl = document.getElementById('note-content');
                 if (charCounterEl && noteContentEl) {
                     const currentLength = noteContentEl.value.length;
-                    const maxLength = 1000;
+                    const maxLength = 100;
                     charCounterEl.textContent = `${currentLength} / ${maxLength} characters`;
                     if (currentLength > maxLength * 0.9) {
                         charCounterEl.style.color = '#ff6b6b';
@@ -734,6 +741,11 @@
                 document.getElementById('note-title').value = currentNote.title || '';
                 document.getElementById('note-content').value = currentNote.content || '';
                 document.getElementById('note-curriculum').value = currentNote.curriculum || '';
+                
+                // Update subject options based on curriculum, then set subject value
+                if (typeof updateSubjectOptions === 'function') {
+                    updateSubjectOptions();
+                }
                 document.getElementById('note-level').value = currentNote.level || '';
                 document.getElementById('note-subject').value = currentNote.subject || '';
                 document.getElementById('note-price').value = currentNote.price || '';
@@ -869,7 +881,7 @@
         // Character counter for note content
         const noteContentTextarea = document.getElementById('note-content');
         const charCounter = document.getElementById('char-counter');
-        const maxLength = 1000;
+        const maxLength = 100;
         
         function updateCharCounter() {
             const currentLength = noteContentTextarea.value.length;
@@ -886,6 +898,145 @@
         
         // Initialize counter on page load
         updateCharCounter();
+
+        // Subject options based on curriculum
+        const subjectOptions = {
+            'CAPS': [
+                'Mathematics',
+                'Mathematical Literacy',
+                'Physical Sciences',
+                'Life Sciences',
+                'English Home Language',
+                'English First Additional Language',
+                'Afrikaans Home Language',
+                'Afrikaans First Additional Language',
+                'History',
+                'Geography',
+                'Economics',
+                'Business Studies',
+                'Accounting',
+                'Life Orientation',
+                'Computer Applications Technology',
+                'Information Technology',
+                'Engineering Graphics and Design',
+                'Visual Arts',
+                'Music',
+                'Dramatic Arts',
+                'Tourism',
+                'Hospitality Studies',
+                'Consumer Studies',
+                'Agricultural Sciences',
+                'Agricultural Technology'
+            ],
+            'IEB': [
+                'Mathematics',
+                'Mathematical Literacy',
+                'Physical Sciences',
+                'Life Sciences',
+                'English Home Language',
+                'English First Additional Language',
+                'Afrikaans Home Language',
+                'Afrikaans First Additional Language',
+                'History',
+                'Geography',
+                'Economics',
+                'Business Studies',
+                'Accounting',
+                'Life Orientation',
+                'Computer Applications Technology',
+                'Information Technology',
+                'Engineering Graphics and Design',
+                'Visual Arts',
+                'Music',
+                'Dramatic Arts',
+                'Tourism',
+                'Hospitality Studies',
+                'Consumer Studies',
+                'Agricultural Sciences',
+                'Agricultural Technology'
+            ],
+            'University': [
+                'Mathematics',
+                'Applied Mathematics',
+                'Statistics',
+                'Physics',
+                'Chemistry',
+                'Biology',
+                'Biochemistry',
+                'Computer Science',
+                'Information Systems',
+                'Engineering',
+                'Mechanical Engineering',
+                'Electrical Engineering',
+                'Civil Engineering',
+                'Chemical Engineering',
+                'Economics',
+                'Business Management',
+                'Accounting',
+                'Finance',
+                'Marketing',
+                'Human Resources',
+                'Psychology',
+                'Sociology',
+                'Political Science',
+                'History',
+                'Geography',
+                'English Literature',
+                'Linguistics',
+                'Philosophy',
+                'Law',
+                'Medicine',
+                'Nursing',
+                'Pharmacy',
+                'Architecture',
+                'Fine Arts',
+                'Media Studies',
+                'Journalism',
+                'Education',
+                'Environmental Science'
+            ]
+        };
+
+        // Populate subject dropdown based on curriculum selection
+        function updateSubjectOptions() {
+            const curriculumSelect = document.getElementById('note-curriculum');
+            const subjectSelect = document.getElementById('note-subject');
+            const selectedCurriculum = curriculumSelect.value;
+            
+            // Clear existing options
+            subjectSelect.innerHTML = '';
+            
+            if (selectedCurriculum && subjectOptions[selectedCurriculum]) {
+                // Add default option
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Select subject...';
+                subjectSelect.appendChild(defaultOption);
+                
+                // Add curriculum-specific subjects
+                subjectOptions[selectedCurriculum].forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    subjectSelect.appendChild(option);
+                });
+                
+                subjectSelect.disabled = false;
+            } else {
+                // No curriculum selected
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Select curriculum first...';
+                subjectSelect.appendChild(defaultOption);
+                subjectSelect.disabled = true;
+            }
+        }
+
+        // Listen for curriculum changes
+        document.getElementById('note-curriculum').addEventListener('change', updateSubjectOptions);
+        
+        // Initialize subject options on page load
+        updateSubjectOptions();
 
         // Initialize: Check if we're editing an existing note
         const noteId = getNoteId();
