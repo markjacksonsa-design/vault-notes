@@ -187,10 +187,62 @@
             cursor: not-allowed;
             transform: none;
         }
+        .btn-edit-note {
+            background: var(--accent);
+            color: #000000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 255, 133, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+        .btn-edit-note:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 255, 133, 0.5);
+            background: #00CC6A;
+        }
+        .btn-view-stats {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            padding: 10px 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+        .btn-view-stats:hover {
+            background: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
         .note-actions {
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
+        }
+        .section-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 24px;
+            margin-top: 40px;
+        }
+        #posted-section .section-title {
+            margin-top: 0;
         }
         .empty-state {
             text-align: center;
@@ -252,15 +304,32 @@
     <div class="container main-content">
         <div class="page-header">
             <h1>My Vault</h1>
-            <p>Your purchased study notes</p>
+            <p>Your purchased notes and posted notes</p>
         </div>
 
-        <div id="loading" class="loading">Loading your purchases...</div>
-        <div id="purchases-grid" class="notes-grid" style="display: none;"></div>
-        <div id="empty-state" class="empty-state" style="display: none;">
-            <h2>No Purchases Yet</h2>
-            <p>You haven't purchased any notes yet. Start browsing to find study materials!</p>
-            <a href="/list.html" class="btn-primary">Browse Notes</a>
+        <div id="loading" class="loading">Loading your vault...</div>
+        
+        <!-- Purchased Notes Section -->
+        <div id="purchases-section">
+            <h2 class="section-title" style="font-size: 1.8em; font-weight: 700; color: var(--text); margin-bottom: 24px; margin-top: 40px;">Purchased Notes</h2>
+            <div id="purchases-grid" class="notes-grid" style="display: none;"></div>
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <h2>No Purchases Yet</h2>
+                <p>You haven't purchased any notes yet. Start browsing to find study materials!</p>
+                <a href="/list.html" class="btn-primary">Browse Notes</a>
+            </div>
+        </div>
+
+        <!-- Posted Notes Section -->
+        <div id="posted-section" style="margin-top: 60px;">
+            <h2 class="section-title" style="font-size: 1.8em; font-weight: 700; color: var(--text); margin-bottom: 24px;">My Posted Notes</h2>
+            <div id="posted-loading" class="loading" style="display: none;">Loading your notes...</div>
+            <div id="posted-grid" class="notes-grid" style="display: none;"></div>
+            <div id="posted-empty-state" class="empty-state" style="display: none;">
+                <h2>No Notes Posted Yet</h2>
+                <p>You haven't posted any notes yet. Start sharing your study materials!</p>
+                <a href="/upload.html" class="btn-primary">Upload Note</a>
+            </div>
         </div>
     </div>
 
@@ -319,8 +388,9 @@
                     return;
                 }
 
-                // Load purchases
+                // Load purchases and posted notes
                 await loadPurchases();
+                await loadPostedNotes();
             } catch (err) {
                 console.error('Auth check error:', err);
                 window.location.href = '/login.html?redirect=/my-vault.html';
@@ -460,6 +530,98 @@
                 alert(err.message || 'Failed to upvote seller. Please try again.');
                 buttonEl.disabled = false;
                 buttonEl.innerHTML = originalText;
+            }
+        }
+
+        // Load user's posted notes
+        async function loadPostedNotes() {
+            const loadingEl = document.getElementById('posted-loading');
+            const gridEl = document.getElementById('posted-grid');
+            const emptyEl = document.getElementById('posted-empty-state');
+            
+            try {
+                const res = await fetch('/api/notes?my=true');
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        // Not authenticated, hide section
+                        document.getElementById('posted-section').style.display = 'none';
+                        return;
+                    }
+                    throw new Error('Failed to load posted notes');
+                }
+                
+                const notes = await res.json() || [];
+                loadingEl.style.display = 'none';
+                
+                if (!notes || notes.length === 0) {
+                    gridEl.style.display = 'none';
+                    emptyEl.style.display = 'block';
+                    return;
+                }
+                
+                gridEl.style.display = 'grid';
+                emptyEl.style.display = 'none';
+                gridEl.innerHTML = '';
+                
+                notes.forEach(note => {
+                    const card = document.createElement('div');
+                    card.className = 'note-card';
+                    
+                    // Build badges
+                    const badges = [];
+                    if (note.curriculum) {
+                        badges.push(getCategoryBadge(note.curriculum));
+                    }
+                    if (note.level) {
+                        badges.push(`<span class="badge level">${escapeHTML(note.level)}</span>`);
+                    }
+                    if (note.subject) {
+                        badges.push(`<span class="badge subject">${escapeHTML(note.subject)}</span>`);
+                    }
+                    if (note.topic) {
+                        badges.push(`<span class="badge subject">${escapeHTML(note.topic)}</span>`);
+                    }
+                    const badgesHTML = badges.length > 0 ? `<div class="note-badges">${badges.join('')}</div>` : '';
+                    
+                    // Format price
+                    const priceValue = note.price ? parseFloat(note.price) : 0;
+                    const priceDisplay = priceValue === 0 ? 'FREE' : `R ${priceValue.toFixed(2)}`;
+                    
+                    // Format date
+                    const createdDate = formatDate(note.created_at || note.date);
+                    
+                    card.innerHTML = `
+                        <div class="note-card-header">
+                            <div class="note-title">${escapeHTML(note.title || 'Untitled Note')}</div>
+                            ${badgesHTML}
+                            <div class="note-meta">
+                                Posted: ${createdDate}<br>
+                                Price: ${priceDisplay}
+                            </div>
+                        </div>
+                        <div class="note-actions">
+                            <a href="/view.html?id=${note.id}" class="btn-edit-note">
+                                <span>👁️</span>
+                                <span>View</span>
+                            </a>
+                            <a href="/upload.html?id=${note.id}" class="btn-edit-note">
+                                <span>✏️</span>
+                                <span>Edit</span>
+                            </a>
+                            <a href="/sales.html" class="btn-view-stats">
+                                <span>📊</span>
+                                <span>Stats</span>
+                            </a>
+                        </div>
+                    `;
+                    
+                    gridEl.appendChild(card);
+                });
+            } catch (err) {
+                console.error('Error loading posted notes:', err);
+                loadingEl.style.display = 'none';
+                gridEl.style.display = 'none';
+                emptyEl.style.display = 'block';
             }
         }
 
