@@ -33,6 +33,7 @@
             background: var(--panel);
             border-radius: 14px;
             box-shadow: 0 8px 32px 0 rgba(0,0,0,0.13);
+            border: 2px solid var(--accent);
         }
         h1 {
             margin-top: 0;
@@ -571,6 +572,9 @@
                     <option value="">Select curriculum first...</option>
                 </select>
                 
+                <label for="note-topic">Topic</label>
+                <input type="text" id="note-topic" name="topic" maxlength="100" autocomplete="off" placeholder="e.g., Algebra, Photosynthesis, World War II...">
+                
                 <label for="note-price">Price (ZAR)</label>
                 <div class="price-input-wrapper">
                     <input type="number" id="note-price" name="price" step="0.01" min="0" placeholder="0.00">
@@ -659,11 +663,12 @@
             
             // Build metadata section
             let metadata = '';
-            if (note.curriculum || note.level || note.subject || note.price) {
+            if (note.curriculum || note.level || note.subject || note.topic || note.price) {
                 metadata = '<div style="margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9em; color: var(--subtitle);">';
                 if (note.curriculum) metadata += `<div><strong>Curriculum:</strong> ${escapeHTML(note.curriculum)}</div>`;
                 if (note.level) metadata += `<div style="margin-top: 8px;"><strong>Grade:</strong> ${escapeHTML(note.level)}</div>`;
                 if (note.subject) metadata += `<div style="margin-top: 8px;"><strong>Subject:</strong> ${escapeHTML(note.subject)}</div>`;
+                if (note.topic) metadata += `<div style="margin-top: 8px;"><strong>Topic:</strong> ${escapeHTML(note.topic)}</div>`;
                 if (note.price) {
                     const priceValue = parseFloat(note.price);
                     if (!isNaN(priceValue)) {
@@ -702,6 +707,7 @@
                 }
                 document.getElementById('note-level').value = currentNote.level || '';
                 document.getElementById('note-subject').value = currentNote.subject || '';
+                document.getElementById('note-topic').value = currentNote.topic || '';
                 document.getElementById('note-price').value = currentNote.price || '';
                 
                 // Update character counter if function exists
@@ -748,6 +754,7 @@
                 }
                 document.getElementById('note-level').value = currentNote.level || '';
                 document.getElementById('note-subject').value = currentNote.subject || '';
+                document.getElementById('note-topic').value = currentNote.topic || '';
                 document.getElementById('note-price').value = currentNote.price || '';
                 setViewMode(true);
             } else {
@@ -810,6 +817,7 @@
             const curriculum = form['curriculum'].value;
             const level = form['level'].value;
             const subject = form['subject'].value.trim();
+            const topic = form['topic'].value.trim();
             const price = form['price'].value ? parseFloat(form['price'].value) : null;
             const pdfFile = form['pdf'].files[0];
             if (!title || !content) return;
@@ -854,6 +862,7 @@
                         curriculum,
                         level,
                         subject,
+                        topic,
                         price,
                         pdf_key: pdfKey
                     })
