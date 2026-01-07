@@ -185,25 +185,64 @@
             min-width: 200px;
             border: 2px solid;
         }
-        .tier-badge-large.candidate {
-            background: rgba(148, 163, 184, 0.2);
-            color: #94a3b8;
-            border-color: #94a3b8;
+        .tier-badge-large.bronze {
+            background: rgba(205, 127, 50, 0.2);
+            color: #CD7F32;
+            border-color: #CD7F32;
+            box-shadow: 0 0 5px rgba(205, 127, 50, 0.3);
         }
-        .tier-badge-large.scholar {
-            background: rgba(16, 185, 129, 0.2);
-            color: #10b981;
-            border-color: #10b981;
+        .tier-badge-large.silver {
+            background: rgba(192, 192, 192, 0.2);
+            color: #C0C0C0;
+            border-color: #C0C0C0;
+            box-shadow: 0 0 5px rgba(192, 192, 192, 0.3);
         }
-        .tier-badge-large.elite {
-            background: rgba(59, 130, 246, 0.2);
-            color: #3b82f6;
-            border-color: #3b82f6;
+        .tier-badge-large.gold {
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            border-color: #FFD700;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
         }
-        .tier-badge-large.distinction {
-            background: rgba(245, 158, 11, 0.2);
-            color: #f59e0b;
-            border-color: #f59e0b;
+        .tier-badge-large.platinum {
+            background: rgba(229, 228, 226, 0.25);
+            color: #E5E4E2;
+            border-color: #E5E4E2;
+            box-shadow: 0 0 10px rgba(229, 228, 226, 0.5);
+        }
+        /* Compact tier badge styles */
+        .tier-badge-compact {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 700;
+            text-align: center;
+            border: 2px solid;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .tier-badge-compact.bronze {
+            background: rgba(205, 127, 50, 0.2);
+            color: #CD7F32;
+            border-color: #CD7F32;
+            box-shadow: 0 0 5px rgba(205, 127, 50, 0.3);
+        }
+        .tier-badge-compact.silver {
+            background: rgba(192, 192, 192, 0.2);
+            color: #C0C0C0;
+            border-color: #C0C0C0;
+            box-shadow: 0 0 5px rgba(192, 192, 192, 0.3);
+        }
+        .tier-badge-compact.gold {
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            border-color: #FFD700;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+        }
+        .tier-badge-compact.platinum {
+            background: rgba(229, 228, 226, 0.25);
+            color: #E5E4E2;
+            border-color: #E5E4E2;
+            box-shadow: 0 0 10px rgba(229, 228, 226, 0.5);
         }
         .reputation-stats {
             flex: 1;
@@ -384,7 +423,7 @@
                             <div id="reputation-display" style="display: none;">
                                 <div class="reputation-header-compact">
                                     <div class="tier-badge-compact" id="tier-badge">
-                                        <span class="tier-name" id="tier-name">Candidate</span>
+                                        <span class="tier-name" id="tier-name">Bronze</span>
                                     </div>
                                     <div class="reputation-stats-compact">
                                         <span class="stat-label-small">Reputation Points: </span>
@@ -393,7 +432,7 @@
                                 </div>
                                 <div class="progress-section-compact">
                                     <div class="progress-header-compact">
-                                        <span class="progress-label-compact">Progress to <span id="next-tier-name">Scholar</span></span>
+                                        <span class="progress-label-compact">Progress to <span id="next-tier-name">Silver</span></span>
                                         <span class="progress-text-compact" id="progress-text">0%</span>
                                     </div>
                                     <div class="progress-bar-container-compact">
@@ -502,19 +541,30 @@
             }
         }
 
+        // Map old tier names to new metal-based names
+        function mapTierName(oldTier) {
+            const tierMapping = {
+                'Candidate': 'Bronze',
+                'Scholar': 'Silver',
+                'Elite': 'Gold',
+                'Distinction': 'Platinum'
+            };
+            return tierMapping[oldTier] || 'Bronze';
+        }
+
         // Calculate progress to next tier
         function calculateProgress(currentPoints) {
             if (currentPoints >= 81) {
-                return { currentTier: 'Distinction', nextTier: null, progress: 100, pointsToNext: 0, nextTierPoints: null };
+                return { currentTier: 'Platinum', nextTier: null, progress: 100, pointsToNext: 0, nextTierPoints: null };
             } else if (currentPoints >= 51) {
                 const progress = ((currentPoints - 51) / 30) * 100;
-                return { currentTier: 'Elite', nextTier: 'Distinction', progress: Math.min(100, progress), pointsToNext: Math.max(0, 81 - currentPoints), nextTierPoints: 81 };
+                return { currentTier: 'Gold', nextTier: 'Platinum', progress: Math.min(100, progress), pointsToNext: Math.max(0, 81 - currentPoints), nextTierPoints: 81 };
             } else if (currentPoints >= 21) {
                 const progress = ((currentPoints - 21) / 30) * 100;
-                return { currentTier: 'Scholar', nextTier: 'Elite', progress: Math.min(100, progress), pointsToNext: Math.max(0, 51 - currentPoints), nextTierPoints: 51 };
+                return { currentTier: 'Silver', nextTier: 'Gold', progress: Math.min(100, progress), pointsToNext: Math.max(0, 51 - currentPoints), nextTierPoints: 51 };
             } else {
                 const progress = (currentPoints / 21) * 100;
-                return { currentTier: 'Candidate', nextTier: 'Scholar', progress: Math.min(100, progress), pointsToNext: Math.max(0, 21 - currentPoints), nextTierPoints: 21 };
+                return { currentTier: 'Bronze', nextTier: 'Silver', progress: Math.min(100, progress), pointsToNext: Math.max(0, 21 - currentPoints), nextTierPoints: 21 };
             }
         }
 
@@ -567,7 +617,8 @@
 
                 // Load reputation data
                 const reputationPoints = statsData.reputationPoints || 0;
-                const tier = statsData.tier || 'Candidate';
+                const oldTier = statsData.tier || 'Candidate';
+                const tier = mapTierName(oldTier);
                 const progress = calculateProgress(reputationPoints);
 
                 // Update reputation display (compact version)
@@ -583,8 +634,8 @@
                 const progressFillEl = document.getElementById('progress-fill');
                 const pointsToNextEl = document.getElementById('points-to-next');
                 
-                if (tierBadge) tierBadge.className = `tier-badge-compact ${(tier || 'Candidate').toLowerCase()}`;
-                if (tierNameEl) tierNameEl.textContent = tier || 'Candidate';
+                if (tierBadge) tierBadge.className = `tier-badge-compact ${(tier || 'Bronze').toLowerCase()}`;
+                if (tierNameEl) tierNameEl.textContent = tier || 'Bronze';
                 if (repPointsEl) repPointsEl.textContent = reputationPoints || 0;
 
                 // Update progress bar (compact version)
@@ -611,13 +662,13 @@
                     document.getElementById('reputation-loading').style.display = 'none';
                     document.getElementById('reputation-display').style.display = 'block';
                     const tierBadge = document.getElementById('tier-badge');
-                    tierBadge.className = 'tier-badge-compact candidate';
-                    document.getElementById('tier-name').textContent = 'Candidate';
+                    tierBadge.className = 'tier-badge-compact bronze';
+                    document.getElementById('tier-name').textContent = 'Bronze';
                     document.getElementById('reputation-points').textContent = '0';
-                    document.getElementById('next-tier-name').textContent = 'Scholar';
+                    document.getElementById('next-tier-name').textContent = 'Silver';
                     document.getElementById('progress-text').textContent = '0%';
                     document.getElementById('progress-fill').style.width = '0%';
-                    document.getElementById('points-to-next').textContent = '21 points to Scholar';
+                    document.getElementById('points-to-next').textContent = '21 points to Silver';
                 } catch (reputationErr) {
                     console.error('Error setting default reputation:', reputationErr);
                 }
