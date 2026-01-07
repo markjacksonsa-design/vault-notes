@@ -63,11 +63,11 @@ body:not(:has(.global-sidebar)) #content-area {
 }
 
 .container {
-    width: 100%;
-    max-width: 100%;
+    width: calc(100% - 280px);
+    max-width: none;
     padding: 20px;
-    margin-left: 0;
-    padding-left: 20px;
+    margin-left: 20px;
+    padding-left: 0;
 }
 
 /* Responsive adjustments */
@@ -333,14 +333,14 @@ body:not(:has(.global-sidebar)) #content-area {
     height: 32px;
     padding: 0 12px;
     border-radius: 4px;
-    border: 1px solid #39FF14;
+    border: 2px solid #39FF14;
     background: #000000;
     color: #ffffff;
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', 'Poppins', 'Roboto', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -350,6 +350,7 @@ body:not(:has(.global-sidebar)) #content-area {
 .pill-btn:hover {
     background: #39FF14;
     color: #000000;
+    border-width: 2px;
     box-shadow: 0 0 8px rgba(57, 255, 20, 0.4);
 }
 
@@ -364,6 +365,7 @@ body:not(:has(.global-sidebar)) #content-area {
     background: #39FF14;
     color: #000000;
     border-color: #39FF14;
+    border-width: 2px;
     box-shadow: 0 0 8px rgba(57, 255, 20, 0.4);
 }
 
@@ -392,6 +394,7 @@ body:not(:has(.global-sidebar)) #content-area {
     align-items: center;
     margin-left: auto;
     flex-wrap: wrap;
+    margin-top: 40px;
 }
 
 .filter-input,
@@ -400,11 +403,12 @@ body:not(:has(.global-sidebar)) #content-area {
     padding: 0 12px;
     padding-right: 32px;
     border-radius: 4px;
-    border: 1px solid #39FF14;
+    border: 2px solid #39FF14;
     background: #000000;
     color: #ffffff;
-    font-size: 13px;
-    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Inter', 'Poppins', 'Roboto', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
     transition: all 0.2s ease;
     box-sizing: border-box;
     box-shadow: 0 0 5px rgba(57, 255, 20, 0.2);
@@ -422,7 +426,8 @@ body:not(:has(.global-sidebar)) #content-area {
 
 .filter-input:hover,
 .filter-select:hover:not(:disabled) {
-    border-color: #00FF00;
+    border-color: #39FF14;
+    border-width: 2px;
     box-shadow: 0 0 8px rgba(57, 255, 20, 0.4);
 }
 
@@ -432,6 +437,7 @@ body:not(:has(.global-sidebar)) #content-area {
     background: #39FF14;
     color: #000000;
     border-color: #39FF14;
+    border-width: 2px;
     box-shadow: 0 0 8px rgba(57, 255, 20, 0.4);
 }
 
@@ -455,6 +461,7 @@ body:not(:has(.global-sidebar)) #content-area {
     background: #121212;
     color: #666;
     border-color: #333;
+    border-width: 2px;
     cursor: not-allowed;
     opacity: 0.5;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
@@ -479,11 +486,12 @@ body:not(:has(.global-sidebar)) #content-area {
     height: 28px;
     padding: 0 10px;
     background: #121212;
-    border: 1px solid #39FF14;
+    border: 2px solid #39FF14;
     border-radius: 14px;
-    font-size: 12px;
-    color: #ffffff;
-    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #39FF14;
+    font-family: 'Inter', 'Poppins', 'Roboto', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
     gap: 6px;
     box-shadow: 0 0 5px rgba(57, 255, 20, 0.2);
 }
@@ -492,12 +500,13 @@ body:not(:has(.global-sidebar)) #content-area {
     background: none;
     border: none;
     color: #39FF14;
-    font-size: 16px;
+    font-size: 18px;
+    font-weight: 700;
     line-height: 1;
     cursor: pointer;
     padding: 0;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
