@@ -313,7 +313,15 @@
                 const badgesHTML = badges.length > 0 ? `<div class="note-badges">${badges.join('')}</div>` : '';
                 
                 // Get seller tier badge and seller info
-                const sellerTier = note.seller_tier || 'Candidate';
+                // Map old tier names to new metal-based names
+                const tierMapping = {
+                    'Candidate': 'Bronze',
+                    'Scholar': 'Silver',
+                    'Elite': 'Gold',
+                    'Distinction': 'Platinum'
+                };
+                const oldTier = note.seller_tier || 'Candidate';
+                const sellerTier = tierMapping[oldTier] || 'Bronze';
                 const sellerId = note.seller_id || note.sellerId;
                 const sellerName = note.seller_name || note.sellerName || 'Unknown Seller';
                 const tierBadgeHTML = sellerTier ? `<span class="tier-badge ${sellerTier.toLowerCase()}">${escapeHTML(sellerTier)}</span>` : '';
@@ -358,6 +366,7 @@
                                 <span class="author-name">${escapeHTML(sellerName)}</span>
                             </div>
                             <div class="note-reputation-badge">
+                                <span class="reputation-label">Reputation:</span>
                                 ${tierBadgeHTML}
                             </div>
                         </div>
