@@ -551,9 +551,9 @@
                     <option value="University">University</option>
                 </select>
                 
-                <label for="note-level">Level</label>
+                <label for="note-level">Grade</label>
                 <select id="note-level" name="level">
-                    <option value="">Select level...</option>
+                    <option value="">Select grade...</option>
                     <option value="Grade 8">Grade 8</option>
                     <option value="Grade 9">Grade 9</option>
                     <option value="Grade 10">Grade 10</option>
@@ -584,6 +584,7 @@
                 
                 <label for="note-content">Note Content</label>
                 <textarea id="note-content" name="content" required maxlength="1000" placeholder="Type your note..."></textarea>
+                <div class="char-counter" id="char-counter" style="text-align: right; color: var(--subtitle); font-size: 0.85em; margin-top: -10px; margin-bottom: 10px;">0 / 1000 characters</div>
                 <div class="button-group">
                     <button type="button" id="cancel-btn" class="btn-secondary">Cancel</button>
                     <button type="submit" id="save-btn">Save Note</button>
@@ -659,7 +660,7 @@
             if (note.curriculum || note.level || note.subject || note.price) {
                 metadata = '<div style="margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9em; color: var(--subtitle);">';
                 if (note.curriculum) metadata += `<div><strong>Curriculum:</strong> ${escapeHTML(note.curriculum)}</div>`;
-                if (note.level) metadata += `<div style="margin-top: 8px;"><strong>Level:</strong> ${escapeHTML(note.level)}</div>`;
+                if (note.level) metadata += `<div style="margin-top: 8px;"><strong>Grade:</strong> ${escapeHTML(note.level)}</div>`;
                 if (note.subject) metadata += `<div style="margin-top: 8px;"><strong>Subject:</strong> ${escapeHTML(note.subject)}</div>`;
                 if (note.price) {
                     const priceValue = parseFloat(note.price);
@@ -695,6 +696,20 @@
                 document.getElementById('note-level').value = currentNote.level || '';
                 document.getElementById('note-subject').value = currentNote.subject || '';
                 document.getElementById('note-price').value = currentNote.price || '';
+                
+                // Update character counter if function exists
+                const charCounterEl = document.getElementById('char-counter');
+                const noteContentEl = document.getElementById('note-content');
+                if (charCounterEl && noteContentEl) {
+                    const currentLength = noteContentEl.value.length;
+                    const maxLength = 1000;
+                    charCounterEl.textContent = `${currentLength} / ${maxLength} characters`;
+                    if (currentLength > maxLength * 0.9) {
+                        charCounterEl.style.color = '#ff6b6b';
+                    } else {
+                        charCounterEl.style.color = 'var(--subtitle)';
+                    }
+                }
                 
                 // Show in view mode by default
                 updateViewMode(currentNote);
@@ -850,6 +865,27 @@
                 btn.innerText = isEditing ? 'Update Note' : 'Save Note';
             }
         });
+
+        // Character counter for note content
+        const noteContentTextarea = document.getElementById('note-content');
+        const charCounter = document.getElementById('char-counter');
+        const maxLength = 1000;
+        
+        function updateCharCounter() {
+            const currentLength = noteContentTextarea.value.length;
+            charCounter.textContent = `${currentLength} / ${maxLength} characters`;
+            if (currentLength > maxLength * 0.9) {
+                charCounter.style.color = '#ff6b6b';
+            } else {
+                charCounter.style.color = 'var(--subtitle)';
+            }
+        }
+        
+        noteContentTextarea.addEventListener('input', updateCharCounter);
+        noteContentTextarea.addEventListener('keyup', updateCharCounter);
+        
+        // Initialize counter on page load
+        updateCharCounter();
 
         // Initialize: Check if we're editing an existing note
         const noteId = getNoteId();

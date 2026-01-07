@@ -392,7 +392,7 @@
                             </button>
                             <button class="btn-vouch" ${isVouched ? 'disabled' : ''} onclick="vouchForSeller(${saleId}, this)" data-sale-id="${saleId}">
                                 <span>${isVouched ? '✓' : '⭐'}</span>
-                                <span>${isVouched ? 'Vouched' : 'Vouch for Seller'}</span>
+                                <span>${isVouched ? 'Upvoted' : 'Upvote for Seller'}</span>
                             </button>
                         </div>
                     `;
@@ -419,7 +419,7 @@
             window.location.href = `/api/download?noteId=${noteId}&reference=${reference}`;
         }
 
-        // Vouch for seller
+        // Upvote for seller
         async function vouchForSeller(saleId, buttonEl) {
             if (!saleId) {
                 alert('Invalid sale information');
@@ -446,18 +446,18 @@
                 const data = await res.json();
 
                 if (!res.ok) {
-                    throw new Error(data.error || 'Failed to vouch for seller');
+                    throw new Error(data.error || 'Failed to upvote seller');
                 }
 
-                // Update button to show vouched state
-                buttonEl.innerHTML = '<span>✓</span><span>Vouched</span>';
+                // Update button to show upvoted state
+                buttonEl.innerHTML = '<span>✓</span><span>Upvoted</span>';
                 buttonEl.style.background = '#059669';
                 
                 // Show success message
-                alert(`Successfully vouched for seller! They received 10 reputation points.`);
+                alert(`Successfully upvoted seller! They received 10 reputation points.`);
             } catch (err) {
-                console.error('Error vouching for seller:', err);
-                alert(err.message || 'Failed to vouch for seller. Please try again.');
+                console.error('Error upvoting seller:', err);
+                alert(err.message || 'Failed to upvote seller. Please try again.');
                 buttonEl.disabled = false;
                 buttonEl.innerHTML = originalText;
             }
