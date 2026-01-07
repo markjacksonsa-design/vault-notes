@@ -797,6 +797,9 @@
     </div>
     <button class="fab" id="create-fab" title="Create New Note">+</button>
     <script>
+        // Global Access Control - Check authentication before page loads
+        checkAccess();
+        
         // Helper for XSS-safe text
         function escapeHTML(str) {
             return String(str || '')

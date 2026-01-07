@@ -89,6 +89,9 @@
     </div>
     <button class="fab" id="create-fab" title="Create New Note">+</button>
     <script>
+        // Global Access Control - Check authentication before page loads
+        checkAccess();
+        
         // Cloudflare R2 Configuration
         const R2_BASE_URL = 'https://pub-79bda9095c294af5976bf1473db1cd28.r2.dev';
         const R2_DEFAULT_PLACEHOLDER = 'default-placeholder.png';

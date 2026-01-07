@@ -674,6 +674,9 @@
     </main>
 
     <script>
+        // Global Access Control - Check authentication before page loads
+        checkAccess();
+        
         // REMOVED: URL normalization that was causing redirect loops
         // No automatic redirects based on URL pathname
         

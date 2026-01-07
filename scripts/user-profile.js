@@ -68,12 +68,20 @@ async function getUserProfile() {
 }
 
 /**
- * Logout user by clearing session cookie
- * Redirects to browse.html (home of the app) after logout
+ * Logout user by clearing session cookie and localStorage
+ * Redirects to index.html (landing page) after logout
  */
 function logout() {
+    // Clear session cookie
     document.cookie = 'session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    window.location.href = '/browse.html';
+    // Clear user from localStorage
+    try {
+        localStorage.removeItem('user');
+    } catch (e) {
+        // localStorage might be disabled, that's okay
+    }
+    // Redirect to landing page
+    window.location.href = '/index.html';
 }
 
 /**
@@ -147,4 +155,57 @@ function updateReputationBar(reputationData) {
 }
 
 // Sidebar is handled by global-layout.js - no need to duplicate here
+
+/**
+ * Global Access Control - Check if user is logged in before accessing protected pages
+ * Redirects to index.html if user is not authenticated
+ * Should be called at the very top of every HTML file's script section (except index.html)
+ */
+function checkAccess() {
+    // Get current page path
+    const currentPath = window.location.pathname;
+    const currentPage = currentPath.split('/').pop() || 'index.html';
+    
+    // Allow access to index.html, login.html, and register.html without authentication
+    const publicPages = ['index.html', 'login.html', 'register.html', ''];
+    
+    // If on a public page, allow access
+    if (publicPages.includes(currentPage)) {
+        return;
+    }
+    
+    // Check for user in localStorage (primary check)
+    let isLoggedIn = false;
+    try {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            if (user && (user.id || user.userId)) {
+                isLoggedIn = true;
+            }
+        }
+    } catch (e) {
+        // localStorage check failed, continue to cookie check
+    }
+    
+    // Fallback: Check session cookie if localStorage doesn't have user
+    if (!isLoggedIn) {
+        const user = getCurrentUser();
+        if (user && (user.id || user.userId)) {
+            isLoggedIn = true;
+            // Store in localStorage for future checks
+            try {
+                localStorage.setItem('user', JSON.stringify(user));
+            } catch (e) {
+                // localStorage might be disabled, that's okay
+            }
+        }
+    }
+    
+    // If not logged in, redirect to index.html immediately
+    if (!isLoggedIn) {
+        window.location.replace('/index.html');
+        return;
+    }
+}
 

@@ -290,6 +290,15 @@
                     throw new Error(data.error || 'Login failed');
                 }
                 
+                // Success - store user in localStorage for checkAccess()
+                if (data.user) {
+                    try {
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                    } catch (e) {
+                        console.warn('Could not store user in localStorage:', e);
+                    }
+                }
+                
                 // Success - redirect to original page or dashboard
                 successMsg.textContent = 'Login successful! Redirecting...';
                 successMsg.classList.add('show');
