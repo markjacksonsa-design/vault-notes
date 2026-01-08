@@ -853,25 +853,32 @@
             try {
                 let pdfKey = null;
                 let thumbnailUrl = null;
+                let thumbnailFileName = null;
                 
                 // R2 Upload Logic (The 'Silent' Step): Upload thumbnail before SQL save
                 if (thumbnailFile) {
                     try {
-                        const r2Path = generateR2Path(thumbnailFile, 'thumbnail');
-                        const r2WorkerUrl = 'https://r2-uploader.markjacksonsa.workers.dev/';
+                        // Generate unique filename using Date.now() and original file name
+                        const timestamp = Date.now();
+                        const originalFileName = thumbnailFile.name || 'thumbnail.jpg';
+                        // Sanitize filename: remove special characters, keep only alphanumeric, dots, hyphens, underscores
+                        const sanitizedFileName = originalFileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+                        // Create unique filename: timestamp-originalfilename
+                        const uniqueFileName = `${timestamp}-${sanitizedFileName}`;
+                        thumbnailFileName = uniqueFileName;
+                        
+                        // Append filename to Worker URL for PUT request
+                        const r2WorkerUrl = `https://r2-uploader.markjacksonsa.workers.dev/${uniqueFileName}`;
                         
                         // Upload to R2 Worker
                         const r2UploadRes = await fetch(r2WorkerUrl, {
                             method: 'PUT',
-                            headers: {
-                                'X-R2-Path': r2Path
-                            },
                             body: thumbnailFile
                         });
                         
                         if (r2UploadRes.ok) {
-                            // Construct public URL
-                            thumbnailUrl = `https://pub-79bda9095c294af5976bf1473db1cd28.r2.dev/${r2Path}`;
+                            // Use the same filename to create the final public link for SQL database
+                            thumbnailUrl = `https://pub-79bda9095c294af5976bf1473db1cd28.r2.dev/${uniqueFileName}`;
                         } else {
                             throw new Error('R2 upload failed');
                         }
@@ -879,6 +886,7 @@
                         // Log error but don't stop execution - fall back to placeholder
                         console.error('R2 thumbnail upload failed:', r2Error);
                         thumbnailUrl = 'https://placehold.co/600x400/111/39FF14?text=Vault+Note';
+                        thumbnailFileName = null; // Don't store filename if upload failed
                     }
                 }
                 
@@ -935,9 +943,9 @@
                     pdf_key: pdfKey
                 };
                 
-                // Add thumbnail URL if available
-                if (thumbnailUrl) {
-                    requestBody.thumbnail_url = thumbnailUrl.split('/').pop(); // Store only filename
+                // Add thumbnail filename if available (use the unique filename we generated)
+                if (thumbnailFileName) {
+                    requestBody.thumbnail_url = thumbnailFileName; // Store only filename
                 }
                 
                 // Add author details
