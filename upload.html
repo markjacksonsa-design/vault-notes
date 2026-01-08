@@ -1099,7 +1099,7 @@
         };
 
         // Populate subject dropdown based on curriculum selection
-        function updateSubjectOptions() {
+        async function updateSubjectOptions() {
             const curriculumSelect = document.getElementById('note-curriculum');
             const subjectSelect = document.getElementById('note-subject');
             const selectedCurriculum = curriculumSelect.value;
@@ -1107,27 +1107,69 @@
             // Clear existing options
             subjectSelect.innerHTML = '';
             
-            if (selectedCurriculum && subjectOptions[selectedCurriculum]) {
-                // Add default option
+            if (!selectedCurriculum) {
+                // No curriculum selected
                 const defaultOption = document.createElement('option');
                 defaultOption.value = '';
-                defaultOption.textContent = 'Select subject...';
+                defaultOption.textContent = 'Select curriculum first...';
                 subjectSelect.appendChild(defaultOption);
-                
-                // Add curriculum-specific subjects
+                subjectSelect.disabled = true;
+                return;
+            }
+            
+            // Add default option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Select subject...';
+            subjectSelect.appendChild(defaultOption);
+            subjectSelect.disabled = true; // Disable while loading
+            
+            // For IEB curriculum, fetch subjects from API
+            if (selectedCurriculum === 'IEB') {
+                try {
+                    const response = await fetch(`/api/subjects?curriculum=IEB`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch IEB subjects');
+                    }
+                    const data = await response.json();
+                    
+                    if (data.success && data.subjects && data.subjects.length > 0) {
+                        // Add IEB subjects using code as value and name as display text
+                        data.subjects.forEach(subject => {
+                            const option = document.createElement('option');
+                            option.value = subject.code; // Use code column as value
+                            option.textContent = subject.name; // Use name as display text
+                            subjectSelect.appendChild(option);
+                        });
+                        subjectSelect.disabled = false;
+                    } else {
+                        throw new Error('No IEB subjects found');
+                    }
+                } catch (error) {
+                    console.error('Error fetching IEB subjects:', error);
+                    // Fallback: show error message
+                    const errorOption = document.createElement('option');
+                    errorOption.value = '';
+                    errorOption.textContent = 'Error loading subjects. Please try again.';
+                    subjectSelect.innerHTML = '';
+                    subjectSelect.appendChild(errorOption);
+                    subjectSelect.disabled = true;
+                }
+            } else if (subjectOptions[selectedCurriculum]) {
+                // For CAPS and University, use hardcoded list
                 subjectOptions[selectedCurriculum].forEach(subject => {
                     const option = document.createElement('option');
                     option.value = subject;
                     option.textContent = subject;
                     subjectSelect.appendChild(option);
                 });
-                
                 subjectSelect.disabled = false;
             } else {
-                // No curriculum selected
+                // Unknown curriculum
                 const defaultOption = document.createElement('option');
                 defaultOption.value = '';
                 defaultOption.textContent = 'Select curriculum first...';
+                subjectSelect.innerHTML = '';
                 subjectSelect.appendChild(defaultOption);
                 subjectSelect.disabled = true;
             }
