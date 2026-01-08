@@ -812,25 +812,75 @@
         document.getElementById('note-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const form = e.target;
+            
+            // Data Capture & Validation
             const title = form['title'].value.trim();
             const content = form['content'].value.trim();
+            const subject = form['subject'].value.trim();
+            
+            // Explicit validation: ensure title, noteContent, and subject are strings and not null
+            if (!title || typeof title !== 'string' || title === null) {
+                alert('Please enter a valid note title.');
+                return;
+            }
+            if (!content || typeof content !== 'string' || content === null) {
+                alert('Please enter valid note content.');
+                return;
+            }
+            if (!subject || typeof subject !== 'string' || subject === null) {
+                alert('Please select a valid subject.');
+                return;
+            }
+            
             const curriculum = form['curriculum'].value;
             const level = form['level'].value;
-            const subject = form['subject'].value.trim();
             const topic = form['topic'].value.trim();
-            const price = form['price'].value ? parseFloat(form['price'].value) : null;
+            
+            // Ensure price is converted to Number before sending to API
+            const price = form['price'].value ? Number(parseFloat(form['price'].value)) : null;
+            
             const pdfFile = form['pdf'].files[0];
-            if (!title || !content) return;
+            const thumbnailFile = form['thumbnail'].files[0];
 
             const noteId = getNoteId();
             const isEditing = noteId !== null;
             const btn = document.getElementById('save-btn');
             
+            // UI Feedback: Disable save button and change text to 'Processing...'
             btn.disabled = true;
-            btn.innerText = isEditing ? 'Updating...' : 'Saving...';
+            btn.innerText = 'Processing...';
             
             try {
                 let pdfKey = null;
+                let thumbnailUrl = null;
+                
+                // R2 Upload Logic (The 'Silent' Step): Upload thumbnail before SQL save
+                if (thumbnailFile) {
+                    try {
+                        const r2Path = generateR2Path(thumbnailFile, 'thumbnail');
+                        const r2WorkerUrl = 'https://r2-uploader.markjacksonsa.workers.dev/';
+                        
+                        // Upload to R2 Worker
+                        const r2UploadRes = await fetch(r2WorkerUrl, {
+                            method: 'PUT',
+                            headers: {
+                                'X-R2-Path': r2Path
+                            },
+                            body: thumbnailFile
+                        });
+                        
+                        if (r2UploadRes.ok) {
+                            // Construct public URL
+                            thumbnailUrl = `https://pub-79bda9095c294af5976bf1473db1cd28.r2.dev/${r2Path}`;
+                        } else {
+                            throw new Error('R2 upload failed');
+                        }
+                    } catch (r2Error) {
+                        // Log error but don't stop execution - fall back to placeholder
+                        console.error('R2 thumbnail upload failed:', r2Error);
+                        thumbnailUrl = 'https://placehold.co/600x400/111/39FF14?text=Vault+Note';
+                    }
+                }
                 
                 // Upload PDF if provided
                 if (pdfFile) {
@@ -850,37 +900,71 @@
                     pdfKey = uploadData.key;
                 }
                 
-                const url = isEditing ? `/api/notes?id=${noteId}` : '/api/notes';
+                // SQL Integration (The 'Profile' Step): Pull author details from localStorage
+                let first_name = null;
+                let last_name = null;
+                let school = null;
+                let reputation = null;
+                
+                try {
+                    const userStr = localStorage.getItem('user');
+                    if (userStr) {
+                        const user = JSON.parse(userStr);
+                        // Try both camelCase and snake_case versions
+                        first_name = user.first_name || user.firstName || null;
+                        last_name = user.last_name || user.lastName || null;
+                        school = user.school || null;
+                        reputation = user.reputation || null;
+                    }
+                } catch (localStorageError) {
+                    console.warn('Could not read author details from localStorage:', localStorageError);
+                }
+                
+                const url = isEditing ? `/api/notes?id=${noteId}` : '/api/notes/save';
                 const method = isEditing ? 'PUT' : 'POST';
+                
+                // Build request body with author details
+                const requestBody = { 
+                    title, 
+                    content,
+                    curriculum,
+                    level,
+                    subject,
+                    topic,
+                    price,
+                    pdf_key: pdfKey
+                };
+                
+                // Add thumbnail URL if available
+                if (thumbnailUrl) {
+                    requestBody.thumbnail_url = thumbnailUrl.split('/').pop(); // Store only filename
+                }
+                
+                // Add author details
+                if (first_name !== null) requestBody.first_name = first_name;
+                if (last_name !== null) requestBody.last_name = last_name;
+                if (school !== null) requestBody.school = school;
+                if (reputation !== null) requestBody.reputation = reputation;
                 
                 const res = await fetch(url, {
                     method: method,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        title, 
-                        content,
-                        curriculum,
-                        level,
-                        subject,
-                        topic,
-                        price,
-                        pdf_key: pdfKey
-                    })
+                    body: JSON.stringify(requestBody)
                 });
                 
-                if (!res.ok) throw new Error(isEditing ? 'Update failed' : 'Save failed');
-                
-                // Update current note data and switch to view mode
-                if (isEditing) {
-                    // Reload the note to get latest data from server
-                    await loadNote(noteId);
-                } else {
-                    // For new notes, redirect to list
-                    window.location.href = '/list.html';
+                // If SQL stage fails, show specific alert with error message
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+                    const errorMessage = errorData.error || errorData.message || (isEditing ? 'Update failed' : 'Save failed');
+                    throw new Error(errorMessage);
                 }
+                
+                // If save is successful, redirect to /list.html
+                window.location.href = '/list.html';
             } catch (err) {
                 console.error('Error saving note:', err);
-                alert(isEditing ? 'Failed to update note.' : 'Failed to save note.');
+                // Show specific alert with error message
+                alert(`Failed to save note: ${err.message || 'Unknown error occurred'}`);
             } finally {
                 btn.disabled = false;
                 btn.innerText = isEditing ? 'Update Note' : 'Save Note';
