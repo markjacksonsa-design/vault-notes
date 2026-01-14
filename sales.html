@@ -320,6 +320,124 @@
             font-size: 1.1em;
         }
         
+        /* Withdraw Button Styles */
+        .withdraw-button {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .withdraw-button:hover {
+            background: #00CC6A;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 255, 133, 0.3);
+        }
+        .withdraw-button:disabled {
+            background: rgba(0, 255, 133, 0.3);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Withdrawal Modal */
+        .withdrawal-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        .withdrawal-modal.active {
+            display: flex;
+        }
+        .withdrawal-modal-content {
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid rgba(0, 255, 133, 0.3);
+        }
+        .withdrawal-modal-content h2 {
+            color: var(--text);
+            margin-bottom: 24px;
+            font-size: 1.8em;
+        }
+        .withdrawal-form-group {
+            margin-bottom: 20px;
+        }
+        .withdrawal-form-group label {
+            display: block;
+            color: var(--subtitle);
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        .withdrawal-form-group input {
+            width: 100%;
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 1em;
+        }
+        .withdrawal-form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .withdrawal-info {
+            background: rgba(0, 255, 133, 0.1);
+            border: 1px solid rgba(0, 255, 133, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            color: var(--subtitle);
+            font-size: 0.9em;
+        }
+        .withdrawal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .withdrawal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .withdrawal-buttons .btn-primary {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+        }
+        .withdrawal-buttons .btn-primary:hover {
+            background: #00CC6A;
+        }
+        .withdrawal-buttons .btn-secondary {
+            background: transparent;
+            color: var(--subtitle);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .withdrawal-buttons .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
         /* Access Denied Message */
         .access-denied {
             text-align: center;
@@ -398,8 +516,11 @@
                             <div class="stat-value" id="total-sales">0</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">Current Balance</div>
+                            <div class="stat-label">Available Balance</div>
                             <div class="stat-value currency" id="current-balance">R 0.00</div>
+                            <button id="withdraw-btn" class="withdraw-button" style="margin-top: 16px; display: none;">
+                                Withdraw Funds
+                            </button>
                         </div>
                     </div>
 
@@ -474,6 +595,28 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Withdrawal Modal -->
+    <div id="withdrawal-modal" class="withdrawal-modal">
+        <div class="withdrawal-modal-content">
+            <h2>Withdraw Funds</h2>
+            <div class="withdrawal-info">
+                <strong>Available Balance:</strong> <span id="modal-available-balance">R 0.00</span><br>
+                <small>Minimum withdrawal: R100.00</small>
+            </div>
+            <form id="withdrawal-form">
+                <div class="withdrawal-form-group">
+                    <label for="withdrawal-amount">Amount (ZAR)</label>
+                    <input type="number" id="withdrawal-amount" name="amount" min="100" step="0.01" placeholder="Enter amount" required>
+                </div>
+                <div class="withdrawal-buttons">
+                    <button type="submit" class="btn-primary" id="confirm-withdraw-btn">Withdraw</button>
+                    <button type="button" class="btn-secondary" id="cancel-withdraw-btn">Cancel</button>
+                </div>
+            </form>
+            <div id="withdrawal-message" style="margin-top: 16px; display: none;"></div>
+        </div>
     </div>
 
     <script>
@@ -612,8 +755,9 @@
                 
                 if (lifetimeEarningsEl) lifetimeEarningsEl.textContent = formatCurrency(totalEarnings || 0);
                 if (totalSalesEl) totalSalesEl.textContent = totalDownloads || 0;
-                // Current Balance is same as Total Earnings for now (can be updated if withdrawal system is added)
-                if (currentBalanceEl) currentBalanceEl.textContent = formatCurrency(totalEarnings || 0);
+                
+                // Load available balance (earnings minus withdrawals)
+                await loadAvailableBalance();
 
                 // Load reputation data
                 const reputationPoints = statsData.reputationPoints || 0;
@@ -932,6 +1076,159 @@
                 console.error('Error loading notes:', err);
                 document.getElementById('notes-loading').textContent = 'Failed to load notes. Please try again later.';
             }
+        }
+
+        // Load available balance and show withdraw button
+        async function loadAvailableBalance() {
+            try {
+                const res = await fetch('/api/user/withdraw');
+                if (!res.ok) {
+                    console.error('Failed to load withdrawal info');
+                    return;
+                }
+                
+                const data = await res.json();
+                if (data.success) {
+                    const availableBalance = data.availableBalance || 0;
+                    const currentBalanceEl = document.getElementById('current-balance');
+                    const withdrawBtn = document.getElementById('withdraw-btn');
+                    
+                    if (currentBalanceEl) {
+                        currentBalanceEl.textContent = formatCurrency(availableBalance);
+                    }
+                    
+                    // Show withdraw button if balance is above minimum (R100)
+                    if (withdrawBtn && availableBalance >= 100) {
+                        withdrawBtn.style.display = 'block';
+                    } else if (withdrawBtn) {
+                        withdrawBtn.style.display = 'none';
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading available balance:', err);
+            }
+        }
+
+        // Withdrawal modal handlers
+        const withdrawalModal = document.getElementById('withdrawal-modal');
+        const withdrawBtn = document.getElementById('withdraw-btn');
+        const cancelWithdrawBtn = document.getElementById('cancel-withdraw-btn');
+        const withdrawalForm = document.getElementById('withdrawal-form');
+        const withdrawalAmountInput = document.getElementById('withdrawal-amount');
+        const modalAvailableBalance = document.getElementById('modal-available-balance');
+        const withdrawalMessage = document.getElementById('withdrawal-message');
+
+        // Open withdrawal modal
+        if (withdrawBtn) {
+            withdrawBtn.addEventListener('click', async () => {
+                await loadAvailableBalance();
+                const res = await fetch('/api/user/withdraw');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        const availableBalance = data.availableBalance || 0;
+                        modalAvailableBalance.textContent = formatCurrency(availableBalance);
+                        withdrawalAmountInput.max = availableBalance;
+                        withdrawalAmountInput.value = '';
+                        withdrawalMessage.style.display = 'none';
+                        withdrawalModal.classList.add('active');
+                    }
+                }
+            });
+        }
+
+        // Close modal
+        if (cancelWithdrawBtn) {
+            cancelWithdrawBtn.addEventListener('click', () => {
+                withdrawalModal.classList.remove('active');
+                withdrawalForm.reset();
+                withdrawalMessage.style.display = 'none';
+            });
+        }
+
+        // Close modal on outside click
+        withdrawalModal.addEventListener('click', (e) => {
+            if (e.target === withdrawalModal) {
+                withdrawalModal.classList.remove('active');
+                withdrawalForm.reset();
+                withdrawalMessage.style.display = 'none';
+            }
+        });
+
+        // Handle withdrawal form submission
+        if (withdrawalForm) {
+            withdrawalForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const amount = parseFloat(withdrawalAmountInput.value);
+                const confirmBtn = document.getElementById('confirm-withdraw-btn');
+                const originalText = confirmBtn.textContent;
+                
+                // Validate amount
+                if (!amount || amount < 100) {
+                    showWithdrawalMessage('Minimum withdrawal amount is R100.00', 'error');
+                    return;
+                }
+                
+                // Disable button
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = 'Processing...';
+                withdrawalMessage.style.display = 'none';
+                
+                try {
+                    const res = await fetch('/api/user/withdraw', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ amount: amount })
+                    });
+                    
+                    const data = await res.json();
+                    
+                    if (res.ok && data.success) {
+                        showWithdrawalMessage(
+                            `Withdrawal of ${formatCurrency(amount)} initiated successfully! Reference: ${data.reference}`,
+                            'success'
+                        );
+                        
+                        // Update balance and reload stats
+                        setTimeout(async () => {
+                            await loadAvailableBalance();
+                            await loadStats();
+                            setTimeout(() => {
+                                withdrawalModal.classList.remove('active');
+                                withdrawalForm.reset();
+                                withdrawalMessage.style.display = 'none';
+                            }, 2000);
+                        }, 1500);
+                    } else {
+                        showWithdrawalMessage(
+                            data.error || 'Failed to process withdrawal. Please try again.',
+                            'error'
+                        );
+                    }
+                } catch (err) {
+                    console.error('Error processing withdrawal:', err);
+                    showWithdrawalMessage('An error occurred. Please try again later.', 'error');
+                } finally {
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = originalText;
+                }
+            });
+        }
+
+        // Show withdrawal message
+        function showWithdrawalMessage(message, type) {
+            withdrawalMessage.textContent = message;
+            withdrawalMessage.style.display = 'block';
+            withdrawalMessage.style.color = type === 'success' ? '#00FF85' : '#ff6b6b';
+            withdrawalMessage.style.padding = '12px';
+            withdrawalMessage.style.borderRadius = '8px';
+            withdrawalMessage.style.background = type === 'success' 
+                ? 'rgba(0, 255, 133, 0.1)' 
+                : 'rgba(255, 107, 107, 0.1)';
+            withdrawalMessage.style.border = `1px solid ${type === 'success' ? 'rgba(0, 255, 133, 0.3)' : 'rgba(255, 107, 107, 0.3)'}`;
         }
 
         // Initialize page
